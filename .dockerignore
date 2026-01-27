@@ -1,0 +1,42 @@
+# Docker Build Strategy: Whitelist specific source files to minimize context size.
+# JARs and large tools are downloaded at build time, not shipped in context.
+
+# 1. Ignore EVERYTHING
+**
+
+# 2. Whitelist Source Code & Config
+!**/*.py
+!**/*.sh
+!**/*.brf
+!**/*.xml
+!**/*.txt
+!**/*.md
+!**/*.properties
+!**/*.bat
+!batch_docker.xml
+
+# 3. Explicitly Re-ignore Large/Binary Assets
+**/*.zip
+**/*.obf
+**/*.pbf
+**/*.o5m
+**/*.gpkg
+**/*.osm
+**/*.json
+**/*.log
+**/*.jar
+**/nodes.tmp.odb
+**/regions.ocbf
+**/temp_map_build/
+**/segments4/
+**/dist/
+**/srtm/
+**/osmand_input/
+**/osmand_output/
+**/osmand_gen/
+
+# 4. Ignore Git and IDE metadata
+.git/
+.idea/
+.vscode/
+__pycache__/

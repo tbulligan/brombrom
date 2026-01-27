@@ -1,0 +1,48 @@
+# Data Files (Local Cache)
+*.pbf
+*.gpkg
+*.osm
+*.o5m
+*.json
+*.geojson
+*.gpx
+*.zip
+*.gz
+*.bz2
+*.log
+
+# Build Artifacts
+dist/
+segments4/
+osmand_input/
+osmand_output/
+osmand_gen/
+temp_map_build/
+temp_map_test/
+srtm/
+nodes.tmp.odb
+regions.ocbf
+*nodes.tmp.odb
+*.odb
+
+# Tools (Downloaded/Extracted)
+OsmAndMapCreator/
+brouter-server/
+profiles2/
+osmconvert64
+osmfilter64
+META-INF/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

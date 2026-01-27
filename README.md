@@ -1,0 +1,56 @@
+# BromBrom: Brommobiel Navigation for Android
+
+**BromBrom** creates a professional-grade offline navigation package for L6e microcars (Brommobielen) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) using official NDW traffic data and OpenStreetMap.
+
+## Features
+
+- **Advanced Routing Engine**: Generates a custom `.obf` map for OsmAnd with "C9-forbidden" tags baked into the road network.
+- **Redundant Navigation**: Includes a `brommobiel.brf` profile for BRouter as a robust offline backup.
+- **End-to-End Docker Pipeline**: One command fetches data, processes geometry, snaps traffic signs, and builds Android artifacts.
+- **Zero-Touch Deployment**: Outputs a single `brombrom_android_deploy.zip` ready for your phone.
+
+## Getting Started
+
+### Prerequisites
+- Docker (with BuildKit support)
+
+### Build the Map
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/tbulligan/brombrom.git
+   cd brombrom
+   ```
+
+2. **Build the Docker Image**:
+   ```bash
+   docker buildx build -t brombrom-builder .
+   ```
+
+3. **Run the Pipeline**:
+   ```bash
+   docker run --rm -v $(pwd):/app brombrom-builder
+   ```
+   *Note: The first run downloads ~1.5GB of map data. Subsequent runs use local cache.*
+
+4. **Get the Artifact**:
+   Find `brombrom_android_deploy.zip` in the `dist/` folder.
+
+## Installation on Android
+
+1. Connect your phone to your PC.
+2. Unzip `brombrom_android_deploy.zip` to the **root** of your internal storage.
+   - If you don't need BRouter, you can skip copying the BRouter folder to your phone.
+3. **Setup OsmAnd** (Primary):
+   - Settings -> Select Profile -> Navigation Settings -> Navigation Type -> Select **`routing.xml`** (might appear as 'microcar') as the style.
+4. **Setup BRouter** (Optional, as backup):
+   - Open BRouter app, select BRouter App -> `brommobiel` -> Server-Mode -> OK -> Exit.
+
+## Project Structure
+
+- `src/`: Python processing pipelines (Data fetching, Snapping, Tagging).
+- `config/`: Routing profiles (`.brf`) and XML configurations.
+- `Dockerfile`: Multi-stage Docker build environment.
+
+## License
+
+MIT
