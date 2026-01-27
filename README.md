@@ -15,6 +15,7 @@
 
 ### Prerequisites
 - **Docker**: with BuildKit support.
+- **OsmAnd (Android App)**: **Required** for using the generated maps. (Available on Play Store/F-Droid).
 - **System Memory**: At least **10GB RAM** is required for the map generation stage.
 
 ### 1. Build the Map
@@ -31,11 +32,13 @@ docker run --rm -v $(pwd):/app brombrom-builder
 ```
 Find your artifact `brombrom_android_deploy.zip` in the `dist/` folder.
 
-### 2. Installation on Android
+### 2. Installation on Android (OsmAnd)
 1. Connect your phone to your PC.
 2. Unzip `brombrom_android_deploy.zip` to the **root** of your internal storage.
 3. **Setup OsmAnd**:
-   - Settings -> Select Profile -> Navigation Settings -> Navigation Type -> Select **`routing.xml`** (may appear as 'microcar').
+   - Open OsmAnd -> Settings -> Profiles -> [Select Profile] -> Navigation settings -> Route parameters -> **Navigation type**.
+   - Select **`routing.xml`** (may appear as *microcar*).
+> **Note**: BromBrom generates a custom `.obf` map file. Once it's in the correct OsmAnd folder, it will be automatically detected and used for routing.
 
 ---
 
@@ -56,16 +59,18 @@ If you mistakenly enter a forbidden road (e.g., following traffic or missing a s
 
 ---
 
-## 🛠️ Routing Engines
+## � Primary Navigation: OsmAnd
 
-| Feature | OsmAnd (Native) | BRouter (External) |
-| :--- | :--- | :--- |
-| **Primary Use** | **Recommended (Daily Driver)** | **Backup (Safety Audit)** |
-| **Guidance** | Rich: Street names, lanes, voice. | Basic: Turn symbols and distance only. |
-| **Recovery** | Excellent "Rescue" beeline logic. | Sensitive; may fail if too far off-road. |
-| **Stability** | Fully integrated UI experience. | Extremely robust offline fallback. |
+OsmAnd is the **required** primary experience for BromBrom. By baking the C9 and motorway restrictions directly into the `.obf` map data, OsmAnd provides:
+- **Full Voice Guidance**: Street names and turn instructions.
+- **Lane Assistance**: Visual indicators for complex intersections.
+- **Offline Reliability**: 100% offline navigation without data usage.
 
-### Advanced: Including BRouter (Optional)
+---
+
+## 🛠️ Optional: BRouter (Developer / Backup)
+
+While OsmAnd is the primary engine, BRouter is supported as an **optional** secondary fallback or for technical auditing. 
 Specify the environment variable to generate BRouter segments:
 ```bash
 docker run --rm -v $(pwd):/app -e INCLUDE_BROUTER=true brombrom-builder
