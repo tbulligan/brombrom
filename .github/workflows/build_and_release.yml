@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   schedule:
-    - cron: '0 0 * * 0' # Weekly on Sunday at midnight
+    - cron: '0 0 2 * *' # Monthly on the 2nd at midnight
   workflow_dispatch:   # Allow manual trigger
 
 jobs:
@@ -40,8 +40,9 @@ jobs:
           tag_name: latest
           name: Latest BromBrom OsmAnd Build
           body: |
-            ## Automated Weekly Build
+            ## Automated Monthly Build
             This package contains the latest map data and routing profiles for microcars in the Netherlands.
+
             
             **Build Date**: ${{ steps.tag.outputs.TAG_NAME }}
             **Base Branch**: ${{ github.ref_name }}

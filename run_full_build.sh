@@ -2,7 +2,7 @@
 set -e
 
 echo "========================================================"
-echo "      BromBrom - Android Deployment Build"
+echo "      BromBrom - OsmAnd Navigation Build"
 echo "========================================================"
 
 # Pre-flight checks & Cleanup

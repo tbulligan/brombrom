@@ -2,6 +2,7 @@
 import requests, os, gzip
 from tqdm import tqdm
 
+# NDW 'current-state' endpoint provides a full snapshot that regenerates every month.
 URL = "https://data.ndw.nu/api/rest/static-road-data/traffic-signs/v4/current-state?rvv-code=C9"
 JSON_FILE = "ndw_c9_current_state.json"
 
