@@ -1,4 +1,4 @@
-# BromBrom: Brommobiel Navigation for Android
+# BromBrom: Microcar Navigation for Android
 
 **BromBrom** creates a professional-grade offline navigation package for L6e microcars (Brommobielen) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) using official NDW traffic data and OpenStreetMap.
 
