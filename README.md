@@ -51,6 +51,13 @@
 - `config/`: Routing profiles (`.brf`) and XML configurations.
 - `Dockerfile`: Multi-stage Docker build environment.
 
-## License
+## License & Legal
 
-MIT
+### Data Attributions
+- **Map Data**: © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) (ODbL).
+- **Traffic Sign Data**: Provided by [NDW](https://www.ndw.nu/) (National Data Portal for Road Traffic).
+
+### Project License
+© 2026 Tomaso Bulligan. All Rights Reserved.
+
+**Current Status**: This project is provided for personal, non-commercial use only. Redistribution, commercial use, or inclusion in paid products is strictly prohibited without prior written consent.
