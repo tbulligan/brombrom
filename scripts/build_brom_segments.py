@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # build_brom_segments.py
 # Implements the full BRouter map creation pipeline
 import subprocess

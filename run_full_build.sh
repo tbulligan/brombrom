@@ -41,14 +41,14 @@ fi
 # Optional: BRouter
 if [ "$INCLUDE_BROUTER" = "true" ]; then
     echo "[8/9] Generating BRouter Segments..."
-    python scripts/build_brom_segments.py
+    python3 scripts/build_brom_segments.py
 else
     echo "[8/9] Skipping BRouter generation (Optional)."
 fi
 
 # Stage 3: Deployment (Step 9)
 echo "[9/9] Creating Android Deployment Package..."
-python scripts/generate_android_deploy.py
+python3 scripts/generate_android_deploy.py
 
 echo "========================================================"
 echo "      Build Successful!"
