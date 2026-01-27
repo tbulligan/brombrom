@@ -8,9 +8,11 @@
 
 **[Download BromBrom for OsmAnd (latest release)](https://github.com/tbulligan/brombrom/releases/latest)**
 
+> **Support the Project**: If BromBrom has helped you navigate safely and saved you from a fine or a motorway, [consider buying me a coffee](https://buymeacoffee.com/brombrom) to support its continued maintenance. ☕
+
 ---
 
-## Features
+## ✨ Features
 
 - **Advanced Routing Engine**: Generates a custom `.obf` map for OsmAnd with "C9-forbidden" tags baked into the road network.
 - **Intelligent Restriction Logic**: Handles Dutch C9 traffic signs by verifying supplementary plates; roads with `OB65` (microcar exception) remain accessible.
@@ -48,7 +50,7 @@ Find your artifact `brombrom_osmand_deploy.zip` in the `dist/` folder.
    - Select **`routing.xml`** (may appear as *microcar*).
 > **Note**: BromBrom generates a custom `.obf` map file. Once it's in the correct OsmAnd folder, it will be automatically detected and used for routing.
 
-### 🍏 Experimental: iOS Support
+### Experimental: iOS Support
 The generated `.obf` and `routing.xml` files are cross-platform and theoretically work on **OsmAnd for iOS**. However, because iOS lacks the direct file structure of Android, you must manually import the files:
 - Transfer the `.obf` and `routing.xml` files from the zip to your iPhone (via AirDrop, iCloud, or Files app).
 - Open them with the OsmAnd app to import.
