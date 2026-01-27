@@ -45,6 +45,15 @@
 4. **Setup BRouter** (Optional, as backup):
    - Open BRouter app, select BRouter App -> `brommobiel` -> Server-Mode -> OK -> Exit.
 
+## Performance & Build Notes
+
+- **Stage 1 & 2 (Downloads)**: The initial build downloads ~1.5GB of geospatial data. Ensure you have a stable connection.
+- **Stage 2 (OsmAnd OBF Generation)**: This is the most resource-intensive part of the pipeline.
+  - **Memory**: It is configured to use up to 10GB of RAM.
+  - **Duration**: Depending on your hardware, this can take 20-40 minutes.
+  - **Progress Feedback**: The OsmAnd IndexBatchCreator often reports progress percentages exceeding 100% (e.g., `Done 450%`). This is normal behavior as it processes multiple data layers (Routing, POI, Address) sequentially.
+- **Idempotency**: The pipeline skips already completed stages. Run `./clean.sh` if you want to force a fresh build from scratch.
+
 ## Project Structure
 
 - `src/`: Python processing pipelines (Data fetching, Snapping, Tagging).
