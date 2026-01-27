@@ -1,0 +1,51 @@
+name: Build and Release BromBrom
+
+on:
+  push:
+    branches: [ master ]
+  schedule:
+    - cron: '0 0 * * 0' # Weekly on Sunday at midnight
+  workflow_dispatch:   # Allow manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: actions/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: |
+          docker buildx build -t brombrom-builder . --load
+
+      - name: Run Build Pipeline
+        run: |
+          # The runner has ~7GB physical RAM. We stay at 6GB to avoid swap/OOM.
+          docker run --rm -v ${{ github.workspace }}:/app --memory="6g" brombrom-builder
+
+      - name: Generate Release Tag
+        id: tag
+        run: echo "TAG_NAME=build-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Update Latest Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/brombrom_android_deploy.zip
+          tag_name: latest
+          name: Latest BromBrom Android Build
+          body: |
+            ## Automated Weekly Build
+            This package contains the latest map data and routing profiles for microcars in the Netherlands.
+            
+            **Build Date**: ${{ steps.tag.outputs.TAG_NAME }}
+            **Base Branch**: ${{ github.ref_name }}
+          prerelease: false
+          overwrite: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
