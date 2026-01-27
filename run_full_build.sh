@@ -47,10 +47,10 @@ else
 fi
 
 # Stage 3: Deployment (Step 9)
-echo "[9/9] Creating Android Deployment Package..."
-python3 scripts/generate_android_deploy.py
+echo "[9/9] Creating OsmAnd Deployment Package..."
+python3 scripts/generate_osmand_deploy.py
 
 echo "========================================================"
 echo "      Build Successful!"
-echo "      Output: dist/brombrom_android_deploy.zip"
+echo "      Output: dist/brombrom_osmand_deploy.zip"
 echo "========================================================"

@@ -7,7 +7,7 @@
 - **Advanced Routing Engine**: Generates a custom `.obf` map for OsmAnd with "C9-forbidden" tags baked into the road network.
 - **Intelligent Restriction Logic**: Specifically handles Dutch C9 traffic signs by verifying supplementary plates; roads with `OB65` (microcar exception) remain accessible.
 - **End-to-End Docker Pipeline**: One command fetches data, processes geometry, snaps traffic signs, and builds Android artifacts.
-- **Zero-Touch Deployment**: Outputs a single `brombrom_android_deploy.zip` ready for your phone.
+- **Zero-Touch Deployment**: Outputs a single `brombrom_osmand_deploy.zip` ready for your phone.
 
 ---
 
@@ -30,11 +30,11 @@ docker buildx build -t brombrom-builder .
 # Run the pipeline (downloads ~1.5GB data on first run)
 docker run --rm -v $(pwd):/app brombrom-builder
 ```
-Find your artifact `brombrom_android_deploy.zip` in the `dist/` folder.
+Find your artifact `brombrom_osmand_deploy.zip` in the `dist/` folder.
 
 ### 2. Installation on Android (OsmAnd)
 1. Connect your phone to your PC.
-2. Unzip `brombrom_android_deploy.zip` to the **root** of your internal storage.
+2. Unzip `brombrom_osmand_deploy.zip` to the **root** of your internal storage.
 3. **Setup OsmAnd**:
    - Open OsmAnd -> Settings -> Profiles -> [Select Profile] -> Navigation settings -> Route parameters -> **Navigation type**.
    - Select **`routing.xml`** (may appear as *microcar*).

@@ -36,9 +36,9 @@ jobs:
       - name: Update Latest Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/brombrom_android_deploy.zip
+          files: dist/brombrom_osmand_deploy.zip
           tag_name: latest
-          name: Latest BromBrom Android Build
+          name: Latest BromBrom OsmAnd Build
           body: |
             ## Automated Weekly Build
             This package contains the latest map data and routing profiles for microcars in the Netherlands.
