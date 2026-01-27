@@ -1,6 +1,6 @@
-# BromBrom: Microcar Navigation for Android
+# BromBrom: OsmAnd Microcar Navigation (Netherlands)
 
-**BromBrom** creates a professional-grade offline navigation package for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) using official NDW traffic data and OpenStreetMap.
+**BromBrom** creates a professional-grade **OsmAnd** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
 
 ## Features
 
@@ -39,6 +39,12 @@ Find your artifact `brombrom_android_deploy.zip` in the `dist/` folder.
    - Open OsmAnd -> Settings -> Profiles -> [Select Profile] -> Navigation settings -> Route parameters -> **Navigation type**.
    - Select **`routing.xml`** (may appear as *microcar*).
 > **Note**: BromBrom generates a custom `.obf` map file. Once it's in the correct OsmAnd folder, it will be automatically detected and used for routing.
+
+### 🍏 Experimental: iOS Support
+The generated `.obf` and `routing.xml` files are cross-platform and theoretically work on **OsmAnd for iOS**. However, because iOS lacks the direct file structure of Android, you must manually import the files:
+- Transfer the `.obf` and `routing.xml` files from the zip to your iPhone (via AirDrop, iCloud, or Files app).
+- Open them with the OsmAnd app to import.
+- Note: This path is currently manual and experimental.
 
 ---
 
