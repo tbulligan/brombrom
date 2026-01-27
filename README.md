@@ -52,7 +52,7 @@ BromBrom doesn't just "prefer" certain roads; it programmatically enforces legal
 If you mistakenly enter a forbidden road (e.g., following traffic or missing a sign):
 - **GPS Snapping**: The app will try to "snap" your position to the nearest **legal** road on the map.
 - **Beeline Recovery**: If you are too far from a legal road, OsmAnd shows a "beeline" to the nearest exit point. guidance resumes once you reach a permitted street.
-- **Pilot Responsibility**: The map will never suggest a U-turn or shortcut onto a C9 road, but you must always obey physical signs in the real world.
+- **Legal Safety**: The app will never plan a route through a C9 road or use one as a shortcut. If you accidentally end up on a restricted road, the app will immediately guide you to the nearest legal exit. **Crucially: Digital maps can have errors; if you see a physical C9 sign, always obey the sign over the app.**
 
 ---
 
