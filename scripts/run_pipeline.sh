@@ -1,35 +1,23 @@
 #!/bin/bash
 set -e
 
-echo "=== Starting Geospatial ETL Pipeline ==="
-
-# 1. Fetch Data
-echo "[1/7] Fetching Signs..."
+# Data Acquisition
+echo "[1/9] Fetching Traffic Sign Data (NDW)..."
 python scripts/fetch_nl_signs.py
 
-echo "[2/7] Fetching Map..."
+echo "[2/9] Fetching Map Data (OSM)..."
 python scripts/fetch_nl_map.py
 
-# 2. Extract Data
-echo "[3/7] Extracting C9 signs..."
+# Data Extraction
+echo "[3/9] Extracting C9 restrictions..."
 python scripts/extract_c9.py
 
-echo "[4/7] Extracting Roads network..."
+echo "[4/9] Extracting road network..."
 python scripts/extract_roads.py
 
-# 3. Process Data
-echo "[5/7] Snapping C9 to Roads..."
+# Geospatial Processing
+echo "[5/9] Snapping restrictions to road network..."
 python scripts/snap_c9_to_roads.py
 
-echo "[6/7] Tagging Roads in PBF..."
+echo "[6/9] Applying custom tags to PBF..."
 python scripts/tag_c9_roads.py
-
-# 4. Generate Map
-if [ "$INCLUDE_BROUTER" = "true" ]; then
-    echo "[7/7] Building BRouter Segments..."
-    python scripts/build_brom_segments.py
-else
-    echo "[7/7] Skipping BRouter Segments (Set INCLUDE_BROUTER=true to enable)."
-fi
-
-echo "=== Geospatial ETL Pipeline Finished Successfully ==="

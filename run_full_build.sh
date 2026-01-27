@@ -2,58 +2,55 @@
 set -e
 
 echo "========================================================"
-echo "      BromBrom - Optimized Android Build"
+echo "      BromBrom - Android Deployment Build"
 echo "========================================================"
 
-# Ensure directories exist
-mkdir -p segments4
-mkdir -p dist
-mkdir -p osmand_input
-mkdir -p osmand_output
-mkdir -p osmand_gen
-
-# 1. Run the Data & Processing Pipeline
-echo ">>> [Stage 1] Data & Processing..."
-# Check if python deps work
-python --version
-./scripts/run_pipeline.sh
-
-# 2. OsmAnd Map Generation (OBF)
-echo ">>> [Stage 2] OsmAnd OBF..."
-# Clean old temp DBs that might conflict or cause OOM
+# Pre-flight checks & Cleanup
+mkdir -p segments4 dist osmand_input osmand_output osmand_gen
 rm -f OsmAndMapCreator/*.odb osmand_gen/*.odb
 
-cp nl_brom_tagged.osm.pbf osmand_input/
+# Stage 1: Processing (Steps 1-6)
+./scripts/run_pipeline.sh
 
-# Determine OmC location (handle potential nesting from unzip)
-OMC_DIR="OsmAndMapCreator"
-if [ -d "/opt/OsmAndMapCreator" ]; then
-    # find the actual directory containing the JAR
-    ACTUAL_DIR=$(find /opt/OsmAndMapCreator -name "OsmAndMapCreator.jar" -exec dirname {} \;)
-    if [ -n "$ACTUAL_DIR" ]; then
-        OMC_DIR="$ACTUAL_DIR"
+# Stage 2: Map Generation (Steps 7-8)
+if ls OsmAndMapCreator/*.obf >/dev/null 2>&1; then
+    echo "[7/9] OsmAnd OBF Map already exists. Skipping."
+else
+    echo "[7/9] Generating OsmAnd OBF Map..."
+    cp nl_brom_tagged.osm.pbf osmand_input/
+
+    # Dynamically locate OsmAndMapCreator
+    OMC_DIR="OsmAndMapCreator"
+    if [ -d "/opt/OsmAndMapCreator" ]; then
+        ACTUAL_DIR=$(find /opt/OsmAndMapCreator -name "OsmAndMapCreator.jar" -exec dirname {} \;)
+        [ -n "$ACTUAL_DIR" ] && OMC_DIR="$ACTUAL_DIR"
     fi
+
+    # Run OsmAndMapCreator
+    JAVA_OPTS="-Xmx10G -Xms2G"
+    java -Djava.util.logging.config.file="$OMC_DIR/logging.properties" \
+        $JAVA_OPTS \
+        -cp "$OMC_DIR/OsmAndMapCreator.jar:$OMC_DIR/lib/*" \
+        net.osmand.MainUtilities generate-obf-files-in-batch \
+        config/batch_docker.xml
+
+    mkdir -p OsmAndMapCreator
+    mv osmand_output/*.obf OsmAndMapCreator/
 fi
 
-# Run IndexBatchCreator via MainUtilities (Required for modern nightly builds)
-# Increased memory to 10G since user upped WSL limits
-JAVA_OPTS="-Xmx10G -Xms2G"
-echo "    Running MainUtilities generate-obf-files-in-batch using $OMC_DIR ($JAVA_OPTS)..."
-java -Djava.util.logging.config.file="$OMC_DIR/logging.properties" \
-    $JAVA_OPTS \
-    -cp "$OMC_DIR/OsmAndMapCreator.jar:$OMC_DIR/lib/*" \
-    net.osmand.MainUtilities generate-obf-files-in-batch \
-    config/batch_docker.xml
+# Optional: BRouter
+if [ "$INCLUDE_BROUTER" = "true" ]; then
+    echo "[8/9] Generating BRouter Segments..."
+    python scripts/build_brom_segments.py
+else
+    echo "[8/9] Skipping BRouter generation (Optional)."
+fi
 
-# Move result
-mkdir -p OsmAndMapCreator
-mv osmand_output/*.obf OsmAndMapCreator/
-
-# 3. Packaging
-echo ">>> [Stage 3] Packaging..."
+# Stage 3: Deployment (Step 9)
+echo "[9/9] Creating Android Deployment Package..."
 python scripts/generate_android_deploy.py
 
 echo "========================================================"
-echo "      Build Complete!"
-echo "      Artifact: dist/brombrom_android_deploy.zip"
+echo "      Build Successful!"
+echo "      Output: dist/brombrom_android_deploy.zip"
 echo "========================================================"
