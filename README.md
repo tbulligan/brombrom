@@ -16,7 +16,7 @@
 ### Prerequisites
 - **Docker**: with BuildKit support.
 - **OsmAnd (Android App)**: **Required** for using the generated maps. (Available on Play Store/F-Droid).
-- **System Memory**: At least **10GB RAM** is required for the map generation stage.
+- **System Memory**: At least **6GB RAM** is required for the map generation stage.
 
 ### 1. Build the Map
 ```bash
@@ -89,6 +89,7 @@ docker run --rm -v $(pwd):/app -e INCLUDE_BROUTER=true brombrom-builder
 
 - **Initial Build**: Downloads ~1.5GB of geospatial data. Ensure a stable connection.
 - **OsmAnd OBF Generation**: This is the most resource-intensive part.
+  - **Memory**: It is configured to use up to **6GB** of RAM (compatible with GitHub free runners).
   - **Duration**: 20-40 minutes depending on hardware.
   - **Feedback**: Progress over 100% (e.g., `Done 450%`) is normal as it cycles through data layers.
 - **Idempotency**: The pipeline skips finished stages. Run `./clean.sh` for a fresh start.
@@ -106,7 +107,7 @@ docker run --rm -v $(pwd):/app -e INCLUDE_BROUTER=true brombrom-builder
 
 ### Data Attributions
 - **Map Data**: © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) (ODbL).
-- **Traffic signs**: Provided by [NDW](https://www.ndw.nu/) (National Data Portal).
+- **Traffic signs**: Provided by [NDW](https://www.ndw.nu/) (Nationaal Dataportaal Wegverkeer).
 
 ### Project License
 © 2026 Tomaso Bulligan. All Rights Reserved.

@@ -27,7 +27,7 @@ else
     fi
 
     # Run OsmAndMapCreator
-    JAVA_OPTS="-Xmx10G -Xms2G"
+    JAVA_OPTS="-Xmx6G -Xms2G"
     java -Djava.util.logging.config.file="$OMC_DIR/logging.properties" \
         $JAVA_OPTS \
         -cp "$OMC_DIR/OsmAndMapCreator.jar:$OMC_DIR/lib/*" \
