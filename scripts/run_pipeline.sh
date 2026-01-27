@@ -25,7 +25,11 @@ echo "[6/7] Tagging Roads in PBF..."
 python scripts/tag_c9_roads.py
 
 # 4. Generate Map
-echo "[7/7] Building BRouter Segments..."
-python scripts/build_brom_segments.py
+if [ "$INCLUDE_BROUTER" = "true" ]; then
+    echo "[7/7] Building BRouter Segments..."
+    python scripts/build_brom_segments.py
+else
+    echo "[7/7] Skipping BRouter Segments (Set INCLUDE_BROUTER=true to enable)."
+fi
 
 echo "=== Geospatial ETL Pipeline Finished Successfully ==="

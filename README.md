@@ -5,9 +5,17 @@
 ## Features
 
 - **Advanced Routing Engine**: Generates a custom `.obf` map for OsmAnd with "C9-forbidden" tags baked into the road network.
-- **Redundant Navigation**: Includes a `brommobiel.brf` profile for BRouter as a robust offline backup.
+- **Intelligent Restriction Logic**: Specifically handles Dutch C9 traffic signs by verifying supplementary plates; roads with `OB65` (microcar exception) remain accessible, while standard C9 roads are strictly excluded.
 - **End-to-End Docker Pipeline**: One command fetches data, processes geometry, snaps traffic signs, and builds Android artifacts.
 - **Zero-Touch Deployment**: Outputs a single `brombrom_android_deploy.zip` ready for your phone.
+
+## Routing Engine
+
+The primary navigation experience is designed for **OsmAnd**. By baking the restrictions directly into the map data, you get full turn-by-turn guidance, lane assistance, and street names while safely avoiding forbidden roads.
+
+### Optional: BRouter (Developer/Backup)
+BRouter is supported as an optional, secondary routing engine. It uses a rule-based engine (`.brf`) and can be useful for developer auditing or as a fallback. 
+*To include BRouter segments in your build, see the "Advanced Build" section below.*
 
 ## Getting Started
 
@@ -39,11 +47,22 @@
 
 1. Connect your phone to your PC.
 2. Unzip `brombrom_android_deploy.zip` to the **root** of your internal storage.
-   - If you don't need BRouter, you can skip copying the BRouter folder to your phone.
-3. **Setup OsmAnd** (Primary):
+3. **Setup OsmAnd**:
    - Settings -> Select Profile -> Navigation Settings -> Navigation Type -> Select **`routing.xml`** (might appear as 'microcar') as the style.
-4. **Setup BRouter** (Optional, as backup):
-   - Open BRouter app, select BRouter App -> `brommobiel` -> Server-Mode -> OK -> Exit.
+
+## Advanced: Including BRouter (Optional)
+
+If you require BRouter as a secondary backup or for auditing purposes:
+
+1. **Build with BRouter segments**:
+   ```bash
+   docker run --rm -v $(pwd):/app -e INCLUDE_BROUTER=true brombrom-builder
+   ```
+2. **Setup BRouter on Android**:
+   - After unzipping the package, open the BRouter app.
+   - Select the `brommobiel` profile.
+   - Set to **Server-Mode** -> OK -> Exit.
+   - In OsmAnd, you can then switch the "Routing Service" to BRouter in your profile settings.
 
 ## Performance & Build Notes
 
@@ -56,7 +75,7 @@
 
 ## Project Structure
 
-- `src/`: Python processing pipelines (Data fetching, Snapping, Tagging).
+- `scripts/`: Python processing pipelines (Data fetching, Snapping, Tagging).
 - `config/`: Routing profiles (`.brf`) and XML configurations.
 - `Dockerfile`: Multi-stage Docker build environment.
 
