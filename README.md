@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="BromBrom Banner" width="100%">
+</p>
+
 # BromBrom: OsmAnd Microcar Navigation (Netherlands)
 
 **BromBrom** creates a professional-grade **OsmAnd** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
@@ -8,7 +12,7 @@
 
 **[Download BromBrom for OsmAnd (latest release)](https://github.com/tbulligan/brombrom/releases/latest)**
 
-> **Support the Project**: If BromBrom has helped you navigate safely and saved you from a fine or a motorway, [consider buying me a coffee](https://buymeacoffee.com/brombrom) to support its continued maintenance. ☕
+> **☕ Support the Project**: If BromBrom has helped you navigate safely and saved you from a fine or a motorway, [consider buying me a coffee](https://buymeacoffee.com/brombrom) to support its continued maintenance.
 
 ---
 
