@@ -31,7 +31,7 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **OsmAnd** (Android / iOS app): required for using the generated maps. Available on Google Play, F-Droid, Apple App Store.
+- **OsmAnd** (Android / iOS app): **required** for using the generated maps. Available on Google Play, F-Droid, Apple App Store.
 - **Docker**: with BuildKit support.
 - **System Memory**: at least **6GB RAM** is required for the map generation stage.
 
@@ -64,7 +64,9 @@ Find your artifact `brombrom_osmand_deploy.zip` in the `dist/` folder.
 The generated `.obf` and `routing.xml` files are cross-platform and theoretically work on **OsmAnd for iOS**. However, because iOS lacks the direct file structure of Android, you must manually import the files:
 - Transfer the `.obf` and `routing.xml` files from the zip to your iPhone (via AirDrop, iCloud, or Files app).
 - Open them with the OsmAnd app to import.
-- Note: This path is currently manual and experimental.
+
+> [!NOTE]
+> This path is currently manual and experimental.
 
 ---
 
