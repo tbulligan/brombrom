@@ -42,12 +42,12 @@ else
     find osmand_output/ -name "*.obf" -exec mv {} OsmAndMapCreator/NL_BromBrom_tagged.obf \;
 fi
 
-# Optional: BRouter
-if [ "$INCLUDE_BROUTER" = "true" ]; then
-    echo "[8/9] Generating BRouter Segments..."
+# Optional: Developer Debug Mode
+if [ "$DEBUG" = "true" ]; then
+    echo "[8/9] DEBUG mode active: Generating BRouter Segments..."
     python3 scripts/build_brom_segments.py
 else
-    echo "[8/9] Skipping BRouter generation (Optional)."
+    echo "[8/9] Skipping Developer features (DEBUG != true)."
 fi
 
 # Stage 3: Deployment (Step 9)

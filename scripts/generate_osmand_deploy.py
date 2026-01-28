@@ -19,9 +19,9 @@ def create_osmand_deploy_package():
     files_to_pack = []
 
     # 1. BRouter Profile
-    include_brouter = os.environ.get("INCLUDE_BROUTER") == "true"
+    is_debug = os.environ.get("DEBUG") == "true"
 
-    if include_brouter:
+    if is_debug:
         if Path("config/brommobiel.brf").exists():
             files_to_pack.append(("config/brommobiel.brf", f"{BROUTER_BASE}/profiles2/brommobiel.brf"))
         
@@ -30,7 +30,7 @@ def create_osmand_deploy_package():
         for rd5 in segments_dir.glob("*.rd5"):
             files_to_pack.append((str(rd5), f"{BROUTER_BASE}/segments4/{rd5.name}"))
     else:
-        print("Skipping BRouter files (INCLUDE_BROUTER != true)")
+        print("Skipping BRouter files (DEBUG != true)")
 
     # 3. OsmAnd Routing Config
     if Path("config/routing.xml").exists():

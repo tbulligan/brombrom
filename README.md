@@ -117,14 +117,20 @@ OsmAnd is the **required** primary experience for BromBrom. By baking the C9 and
 
 ---
 
-## 🛠️ Optional: BRouter (Developer / Backup)
+## 🛠️ Developer & Debug Mode
 
-While OsmAnd is the primary engine, BRouter is supported as an **optional** secondary fallback or for technical auditing. 
-Specify the environment variable to generate BRouter segments:
+For technical auditing or advanced configuration, you can enable **Debug Mode**. This generates additional diagnostic files and optional routing segments.
+
+Run the pipeline with the `DEBUG` environment variable:
 ```bash
-docker run --rm -v $(pwd):/app -e INCLUDE_BROUTER=true brombrom-builder
+docker run --rm -v $(pwd):/app -e DEBUG=true brombrom-builder
 ```
-**Setup**: Open the BRouter app -> Select `brommobiel` profile -> Set to **Server-Mode**.
+
+**What Debug Mode enables:**
+1. **Visual Snapping Audit**: Generates `debug_snaps.gpkg`. This file contains lines connecting every C9 sign to its snapped road position, allowing you to verify alignment accuracy in QGIS.
+2. **BRouter Support**: Generates BRouter `.rd5` segments and includes the `brommobiel.brf` profile in the deployment package. 
+   - *Setup*: Open the BRouter app -> Select `brommobiel` profile -> Set to **Server-Mode**.
+3. **Verbose Logging**: Provides more detailed feedback during the snapping and tagging stages.
 
 ---
 

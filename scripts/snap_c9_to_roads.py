@@ -171,15 +171,18 @@ def main():
     c9_gdf.loc[~c9_gdf["road_index"].isin(valid_indices), "road_index"] = None
 
     # Save Debug Line Layer (Visual Debugging)
-    debug_links = []
-    valid_snaps = c9_gdf.dropna(subset=['road_index', 'snap_point'])
-    for _, row in valid_snaps.iterrows():
-        debug_links.append(LineString([row.geometry, row['snap_point']]))
-    
-    if debug_links:
-        debug_gdf = gpd.GeoDataFrame(geometry=debug_links, crs=c9_gdf.crs)
-        debug_gdf.to_file("debug_snaps.gpkg", driver="GPKG")
-        print(f"Saved {len(debug_gdf)} snap debug lines to debug_snaps.gpkg")
+    if os.environ.get("DEBUG") == "true":
+        debug_links = []
+        valid_snaps = c9_gdf.dropna(subset=['road_index', 'snap_point'])
+        for _, row in valid_snaps.iterrows():
+            debug_links.append(LineString([row.geometry, row['snap_point']]))
+        
+        if debug_links:
+            debug_gdf = gpd.GeoDataFrame(geometry=debug_links, crs=c9_gdf.crs)
+            debug_gdf.to_file("debug_snaps.gpkg", driver="GPKG")
+            print(f"Saved {len(debug_gdf)} snap debug lines to debug_snaps.gpkg")
+    else:
+        print("Skipping debug_snaps.gpkg (DEBUG != true)")
 
     # Exemption filter
     exempt = c9_gdf[c9_gdf.apply(has_microcar_exemption, axis=1)]
