@@ -77,7 +77,7 @@ def get_bearing_from_side(side):
 # optional: if you use side_count, initialize it
 side_count = {"N": 0, "O": 0, "Z": 0, "W": 0}
 
-def directional_snap(row, roads_gdf, spatial_index, tol=5.0):
+def directional_snap(row, spatial_index, roads_geoms, tol=5.0):
     point = row.geometry
     bearing = row.get("bearing")
 
@@ -101,9 +101,13 @@ def directional_snap(row, roads_gdf, spatial_index, tol=5.0):
         return None
 
     best_idx, best_score = None, float("inf")
-    for idx in candidates:
-        road = roads_gdf.iloc[idx]
-        line = road.geometry
+
+    # Optimization: Access geometries directly
+    candidate_geoms = roads_geoms[candidates]
+
+    for idx, line in zip(candidates, candidate_geoms):
+        # removed: road = roads_gdf.iloc[idx]
+        # removed: line = road.geometry
 
         proj_dist = line.project(point)
         proj_pt = line.interpolate(proj_dist)
@@ -125,8 +129,9 @@ def directional_snap(row, roads_gdf, spatial_index, tol=5.0):
     return best_idx
 
 # Apply directional snapping
+roads_geoms = roads_gdf.geometry.values
 c9_gdf["road_index"] = c9_gdf.apply(
-    lambda row: directional_snap(row, roads_gdf, spatial_index),
+    lambda row: directional_snap(row, spatial_index, roads_geoms),
     axis=1
 )
 
