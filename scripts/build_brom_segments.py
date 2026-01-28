@@ -10,7 +10,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 
-PBF_IN = PROJECT_ROOT / "nl_brom_tagged.osm.pbf"
+PBF_IN = PROJECT_ROOT / "NL_BromBrom_tagged.osm.pbf"
 SEG_OUT_DIR = PROJECT_ROOT / "segments4"
 SRTM_DIR = PROJECT_ROOT / "srtm"
 TEMP_DIR = PROJECT_ROOT / "temp_map_build"

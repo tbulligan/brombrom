@@ -17,7 +17,7 @@ if ls OsmAndMapCreator/*.obf >/dev/null 2>&1; then
     echo "[7/9] OsmAnd OBF Map already exists. Skipping."
 else
     echo "[7/9] Generating OsmAnd OBF Map..."
-    cp nl_brom_tagged.osm.pbf osmand_input/
+    cp NL_BromBrom_tagged.osm.pbf osmand_input/
 
     # Dynamically locate OsmAndMapCreator
     OMC_DIR="OsmAndMapCreator"

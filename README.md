@@ -14,6 +14,11 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
 
 **[Download BromBrom for OsmAnd (latest release)](https://github.com/tbulligan/brombrom/releases/latest)**
 
+### ⏱️ Quick Setup (Android)
+1. **Unzip** the archive on your computer.
+2. **Copy** the `Android` folder to your phone's **Internal Storage**.
+3. **In OsmAnd**: Create a new profile (name it **BromBrom**) based on "Car", and set its **Navigation type** to `routing.xml`. [Full details below](#2-installation-on-android-osmand).
+
 > **☕ Support the Project**: If BromBrom has helped you navigate safely and saved you from a fine or a motorway, [consider buying me a coffee](https://buymeacoffee.com/brombrom) to support its continued maintenance.
 
 ---
@@ -53,16 +58,31 @@ docker run --rm -v $(pwd):/app brombrom-builder
 Find your artifact `brombrom_osmand_deploy.zip` in the `dist/` folder.
 
 ### 2. Installation on Android (OsmAnd)
-1. Connect your phone to your PC.
-2. Unzip `brombrom_osmand_deploy.zip` to the **root** of your internal storage.
-3. **Setup OsmAnd**:
-   - Open OsmAnd -> Settings -> Profiles -> [Select Profile] -> Navigation settings -> Route parameters -> **Navigation type**.
-   - Select **`routing.xml`** (may appear as *microcar*).
-> **Note**: BromBrom generates a custom `.obf` map file. Once it's in the correct OsmAnd folder, it will be automatically detected and used for routing.
+
+#### Step A: Transfer Files
+1. **Unzip** `brombrom_osmand_deploy.zip` on your computer. 
+   *(Note: We recommend using a computer for this step. Android's built-in file manager often restricts access to folders where apps store their data, making it difficult to move files into the right place directly on the phone.)*
+2. Connect your phone to your computer via USB.
+3. **Copy** the `Android` folder from the unzipped archive to your phone's **Internal Storage**. When prompted, select **"Merge"** or **"Overwrite"**. This will place the BromBrom map and routing files into the existing OsmAnd directory structure.
+
+#### Step B: Setup Dedicated Profile (Recommended)
+Creating a dedicated profile ensures your standard "Car" navigation remains untouched.
+1. Open **OsmAnd** -> **Settings** -> **App Profiles**.
+2. Tap **"+" (Add)** to create a new profile.
+3. **Base profile**: Select **Car**.
+4. **Name**: Enter **BromBrom**.
+5. Save the profile.
+
+#### Step C: Enable BromBrom Routing
+1. Select your new **BromBrom** profile.
+2. Go to **Navigation settings** -> **Route parameters** -> **Navigation type**.
+3. Select **`routing.xml`** (it will appear as **`microcar`**).
+
+> **Note**: BromBrom generates a custom `.obf` map file (e.g., `NL_BromBrom_tagged.obf`). Once copied to the `net.osmand/files` folder, it is automatically detected. Check **Map Management** -> **Local** to confirm it is active.
 
 ### Experimental: iOS Support
 The generated `.obf` and `routing.xml` files are cross-platform and theoretically work on **OsmAnd for iOS**. However, because iOS lacks the direct file structure of Android, you must manually import the files:
-- Transfer the `.obf` and `routing.xml` files from the zip to your iPhone (via AirDrop, iCloud, or Files app).
+- Extract the `.obf` and `routing.xml` files from the zip (found within the `Android/data/net.osmand/files/` directory) and transfer them to your iPhone.
 - Open them with the OsmAnd app to import.
 
 > [!NOTE]

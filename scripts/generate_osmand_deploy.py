@@ -36,13 +36,6 @@ def create_osmand_deploy_package():
     for obf in omc_dir.glob("*.obf"):
         files_to_pack.append((str(obf), f"{OSMAND_BASE}/{obf.name}"))
 
-    # 5. README / Manual Support
-    # These also serve as the manual import files for iOS users
-    if Path("config/routing.xml").exists():
-        files_to_pack.append(("config/routing.xml", "routing.xml"))
-    for obf in omc_dir.glob("*.obf"):
-        files_to_pack.append((str(obf), obf.name))
-
     print(f"Creating {zip_path}...")
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for src, arcname in files_to_pack:

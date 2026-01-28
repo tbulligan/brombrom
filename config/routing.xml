@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <osmand_routing_config defaultProfile="car" name="default">
-	<attribute name="heuristicCoefficient" value="" />
+	<attribute name="heuristicCoefficient" value="1.0" />
 	<attribute name="zoomToLoadTiles" value="16" />
 	<attribute name="planRoadDirection" value="0" />
 	<attribute name="recalculateDistanceHelp" value="10000" />
@@ -23,11 +23,11 @@
 		<parameter id="avoid_borders" name="Avoid border crossing" description="Avoid crossing a border into another country" type="boolean"/>
 		<parameter id="avoid_ice_roads_fords" name="Avoid ice roads, fords" description="Avoid ice roads and fords" type="boolean"/>
 		<parameter id="avoid_4wd_only" name="Avoid 4WD roads" description="Avoid roads only suitable for 4WD only vehicles" type="boolean"/>
-		<parameter id="allow_private" name="Allow private access" description="Allow access to private areas for cars" type="boolean" profiles="default"/>
-		<parameter id="weight" name="Weight" description="Maximum vehicle weight to be permitted on the route" type="numeric" values="0,1.49,2.99,3.49,4.99,7.49,9.99,11.99,14.99,19.99,29.99,39.99" valueDescriptions="-,1.5t,3t,3.5t,5t,7.5t,10t,12t,15t,20t,30t,40t"/>
-		<parameter id="height" name="Height" description="Maximum vehicle height to be permitted on the route" type="numeric" values="0,1.49,1.99,2.49,2.99,3.49,3.99,4.49,4.99,5.49,5.99,6.49,6.99,7.49" valueDescriptions="-,1.5m,2m,2.5m,3m,3.5m,4m,4.5m,5m,5.5m,6m,6.5m,7m,7.5m"/>
-		<parameter id="length" name="Length" description="Maximum vehicle length to be permitted on the route" type="numeric" values="0,4.99,5.99,6.49,6.99,7.99,8.99,9.49,9.99,10.99,11.99" valueDescriptions="-,5m,6m,6.5m,7m,8m,9m,9.5m,10m,11m,12m"/>
-		<parameter id="width" name="Width" description="Maximum vehicle width to be permitted on the route" type="numeric" values="0,1.49,1.99,2.29,2.49,2.99" valueDescriptions="-,1.5m,2m,2.3m,2.5m,3m"/>
+		<parameter id="allow_private" name="Allow private access" description="Allow access to private areas" type="boolean" profiles="microcar"/>
+		<parameter id="weight" name="Weight" description="Maximum vehicle weight to be permitted on the route" type="numeric" values="0,0.349,0.449,0.599,0.799,3.49" valueDescriptions="-,350kg,450kg,600kg,800kg,3.5t"/>
+		<parameter id="height" name="Height" description="Maximum vehicle height to be permitted on the route" type="numeric" values="0,1.49,1.99,2.49,2.99" valueDescriptions="-,1.5m,2m,2.5m,3m"/>
+		<parameter id="length" name="Length" description="Maximum vehicle length to be permitted on the route" type="numeric" values="0,2.49,2.99,3.49,3.99" valueDescriptions="-,2.5m,3m,3.5m,4m"/>
+		<parameter id="width" name="Width" description="Maximum vehicle width to be permitted on the route" type="numeric" values="0,1.29,1.49,1.59,1.74" valueDescriptions="-,1.3m,1.5m,1.6m,1.75m"/>
 		<parameter id="motor_type" name="Motor type" description="For CO2 computation" type="numeric" values="0,1,2,3,4,5,6" valueDescriptions="-,Petrol,Diesel,Lpg,Gas,Electric,Hybrid"/>
 
 		<way attribute="access">
@@ -75,7 +75,7 @@
 				<select value="-1" t="smoothness" v="impassable"/>
 			</if>
 
-			<select value="-1" t="highway" v="steps"/>
+
 
 			<select value="-1" t="motorcar" v="no"/>
 			<select value="-1" t="motorcar" v="agricultural"/>
@@ -119,6 +119,11 @@
 			<select value="1"  t="vehicle" v="customers"/>
 
 			<select value="-1" t="highway" v="cycleway"/>
+			<select value="-1" t="highway" v="footway"/>
+			<select value="-1" t="highway" v="path"/>
+			<select value="-1" t="highway" v="pedestrian"/>
+			<select value="-1" t="highway" v="bridleway"/>
+			<select value="-1" t="highway" v="steps"/>
 
 			<select value="-1" t="access" v="no"/>
 			<select value="-1" t="access" v="agricultural"/>
@@ -164,6 +169,9 @@
 			<select value="1" t="highway" v="track"/>
 			<select value="1" t="highway" v="service"/>
 			<select value="1" t="highway" v="living_street"/>
+			<if param="avoid_toll">
+			    <select value="-1" t="toll" v="yes"/>
+			</if>
 			<select value="1" t="route" v="ferry"/>
 			<select value="1" t="route" v="shuttle_train"/>
 			<select value="-1"/>
@@ -243,9 +251,20 @@
 			<select t="motor_vehicle" v="destination" value="0.15"/>
 			<select t="access" v="private" value="0.15"/>
 			<select t="access" v="destination" value="0.15"/>
+			<if param="avoid_toll">
+				<select t="toll" v="yes" value="0.05"/>
+			</if>
+			<if param="avoid_borders">
+				<select t="barrier" v="border_control" value="0.1"/>
+			</if>
 
 			<select value="0.5" t="surface" v="gravel"/>
 			<select value="0.5" t="surface" v="unpaved"/>
+			<if param="prefer_unpaved">
+				<select value="1.2" t="surface" v="gravel"/>
+				<select value="1.2" t="surface" v="unpaved"/>
+				<select value="1.2" t="highway" v="track"/>
+			</if>
 
 			<select value="1.0" t="highway" v="primary"/>
 			<select value="0.95" t="highway" v="primary_link"/>

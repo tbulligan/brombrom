@@ -25,8 +25,8 @@ class TagC9Handler(osmium.SimpleHandler):
         self.writer.add_way(w)
 
 def main():
-    if os.path.exists("nl_brom_tagged.osm.pbf"):
-        print("nl_brom_tagged.osm.pbf already exists. Skipping.")
+    if os.path.exists("NL_BromBrom_tagged.osm.pbf"):
+        print("NL_BromBrom_tagged.osm.pbf already exists. Skipping.")
         return
 
     gdf = gpd.read_file("nl_roads_brom.gpkg")
@@ -44,11 +44,11 @@ def main():
         raise ValueError("No valid OSM ID field found")
 
     print("Tagging OSM PBF...")
-    with osmium.SimpleWriter("nl_brom_tagged.osm.pbf", overwrite=True) as writer:
+    with osmium.SimpleWriter("NL_BromBrom_tagged.osm.pbf", overwrite=True) as writer:
         handler = TagC9Handler(writer, forbidden_ways)
         # Optimization: Use the filtered roads-only PBF as base (huge RAM saving)
         handler.apply_file("nl_roads.osm.pbf")
-    print(f"✓ nl_brom_tagged.osm.pbf created ({len(forbidden_ways)} C9 ways tagged)")
+    print(f"✓ NL_BromBrom_tagged.osm.pbf created ({len(forbidden_ways)} C9 ways tagged)")
 
 if __name__ == "__main__":
     main()
