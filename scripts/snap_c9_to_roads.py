@@ -121,10 +121,11 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     return best_idx, best_snap_pt
 
 def main():
-    if False: # Forced re-run disabled for now
-        pass
+    force_rebuild = os.environ.get("FORCE_REBUILD") == "true"
+    debug_mode = os.environ.get("DEBUG") == "true"
+    debug_missing = debug_mode and not os.path.exists("debug_snaps.gpkg")
 
-    if os.path.exists("nl_roads_brom.gpkg") and not os.environ.get("FORCE_REBUILD"):
+    if os.path.exists("nl_roads_brom.gpkg") and not force_rebuild and not debug_missing:
         print("nl_roads_brom.gpkg already exists. Skipping.")
         return
 

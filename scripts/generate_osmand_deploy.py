@@ -29,10 +29,14 @@ def create_osmand_deploy_package():
         segments_dir = Path("segments4")
         for rd5 in segments_dir.glob("*.rd5"):
             files_to_pack.append((str(rd5), f"{BROUTER_BASE}/segments4/{rd5.name}"))
+        
+        # 3. Debug Snaps (for QGIS auditing)
+        if Path("debug_snaps.gpkg").exists():
+            files_to_pack.append(("debug_snaps.gpkg", "debug_snaps.gpkg"))
     else:
-        print("Skipping BRouter files (DEBUG != true)")
+        print("Skipping BRouter and Debug files (DEBUG != true)")
 
-    # 3. OsmAnd Routing Config
+    # 4. OsmAnd Routing Config
     if Path("config/routing.xml").exists():
         files_to_pack.append(("config/routing.xml", f"{OSMAND_BASE}/routing/routing.xml"))
 

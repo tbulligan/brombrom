@@ -7,7 +7,7 @@ echo "========================================================"
 
 # Pre-flight checks & Cleanup
 mkdir -p segments4 dist osmand_input osmand_output osmand_gen
-rm -f OsmAndMapCreator/*.odb osmand_gen/*.odb OsmAndMapCreator/*.obf osmand_output/*.obf
+rm -f OsmAndMapCreator/*.odb osmand_gen/*.odb osmand_output/*.obf
 
 # Stage 1: Processing (Steps 1-6)
 ./scripts/run_pipeline.sh
@@ -17,7 +17,10 @@ if ls OsmAndMapCreator/NL_BromBrom_tagged.obf >/dev/null 2>&1; then
     echo "[7/9] OsmAnd OBF Map already exists. Skipping."
 else
     echo "[7/9] Generating OsmAnd OBF Map..."
-    # Clean input dir to ensure only one PBF is processed
+    # Clean output, input, and gen to start fresh if building
+    rm -rf osmand_output/*
+    rm -rf osmand_gen/*
+    rm -f OsmAndMapCreator/*.obf
     rm -f osmand_input/*.osm.pbf
     cp NL_BromBrom_tagged.osm.pbf osmand_input/
 
@@ -53,6 +56,10 @@ fi
 # Stage 3: Deployment (Step 9)
 echo "[9/9] Creating OsmAnd Deployment Package..."
 python3 scripts/generate_osmand_deploy.py
+
+# Stage 4: QA Validation
+echo "[QA] Validating Results..."
+python3 scripts/validate_results.py
 
 echo "========================================================"
 echo "      Build Successful!"
