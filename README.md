@@ -6,6 +6,8 @@
 
 **BromBrom** creates a professional-grade **OsmAnd** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
 
+OsmAnd is a free and open-source offline navigation app for Android and iOS: https://osmand.net.
+
 ## 📲 Download the Navigation Package
 
 *Skip the build process. Download the latest official monthly package for your phone.*
@@ -29,9 +31,12 @@
 ## 🚀 Getting Started
 
 ### Prerequisites
+- **OsmAnd** (Android / iOS app): R\required for using the generated maps. Available on Google Play, F-Droid, Apple app Store.
 - **Docker**: with BuildKit support.
-- **OsmAnd (Android App)**: **Required** for using the generated maps. (Available on Play Store/F-Droid).
 - **System Memory**: At least **6GB RAM** is required for the map generation stage.
+
+> [!NOTE]
+> BromBrom on iOS is currently experimental.
 
 ### 1. Build the Map
 ```bash
