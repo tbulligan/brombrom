@@ -19,13 +19,18 @@ def create_osmand_deploy_package():
     files_to_pack = []
 
     # 1. BRouter Profile
-    if Path("config/brommobiel.brf").exists():
-        files_to_pack.append(("config/brommobiel.brf", f"{BROUTER_BASE}/profiles2/brommobiel.brf"))
-    
-    # 2. BRouter Segments (.rd5)
-    segments_dir = Path("segments4")
-    for rd5 in segments_dir.glob("*.rd5"):
-        files_to_pack.append((str(rd5), f"{BROUTER_BASE}/segments4/{rd5.name}"))
+    include_brouter = os.environ.get("INCLUDE_BROUTER") == "true"
+
+    if include_brouter:
+        if Path("config/brommobiel.brf").exists():
+            files_to_pack.append(("config/brommobiel.brf", f"{BROUTER_BASE}/profiles2/brommobiel.brf"))
+        
+        # 2. BRouter Segments (.rd5)
+        segments_dir = Path("segments4")
+        for rd5 in segments_dir.glob("*.rd5"):
+            files_to_pack.append((str(rd5), f"{BROUTER_BASE}/segments4/{rd5.name}"))
+    else:
+        print("Skipping BRouter files (INCLUDE_BROUTER != true)")
 
     # 3. OsmAnd Routing Config
     if Path("config/routing.xml").exists():
@@ -33,8 +38,15 @@ def create_osmand_deploy_package():
 
     # 4. OsmAnd Map (.obf)
     omc_dir = Path("OsmAndMapCreator")
-    for obf in omc_dir.glob("*.obf"):
-        files_to_pack.append((str(obf), f"{OSMAND_BASE}/{obf.name}"))
+    # We specifically look for our renamed map first
+    target_obf = omc_dir / "NL_BromBrom_tagged.obf"
+    if target_obf.exists():
+        files_to_pack.append((str(target_obf), f"{OSMAND_BASE}/NL_BromBrom_tagged.obf"))
+    else:
+        # Fallback to any .obf for robustness, but rename it in the archive
+        for obf in omc_dir.glob("*.obf"):
+            files_to_pack.append((str(obf), f"{OSMAND_BASE}/NL_BromBrom_tagged.obf"))
+            break
 
     print(f"Creating {zip_path}...")
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:

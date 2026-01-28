@@ -7,19 +7,21 @@ echo "========================================================"
 
 # Pre-flight checks & Cleanup
 mkdir -p segments4 dist osmand_input osmand_output osmand_gen
-rm -f OsmAndMapCreator/*.odb osmand_gen/*.odb
+rm -f OsmAndMapCreator/*.odb osmand_gen/*.odb OsmAndMapCreator/*.obf osmand_output/*.obf
 
 # Stage 1: Processing (Steps 1-6)
 ./scripts/run_pipeline.sh
 
 # Stage 2: Map Generation (Steps 7-8)
-if ls OsmAndMapCreator/*.obf >/dev/null 2>&1; then
+if ls OsmAndMapCreator/NL_BromBrom_tagged.obf >/dev/null 2>&1; then
     echo "[7/9] OsmAnd OBF Map already exists. Skipping."
 else
     echo "[7/9] Generating OsmAnd OBF Map..."
+    # Clean input dir to ensure only one PBF is processed
+    rm -f osmand_input/*.osm.pbf
     cp NL_BromBrom_tagged.osm.pbf osmand_input/
 
-    # Dynamically locate OsmAndMapCreator
+    # ... (OMC_DIR logic omitted for brevity in target but will be preserved)
     OMC_DIR="OsmAndMapCreator"
     if [ -d "/opt/OsmAndMapCreator" ]; then
         ACTUAL_DIR=$(find /opt/OsmAndMapCreator -name "OsmAndMapCreator.jar" -exec dirname {} \;)
@@ -35,7 +37,9 @@ else
         config/batch_docker.xml
 
     mkdir -p OsmAndMapCreator
-    mv osmand_output/*.obf OsmAndMapCreator/
+    # Move and force rename to the requested name
+    # We take any .obf generated (likely NL_BromBrom_tagged.obf) and ensure the name
+    find osmand_output/ -name "*.obf" -exec mv {} OsmAndMapCreator/NL_BromBrom_tagged.obf \;
 fi
 
 # Optional: BRouter

@@ -4,9 +4,10 @@ import geopandas as gpd
 import pandas as pd
 import json
 import os
+from shapely.geometry import LineString
 
 PRIMARY_TOL = 2.0  # 2 m
-FALLBACK_TOL = 5.0  # 5 m
+FALLBACK_TOL = 12.0  # 12 m (Increased from 5m to catch imprecise sign coordinates)
 
 def has_microcar_exemption(row):
     """Check textSigns for 'brommobielen' exemptions"""
@@ -21,52 +22,59 @@ def has_microcar_exemption(row):
         texts = str(texts).lower()
     return 'brommobielen' in texts
 
-def snap_c9_distance_only(point, roads_gdf, spatial_index):
+def snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms):
     # Original distance-based snap for fallback
-    primary = spatial_index.query(point.buffer(PRIMARY_TOL))
+    # Helper to calculate precise snap
+    def get_best_snap(candidates_indices):
+        best_idx = None
+        best_dist = float('inf')
+        best_snap_pt = None
+        
+        for idx in candidates_indices:
+            # geom = roads_gdf.geometry.iloc[idx] # unsafe if index mismatch
+            # roads_geoms is a numpy array of geometries, aligned with iloc
+            geom = roads_geoms[idx]
+            dist = geom.distance(point)
+            if dist < best_dist:
+                best_dist = dist
+                best_idx = roads_gdf.index[idx] # Get the label index
+                
+                # Calculate snap point
+                proj = geom.project(point)
+                best_snap_pt = geom.interpolate(proj)
+        
+        return best_idx, best_snap_pt
+
+    primary = list(spatial_index.query(point.buffer(PRIMARY_TOL)))
     if len(primary) > 0:
-        candidates = roads_gdf.iloc[primary]
-        return candidates.distance(point).idxmin()
+        return get_best_snap(primary)
 
-    fallback = spatial_index.query(point.buffer(FALLBACK_TOL))
+    fallback = list(spatial_index.query(point.buffer(FALLBACK_TOL)))
     if len(fallback) > 0:
-        candidates = roads_gdf.iloc[fallback]
-        return candidates.distance(point).idxmin()
+        return get_best_snap(fallback)
 
-    return None
+    return None, None
 
 def bearing_between(p1, p2):
     dx, dy = p2.x - p1.x, p2.y - p1.y
     return (math.degrees(math.atan2(dy, dx)) + 360) % 360
 
 SIDE_MAP = {
-    'N': 0,
-    'NNO': 22.5,
-    'NO': 45,
-    'ONO': 67.5,
-    'O': 90,
-    'OZO': 112.5,
-    'ZO': 135,
-    'ZZO': 157.5,
-    'Z': 180,
-    'ZZW': 202.5,  # fixed duplicate key: ZZ**W**
-    'ZW': 225,
-    'WZW': 247.5,
-    'W': 270,
-    'WNW': 292.5,
-    'NW': 315,
-    'NNW': 337.5
+    'N': 0, 'NNO': 22.5, 'NO': 45, 'ONO': 67.5,
+    'O': 90, 'OZO': 112.5, 'ZO': 135, 'ZZO': 157.5,
+    'Z': 180, 'ZZW': 202.5, 'ZW': 225, 'WZW': 247.5,
+    'W': 270, 'WNW': 292.5, 'NW': 315, 'NNW': 337.5
 }
 
 def get_bearing_from_side(side):
-    """NDW side windroos → degrees"""
+    """NDW side windroos -> degrees"""
     return SIDE_MAP.get(str(side).upper(), None)
 
 def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     point = row.geometry
     bearing = row.get("bearing")
 
-    # Fallback side → bearing
+    # Fallback side -> bearing
     if pd.isna(bearing) or bearing == 0.0:
         side_bearing = get_bearing_from_side(row.get('side'))
         if side_bearing is not None:
@@ -79,13 +87,14 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
 
     # If still no bearing, pure distance
     if pd.isna(bearing):
-        return snap_c9_distance_only(point, roads_gdf, spatial_index)
+        return snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms)
 
-    candidates = spatial_index.query(point.buffer(5.0))
+    candidates = list(spatial_index.query(point.buffer(FALLBACK_TOL)))
     if len(candidates) == 0:
-        return None
+        return None, None
 
     best_idx, best_score = None, float("inf")
+    best_snap_pt = None
 
     # Optimization: Access geometries directly
     candidate_geoms = roads_geoms[candidates]
@@ -106,15 +115,16 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
 
         if score < best_score:
             best_score = score
-            best_idx = idx
+            best_idx = roads_gdf.index[idx] # Label index
+            best_snap_pt = proj_pt
 
-    return best_idx
+    return best_idx, best_snap_pt
 
 def main():
-    if False: # Forced re-run disabled for now, relying on file check
+    if False: # Forced re-run disabled for now
         pass
 
-    if os.path.exists("nl_roads_brom.gpkg"):
+    if os.path.exists("nl_roads_brom.gpkg") and not os.environ.get("FORCE_REBUILD"):
         print("nl_roads_brom.gpkg already exists. Skipping.")
         return
 
@@ -130,10 +140,17 @@ def main():
 
     # Apply directional snapping
     roads_geoms = roads_gdf.geometry.values
-    c9_gdf["road_index"] = c9_gdf.apply(
+    
+    print(f"Snapping {len(c9_gdf)} signs with tolerance {FALLBACK_TOL}m...")
+    
+    # Run snapping and expand result into two columns
+    snap_results = c9_gdf.apply(
         lambda row: directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count),
-        axis=1
+        axis=1,
+        result_type='expand'
     )
+    c9_gdf["road_index"] = snap_results[0]
+    c9_gdf["snap_point"] = snap_results[1]
 
     print(f"Directionally snapped {c9_gdf['road_index'].notna().sum()}/{len(c9_gdf)} C9s")
 
@@ -149,9 +166,20 @@ def main():
     }
     roads_gdf["priority"] = roads_gdf["highway"].map(highway_priority).fillna(99)
     valid_indices = roads_gdf[roads_gdf["priority"] < 10].index
-    c9_gdf["road_index"] = c9_gdf["road_index"].where(
-        c9_gdf["road_index"].isin(valid_indices)
-    )
+    
+    # Filter out snaps to invalid road types
+    c9_gdf.loc[~c9_gdf["road_index"].isin(valid_indices), "road_index"] = None
+
+    # Save Debug Line Layer (Visual Debugging)
+    debug_links = []
+    valid_snaps = c9_gdf.dropna(subset=['road_index', 'snap_point'])
+    for _, row in valid_snaps.iterrows():
+        debug_links.append(LineString([row.geometry, row['snap_point']]))
+    
+    if debug_links:
+        debug_gdf = gpd.GeoDataFrame(geometry=debug_links, crs=c9_gdf.crs)
+        debug_gdf.to_file("debug_snaps.gpkg", driver="GPKG")
+        print(f"Saved {len(debug_gdf)} snap debug lines to debug_snaps.gpkg")
 
     # Exemption filter
     exempt = c9_gdf[c9_gdf.apply(has_microcar_exemption, axis=1)]
@@ -160,10 +188,11 @@ def main():
         exempt.to_file("c9_exemptions.gpkg", driver="GPKG", overwrite=True)
 
     c9_gdf = c9_gdf[~c9_gdf.apply(has_microcar_exemption, axis=1)]
-    print(f"→ {len(c9_gdf)} C9s for tagging")
+    print(f"-> {len(c9_gdf)} C9s for tagging")
 
     # Output forbidden roads
-    forbidden_roads = roads_gdf.loc[c9_gdf["road_index"].dropna().unique()].copy()
+    forbidden_ids = c9_gdf["road_index"].dropna().unique()
+    forbidden_roads = roads_gdf.loc[forbidden_ids].copy()
     forbidden_roads["microcar"] = "no"
     forbidden_roads.to_crs(epsg=4326).to_file(
         "nl_roads_brom.gpkg",
@@ -178,7 +207,7 @@ def main():
     missed.to_file("missed_c9.gpkg", overwrite=True)
 
     # side_stats = c9_gdf['side'].value_counts()
-    print("NaN→side snaps:",
+    print("NaN->side snaps:",
           (~c9_gdf['bearing'].isna() & c9_gdf['side'].isin(['N', 'O', 'Z', 'W'])).sum())
 
 if __name__ == "__main__":
