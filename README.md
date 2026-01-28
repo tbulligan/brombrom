@@ -31,9 +31,9 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **OsmAnd** (Android / iOS app): R\required for using the generated maps. Available on Google Play, F-Droid, Apple app Store.
+- **OsmAnd** (Android / iOS app): required for using the generated maps. Available on Google Play, F-Droid, Apple App Store.
 - **Docker**: with BuildKit support.
-- **System Memory**: At least **6GB RAM** is required for the map generation stage.
+- **System Memory**: at least **6GB RAM** is required for the map generation stage.
 
 > [!NOTE]
 > BromBrom on iOS is currently experimental.
