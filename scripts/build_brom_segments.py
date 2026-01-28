@@ -84,8 +84,13 @@ def build():
                     jvm_args=["-Xmx4G", "-DavoidMapPolling=true"])
 
         # Prepare nodetiles with all extensions just in case
+        processed_stems = set()
         for f in Path("nodetiles").glob("*.*tl*"):
             base = f.stem
+            if base in processed_stems:
+                continue
+            processed_stems.add(base)
+
             for ext in [".ntl", ".tls", ".tlf"]:
                 target = f.parent / (base + ext)
                 if not target.exists():
@@ -99,8 +104,13 @@ def build():
                     jvm_args=["-Xmx4G", "-Ddeletetmpfiles=false", "-DuseDenseMaps=true"])
 
         # Prepare ftiles with all extensions
+        processed_stems = set()
         for f in Path("ftiles").glob("*.*tl*"):
             base = f.stem
+            if base in processed_stems:
+                continue
+            processed_stems.add(base)
+
             for ext in [".ntl", ".tls", ".tlf"]:
                 target = f.parent / (base + ext)
                 if not target.exists():
