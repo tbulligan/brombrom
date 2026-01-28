@@ -52,27 +52,28 @@ def bearing_between(p1, p2):
     dx, dy = p2.x - p1.x, p2.y - p1.y
     return (math.degrees(math.atan2(dy, dx)) + 360) % 360
 
+SIDE_MAP = {
+    'N': 0,
+    'NNO': 22.5,
+    'NO': 45,
+    'ONO': 67.5,
+    'O': 90,
+    'OZO': 112.5,
+    'ZO': 135,
+    'ZZO': 157.5,
+    'Z': 180,
+    'ZZW': 202.5,  # fixed duplicate key: ZZ**W**
+    'ZW': 225,
+    'WZW': 247.5,
+    'W': 270,
+    'WNW': 292.5,
+    'NW': 315,
+    'NNW': 337.5
+}
+
 def get_bearing_from_side(side):
     """NDW side windroos → degrees"""
-    side_map = {
-        'N': 0,
-        'NNO': 22.5,
-        'NO': 45,
-        'ONO': 67.5,
-        'O': 90,
-        'OZO': 112.5,
-        'ZO': 135,
-        'ZZO': 157.5,
-        'Z': 180,
-        'ZZW': 202.5,  # fixed duplicate key: ZZ**W**
-        'ZW': 225,
-        'WZW': 247.5,
-        'W': 270,
-        'WNW': 292.5,
-        'NW': 315,
-        'NNW': 337.5
-    }
-    return side_map.get(str(side).upper(), None)
+    return SIDE_MAP.get(str(side).upper(), None)
 
 # optional: if you use side_count, initialize it
 side_count = {"N": 0, "O": 0, "Z": 0, "W": 0}
