@@ -1,0 +1,6 @@
+requests
+tqdm
+geopandas
+shapely
+osmium
+fiona
