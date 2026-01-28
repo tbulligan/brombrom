@@ -149,12 +149,13 @@ c9_gdf["road_index"] = c9_gdf["road_index"].where(
 )
 
 # Exemption filter
-exempt = c9_gdf[c9_gdf.apply(has_microcar_exemption, axis=1)]
+exemption_mask = c9_gdf.apply(has_microcar_exemption, axis=1)
+exempt = c9_gdf[exemption_mask]
 print(f"Exemptions: {len(exempt)}")
 if len(exempt) > 0:
     exempt.to_file("c9_exemptions.gpkg", driver="GPKG", overwrite=True)
 
-c9_gdf = c9_gdf[~c9_gdf.apply(has_microcar_exemption, axis=1)]
+c9_gdf = c9_gdf[~exemption_mask]
 print(f"→ {len(c9_gdf)} C9s for tagging")
 
 # Output forbidden roads
