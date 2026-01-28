@@ -5,7 +5,7 @@
 	<attribute name="planRoadDirection" value="0" />
 	<attribute name="recalculateDistanceHelp" value="10000" />
 
-	<routingProfile name="microcar" baseProfile="microcar" restrictionsAware="true" minSpeed="7.0" defaultSpeed="45.0" maxSpeed="45.0" sharpTurn="30" slightTurn="15" roundaboutTurn="15" onewayAware="true">
+	<routingProfile name="microcar" baseProfile="car" restrictionsAware="true" minSpeed="7.0" defaultSpeed="45.0" maxSpeed="45.0" sharpTurn="30" slightTurn="15" roundaboutTurn="15" onewayAware="true">
 		<attribute name="penaltyForReverseDirection" value="300" />
 		<attribute name="minPointApproximation" value = "50"/>
 		<attribute name="minStepApproximation" value = "100"/>
@@ -13,6 +13,7 @@
 		<attribute name="smoothenPointsNoRoute" value = "5"/>
 
 		<parameter id="short_way" name="Short way" description="Short way" type="boolean"/>
+		<parameter id="allow_private" name="Allow private access" description="Allow access to private areas" type="boolean"/>
 		<parameter id="avoid_toll" name="Avoid toll roads" description="Avoid toll roads" type="boolean"/>
 		<parameter id="avoid_unpaved" name="Avoid unpaved roads" description="Avoid unpaved roads" type="boolean"/>
 		<parameter id="avoid_low_emission_zone" name="Avoid low emission zones" description="Avoid low emission zones" type="boolean"/>
@@ -23,7 +24,6 @@
 		<parameter id="avoid_borders" name="Avoid border crossing" description="Avoid crossing a border into another country" type="boolean"/>
 		<parameter id="avoid_ice_roads_fords" name="Avoid ice roads, fords" description="Avoid ice roads and fords" type="boolean"/>
 		<parameter id="avoid_4wd_only" name="Avoid 4WD roads" description="Avoid roads only suitable for 4WD only vehicles" type="boolean"/>
-		<parameter id="allow_private" name="Allow private access" description="Allow access to private areas" type="boolean" profiles="microcar"/>
 		<parameter id="weight" name="Weight" description="Maximum vehicle weight to be permitted on the route" type="numeric" values="0,0.349,0.449,0.599,0.799,3.49" valueDescriptions="-,350kg,450kg,600kg,800kg,3.5t"/>
 		<parameter id="height" name="Height" description="Maximum vehicle height to be permitted on the route" type="numeric" values="0,1.49,1.99,2.49,2.99" valueDescriptions="-,1.5m,2m,2.5m,3m"/>
 		<parameter id="length" name="Length" description="Maximum vehicle length to be permitted on the route" type="numeric" values="0,2.49,2.99,3.49,3.99" valueDescriptions="-,2.5m,3m,3.5m,4m"/>
