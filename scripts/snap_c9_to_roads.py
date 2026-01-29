@@ -16,11 +16,22 @@ def has_microcar_exemption(row):
         return False
     try:
         if isinstance(texts, str):
-            texts = json.loads(texts) if texts.startswith('[') else texts
+            # Safe JSON parse attempt
+            if texts.strip().startswith('[') or texts.strip().startswith('{'):
+                try:
+                    loaded = json.loads(texts)
+                    texts = str(loaded)
+                except json.JSONDecodeError:
+                    pass # Keep as raw string if malformed JSON
         texts = str(texts).lower()
     except Exception:
         texts = str(texts).lower()
-    return 'brommobielen' in texts
+    
+    # Common exemption keywords
+    # CRITICAL: Do NOT use generic 'uitgezonderd' as it allows 'uitgezonderd tractoren', 'bestemmingsverkeer', etc.
+    # We only want explicit microcar exemptions.
+    keywords = ['brommobiel', 'brommoblelen', 'ob65']
+    return any(k in texts for k in keywords)
 
 def snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms):
     # Original distance-based snap for fallback
@@ -55,6 +66,32 @@ def snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms):
 
     return None, None
 
+def get_geometric_side(point, line_geom, projected_dist):
+    """Determine if point is Left (L) or Right (R) of the line at projection"""
+    # Sample a small segment around the projection
+    p1 = line_geom.interpolate(projected_dist)
+    # Look slightly ahead
+    p2_dist = min(projected_dist + 1.0, line_geom.length)
+    p2 = line_geom.interpolate(p2_dist)
+    
+    # If at end, look back
+    if p1.equals(p2):
+        p1 = line_geom.interpolate(max(projected_dist - 1.0, 0))
+    
+    dx = p2.x - p1.x
+    dy = p2.y - p1.y
+    
+    # Vector from p1 to Point
+    vx = point.x - p1.x
+    vy = point.y - p1.y
+    
+    # Cross product (2D)
+    cp = dx * vy - dy * vx
+    
+    if cp > 0.01: return 'L'
+    if cp < -0.01: return 'R'
+    return None
+
 def bearing_between(p1, p2):
     dx, dy = p2.x - p1.x, p2.y - p1.y
     return (math.degrees(math.atan2(dy, dx)) + 360) % 360
@@ -72,6 +109,9 @@ def get_bearing_from_side(side):
 
 def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     point = row.geometry
+    if point is None or point.is_empty:
+        return None, None
+        
     bearing = row.get("bearing")
 
     # Fallback side -> bearing
@@ -109,9 +149,20 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
 
         seg_bearing = bearing_between(proj_pt, seg_end)
         angle_diff = min(abs(bearing - seg_bearing), 360 - abs(bearing - seg_bearing))
-
+        
+        # Side Matching Logic
+        side_penalty = 0.0
+        row_side = str(row.get('side', '')).upper()
+        if row_side in ['L', 'R']:
+            geom_side = get_geometric_side(point, line, proj_dist)
+            if geom_side == row_side:
+                side_penalty = -5.0 # Bonus for matching side
+            elif geom_side is not None:
+                side_penalty = 10.0 # Penalty for mismatch
+        
         dist = proj_pt.distance(point)
-        score = dist * 0.7 + angle_diff * 0.03
+        # Score formulation: Distance is king, but orientation/side refine it.
+        score = dist * 0.7 + angle_diff * 0.03 + side_penalty
 
         if score < best_score:
             best_score = score
