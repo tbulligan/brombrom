@@ -6,9 +6,8 @@ This file dictates how AI agents should interact with the BromBrom repository.
 *   **Requirement**: Python 3.14+ (with `environment.yml` dependencies) and OpenJDK 17.
 *   **Execution Strategy**:
     1.  **Native (Preferred for Dev)**: Use a Conda-like manager (`micromamba`/`conda`) with the `brombrom` environment.
-    2.  **Windows/WSL Caveat**: Geospatial libraries (GDAL, Fiona) are notoriously fragile on native Windows. Execution via WSL is highly recommended for stability.
+    2.  **Linux (Standard)**: Use Linux (including WSL) for development and execution. Native Windows execution is not supported due to the fragility of geospatial libraries (GDAL, Fiona).
     3.  **Docker (Full Build)**: Use `Dockerfile` for the final map compilation or if local environment setup fails.
-*   **Command Logic**: Agents should detect the current shell. If on Windows and a WSL `brombrom` env is present, use: `wsl bash -l -c "micromamba run -n brombrom python3 ..."`
 
 ## 🏗️ Project Architecture
 BromBrom is a **hybrid pipeline**:

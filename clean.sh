@@ -13,10 +13,10 @@ docker run --rm -v "$(pwd):/app" -w /app alpine sh -c "rm -rf \
     osmand_output/ \
     osmand_gen/ \
     temp_map_build/ \
+    temp_map_test/ \
     srtm/ \
-    OsmAndMapCreator/ \
-    brouter-server/ \
-    profiles2/ \
+    tools/ \
+    tests/ \
     *.pbf \
     *.gpkg \
     *.json \

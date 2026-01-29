@@ -26,12 +26,11 @@ regions.ocbf
 *.odb
 
 # Tools (Downloaded/Extracted)
-OsmAndMapCreator/
-brouter-server/
-profiles2/
+tools/
 osmconvert64
 osmfilter64
 META-INF/
+tests/
 
 # Python
 __pycache__/
