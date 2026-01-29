@@ -16,7 +16,7 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
 - **Premium Experience**: Full support for voice guidance, lane assistance, and **Android Auto** (with OsmAnd Pro).
 - **Zero-Touch Deployment**: Pre-configured zip files ready for your phone.
 
-> **☕ Support the Project**: If BromBrom helps you navigate safely, [consider buying me a coffee](https://buymeacoffee.com/brombrom).
+> **Support the Project**: If BromBrom helps you navigate safely, [consider buying me a coffee](https://buymeacoffee.com/brombrom).
 
 ---
  
@@ -60,19 +60,13 @@ Go to **Map Management** -> **Local**. You should see `NL_BromBrom_tagged.obf` a
 
 ---
 
-###  iOS Support (Manual)
+### iOS Support (Manual Transfer)
 
 > [!NOTE]
 > iOS support is Experimental. You must manually import files as iOS prevents direct folder access.
 
-1.  Extract `.obf` and `routing.xml` from the zip (inside `Android/data/net.osmand/files/`).
-2.  Transfer them to your iPhone and **Open with OsmAnd** to import.
-The generated `.obf` and `routing.xml` files are cross-platform and theoretically work on **OsmAnd for iOS**. However, because iOS lacks the direct file structure of Android, you must manually import the files:
-- Extract the `.obf` and `routing.xml` files from the zip (found within the `Android/data/net.osmand/files/` directory) and transfer them to your iPhone.
-- Open them with the OsmAnd app to import.
-
-> [!NOTE]
-> This path is currently manual and experimental.
+1.  **Extract** `.obf` and `routing.xml` from the zip (inside `Android/data/net.osmand/files/`).
+2.  **Transfer** these files to your iPhone (via AirDrop, iCloud, or Mail) and use the **"Open in OsmAnd"** (or Share -> OsmAnd) option to import them.
 
 ---
 
