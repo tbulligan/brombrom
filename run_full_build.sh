@@ -29,6 +29,9 @@ else
     if [ -d "/opt/OsmAndMapCreator" ]; then
         ACTUAL_DIR=$(find /opt/OsmAndMapCreator -name "OsmAndMapCreator.jar" -exec dirname {} \;)
         [ -n "$ACTUAL_DIR" ] && OMC_DIR="$ACTUAL_DIR"
+    elif [ -d "tools/OsmAndMapCreator" ]; then
+        ACTUAL_DIR=$(find tools/OsmAndMapCreator -name "OsmAndMapCreator.jar" -exec dirname {} \;)
+        [ -n "$ACTUAL_DIR" ] && OMC_DIR="$ACTUAL_DIR"
     fi
 
     # Run OsmAndMapCreator

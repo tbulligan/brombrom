@@ -1,0 +1,19 @@
+name: brombrom
+channels:
+  - conda-forge
+dependencies:
+  - python=3.14
+  - openjdk=17
+  - zip
+  - unzip
+  - wget
+  - fiona
+  - gdal
+  - geopandas
+  - osmium-tool
+  - requests
+  - shapely
+  - tqdm
+  - pip
+  - pip:
+    - osmium>=4.0  # Python bindings for osmium

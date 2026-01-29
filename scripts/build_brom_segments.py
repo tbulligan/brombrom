@@ -23,10 +23,14 @@ if OPT_BROUTER.exists():
     PROFILES_DIR = OPT_BROUTER / "misc/profiles2"
 else:
     BROUTER_ROOT = PROJECT_ROOT.parent / "brouter"
+    LOCAL_TOOLS_BROUTER = PROJECT_ROOT / "tools" / "brouter"
     BUNDLED_LIB = PROJECT_ROOT / "libs" / "brouter-1.7.8-all.jar"
     BUNDLED_PROFILES = PROJECT_ROOT / "profiles"
     
-    if BUNDLED_LIB.exists():
+    if LOCAL_TOOLS_BROUTER.exists():
+        BROUTER_JAR = LOCAL_TOOLS_BROUTER / "brouter-server" / "build" / "libs" / "brouter-1.7.8-all.jar"
+        PROFILES_DIR = LOCAL_TOOLS_BROUTER / "misc" / "profiles2"
+    elif BUNDLED_LIB.exists():
         BROUTER_JAR = BUNDLED_LIB
         PROFILES_DIR = BUNDLED_PROFILES
     else:

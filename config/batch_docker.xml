@@ -4,11 +4,11 @@
 		osmDbDialect="sqlite" mapDbDialect="sqlite"/>
 
 	<process 
-        directory_for_osm_files="/app/osmand_input" 
-        directory_for_index_files="/app/osmand_output" 
-        directory_for_generation="/app/osmand_gen"
+        directory_for_osm_files="osmand_input" 
+        directory_for_index_files="osmand_output" 
+        directory_for_generation="osmand_gen"
 		skipExistingIndexesAt="" 
-        directory_for_srtm_files="/app/srtm" 
+        directory_for_srtm_files="srtm" 
         indexPOI="true" 
         indexRouting="true" 
         indexMap="true"
