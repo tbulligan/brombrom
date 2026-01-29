@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <batch_process>
-	<process_attributes mapZooms="11;12;13;14;15" renderingTypesFile="" zoomWaySmoothness=""
-		osmDbDialect="sqlite" mapDbDialect="sqlite"/>
+	<process_attributes mapZooms="11;12;13;14;15" renderingTypesFile="" zoomWaySmoothness=""/>
 
 	<process 
         directory_for_osm_files="osmand_input" 
@@ -9,10 +8,10 @@
         directory_for_generation="osmand_gen"
 		skipExistingIndexesAt="" 
         directory_for_srtm_files="srtm" 
-        indexPOI="true" 
+        indexPOI="false" 
         indexRouting="true" 
         indexMap="true"
-		indexTransport="true" 
-        indexAddress="true">
+		indexTransport="false" 
+        indexAddress="false">
 	</process>
 </batch_process>

@@ -31,6 +31,7 @@ osmconvert64
 osmfilter64
 META-INF/
 tests/
+OsmAndMapCreator/
 
 # Python
 __pycache__/

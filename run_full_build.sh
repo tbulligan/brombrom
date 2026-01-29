@@ -25,13 +25,22 @@ else
     cp NL_BromBrom_tagged.osm.pbf osmand_input/
 
     # ... (OMC_DIR logic omitted for brevity in target but will be preserved)
-    OMC_DIR="OsmAndMapCreator"
-    if [ -d "/opt/OsmAndMapCreator" ]; then
-        ACTUAL_DIR=$(find /opt/OsmAndMapCreator -name "OsmAndMapCreator.jar" -exec dirname {} \;)
-        [ -n "$ACTUAL_DIR" ] && OMC_DIR="$ACTUAL_DIR"
-    elif [ -d "tools/OsmAndMapCreator" ]; then
-        ACTUAL_DIR=$(find tools/OsmAndMapCreator -name "OsmAndMapCreator.jar" -exec dirname {} \;)
-        [ -n "$ACTUAL_DIR" ] && OMC_DIR="$ACTUAL_DIR"
+    # Locate OsmAndMapCreator
+    OMC_DIR=""
+    for candidate in "tools/OsmAndMapCreator" "/opt/OsmAndMapCreator" "OsmAndMapCreator"; do
+        if [ -d "$candidate" ]; then
+            JAR=$(find "$candidate" -name "OsmAndMapCreator.jar" -print -quit 2>/dev/null)
+            if [ -n "$JAR" ]; then
+                OMC_DIR=$(dirname "$JAR")
+                break
+            fi
+        fi
+    done
+
+    if [ -z "$OMC_DIR" ]; then
+        echo "Error: OsmAndMapCreator.jar not found."
+        echo "Please run './scripts/setup_tools.sh' to install dependencies."
+        exit 1
     fi
 
     # Run OsmAndMapCreator
