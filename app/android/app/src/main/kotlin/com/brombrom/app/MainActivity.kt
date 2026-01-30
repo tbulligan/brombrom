@@ -28,7 +28,6 @@ class MainActivity : FlutterActivity() {
                     startActivityForResult(intent, REQUEST_CODE_OPEN_DIR)
                 }
                 "copyFileToSaf" -> {
-                    // Args: srcPath, destFilename, treeUriStr, mimeType
                     val srcPath = call.argument<String>("srcPath")
                     val destFilename = call.argument<String>("destFilename")
                     val treeUriStr = call.argument<String>("treeUri")
@@ -39,12 +38,15 @@ class MainActivity : FlutterActivity() {
                         return@setMethodCallHandler
                     }
 
-                    try {
-                         copyFileToSaf(srcPath, destFilename, treeUriStr, mimeType ?: "application/octet-stream")
-                         result.success(true)
-                    } catch (e: Exception) {
-                        result.error("COPY_FAIL", e.message, null)
-                    }
+                    // Run in background thread to avoid ANR/Freeze on large files
+                    Thread {
+                        try {
+                             copyFileToSaf(srcPath, destFilename, treeUriStr, mimeType ?: "application/octet-stream")
+                             runOnUiThread { result.success(true) }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("COPY_FAIL", e.message, null) }
+                        }
+                    }.start()
                 }
                 else -> result.notImplemented()
             }
