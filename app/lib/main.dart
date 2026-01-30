@@ -292,28 +292,44 @@ class _InstallerScreenState extends State<InstallerScreen> {
                   ],
                 )
               else
-                ElevatedButton(
-                  onPressed: _updateAvailable ? _downloadAndInstall : null,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    backgroundColor: Colors.blue[700],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    elevation: 3,
-                  ),
-                  child: const Text(
-                    "UPDATE KAART  /  BIJWERKEN",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // A. Update Button (Primary)
+                    ElevatedButton(
+                      onPressed: _updateAvailable ? _downloadAndInstall : null,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        backgroundColor: Colors.blue[700],
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        elevation: 3,
+                      ),
+                      child: const Text(
+                        "UPDATE KAART  /  BIJWERKEN",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+
+                    // B. Check for Updates (Secondary)
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.refresh),
+                      label: const Text("Controleer op updates (Check)"),
+                      onPressed: _checkSystemState,
+                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                    ),
+                  ],
                 ),
                 
               const SizedBox(height: 16),
               
               // Secondary Options
               if (!_updateAvailable && !_isDownloading)
-                OutlinedButton(
+                TextButton(
                   onPressed: _downloadAndInstall,
-                  child: const Text("Herinstalleer (Force Re-install)"),
+                  child: const Text("Forceer Herinstallatie (Force Re-install)", style: TextStyle(color: Colors.grey)),
                 ),
                 
               const SizedBox(height: 24),
@@ -329,6 +345,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
     );
   }
 
+  /* ... _buildVersionInfo helper ... */
   Widget _buildVersionInfo(String label, String version) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,4 +356,49 @@ class _InstallerScreenState extends State<InstallerScreen> {
       ],
     );
   }
-}
+
+  // Improved Error Handling in _checkForUpdates
+  Future<void> _checkForUpdates() async {
+     setState(() => _statusMessage = 'Controleren... (Checking...)');
+     final prefs = await SharedPreferences.getInstance();
+     setState(() {
+       _localVersion = prefs.getString('local_version') ?? 'None';
+     });
+ 
+     try {
+       final response = await http.get(Uri.parse(RELEASE_API));
+       if (response.statusCode == 200) {
+         final data = jsonDecode(response.body);
+         final String tagName = data['tag_name'];
+         
+         // Verify asset exists before saying update available
+         bool hasAsset = false;
+         for (var asset in data['assets']) {
+           if (asset['name'] == OBF_FILENAME) hasAsset = true;
+         }
+
+         if (!hasAsset) {
+            setState(() => _statusMessage = 'Error: Map file missing in release!');
+            return;
+         }
+
+         setState(() {
+           _latestVersion = tagName;
+           _updateAvailable = _localVersion != _latestVersion;
+           _statusMessage = _updateAvailable 
+               ? 'Nieuwe update beschikbaar!' 
+               : 'Je bent helemaal bij.';
+         });
+       } else {
+         setState(() => _statusMessage = 'Error: GitHub API ${response.statusCode}');
+         if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('API Error: ${response.statusCode} - ${response.reasonPhrase}'), backgroundColor: Colors.red));
+         }
+       }
+     } catch (e) {
+       setState(() => _statusMessage = 'Error verbinding (Connection)');
+       if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+       }
+     }
+  }
