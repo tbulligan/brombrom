@@ -38,23 +38,16 @@ jobs:
         id: tag
         run: echo "TAG_NAME=build-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Reset Latest Release and Tag
+      - name: Zero-Downtime Release Update
         run: |
-          # Delete the existing 'latest' release and its git tag from the server
-          gh release delete latest --yes --cleanup-tag || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update Latest Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            dist/routing.xml
-            dist/NL_BromBrom_tagged.obf
-          tag_name: latest
-          name: Latest BromBrom OsmAnd Build
-          body: |
-            ## Automated Monthly Build
+          # 1. Force move the 'latest' tag locally and on remote
+          git tag -f latest
+          git push origin latest -f
+          
+          # 2. Ensure release exists and update metadata
+          gh release edit latest \
+            --title "Latest BromBrom OsmAnd Build" \
+            --notes "## Automated Monthly Build
             This release contains the latest map data and routing profiles for microcars in the Netherlands.
 
             **Installation Instructions**: 
@@ -62,8 +55,15 @@ jobs:
             2. Follow the Quick Way instructions in the [README](https://github.com/tbulligan/brombrom#installation--setup).
 
             **Build Date**: ${{ steps.tag.outputs.TAG_NAME }}
-            **Base Branch**: ${{ github.ref_name }}
-          prerelease: false
-          make_latest: true
+            **Base Branch**: ${{ github.ref_name }}" || \
+          gh release create latest \
+            --title "Latest BromBrom OsmAnd Build" \
+            --notes "Initial release setup."
+
+          # 3. Upload and Overwrite artifacts (Zero-Downtime)
+          gh release upload latest \
+            dist/routing.xml \
+            dist/NL_BromBrom_tagged.obf \
+            --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
