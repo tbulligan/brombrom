@@ -381,9 +381,18 @@ class _InstallerScreenState extends State<InstallerScreen> {
                   
                   // Secondary Options
                   if (!_updateAvailable && !_isDownloading)
-                    TextButton(
-                      onPressed: _downloadAndInstall,
-                      child: const Text("Forceer Herinstallatie (Force Re-install)", style: TextStyle(color: Colors.grey)),
+                    Column(
+                      children: [
+                        TextButton(
+                          onPressed: _downloadAndInstall,
+                          child: const Text("Forceer Herinstallatie (Force Re-install)", style: TextStyle(color: Colors.grey)),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: _downloadRoutingXml,
+                          child: const Text("Update Routing Rules (Manual)", style: TextStyle(color: Colors.blueGrey)),
+                        ),
+                      ],
                     ),
                     
                   const SizedBox(height: 24),
@@ -424,5 +433,84 @@ class _InstallerScreenState extends State<InstallerScreen> {
         Text(version, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
       ],
     );
+  }
+
+  Future<void> _downloadRoutingXml() async {
+     _log("Downloading Routing Style...");
+     try {
+       // 1. Get URL
+       final response = await http.get(Uri.parse(RELEASE_API));
+       final data = jsonDecode(response.body);
+       String? xmlUrl;
+       for (var asset in data['assets']) {
+         if (asset['name'] == 'routing.xml') {
+           xmlUrl = asset['browser_download_url'];
+         }
+       }
+       
+       if (xmlUrl == null) {
+         _log("routing.xml not found in release!");
+         return;
+       }
+
+       // 2. Download
+       final dir = await getExternalStorageDirectory(); 
+       final File file = File('${dir!.path}/routing.xml');
+       final request = http.Request('GET', Uri.parse(xmlUrl));
+       final streamedResponse = await request.send();
+       
+       final sink = file.openWrite();
+       await streamedResponse.stream.listen((chunk) => sink.add(chunk)).asFuture();
+       await sink.close();
+       
+       _log("routing.xml saved to: ${file.path}");
+       
+       // 3. Show Instructions
+       if (mounted) {
+         showDialog(
+           context: context,
+           builder: (ctx) => AlertDialog(
+             title: const Text("Manual Step Required"),
+             content: const Text(
+               "The routing style has been downloaded.\n\n"
+               "OsmAnd does not allow automatic import of this file.\n\n"
+               "Please share this file to a File Manager and move it to:\n\n"
+               "Android/data/net.osmand/files/routing/"
+             ),
+             actions: [
+               TextButton(
+                 onPressed: () {
+                   Navigator.pop(ctx);
+                   _shareFile(file.path);
+                 },
+                 child: const Text("Share / Move File")
+               ),
+               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Done")),
+             ],
+           )
+         );
+       }
+
+     } catch (e) {
+       _log("Routing Download Error: $e");
+     }
+  }
+
+  Future<void> _shareFile(String filePath) async {
+    const String authority = "com.brombrom.app.fileprovider";
+    final File file = File(filePath);
+    final String fileName = file.uri.pathSegments.last;
+    final String contentUri = "content://$authority/map_imports_ext/$fileName"; // Use external path
+
+    final AndroidIntent intent = AndroidIntent(
+      action: 'action_send',
+      data: contentUri, // Intent data is usually null for SEND, uses Extra Stream
+      type: 'text/xml',
+      flags: <int>[0x00000001], // Grant Read
+      arguments: <String, dynamic>{
+        'android.intent.extra.STREAM': contentUri,
+      }
+    );
+    await intent.launch();
   }
 }
