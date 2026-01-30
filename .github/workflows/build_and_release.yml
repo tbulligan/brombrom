@@ -38,14 +38,10 @@ jobs:
         id: tag
         run: echo "TAG_NAME=build-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: Clear Old Release Assets
+      - name: Reset Latest Release and Tag
         run: |
-          # List all assets for the 'latest' release and delete them one by one
-          assets=$(gh release view latest --json assets --jq '.assets[].name' 2>/dev/null || echo "")
-          for asset in $assets; do
-            echo "Deleting old asset: $asset"
-            gh release delete-asset latest "$asset" -y || true
-          done
+          # Delete the existing 'latest' release and its git tag from the server
+          gh release delete latest --yes --cleanup-tag || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
