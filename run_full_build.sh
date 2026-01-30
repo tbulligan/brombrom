@@ -75,5 +75,5 @@ python3 scripts/validate_results.py
 
 echo "========================================================"
 echo "      Build Successful!"
-echo "      Output: dist/brombrom_osmand_deploy.zip"
+echo "      Output: dist/"
 echo "========================================================"

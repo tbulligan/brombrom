@@ -10,16 +10,22 @@ def validate_build():
     print("Running QA Validation...")
     
     # 1. Validate OBF Artifact
-    obf_path = "dist/brombrom_osmand_deploy.zip"
+    obf_path = "dist/NL_BromBrom_tagged.obf"
+    xml_path = "dist/routing.xml"
+    
     if not os.path.exists(obf_path):
-        print("❌ CRITICAL: Deployment zip artifact does not exist!")
+        print("❌ CRITICAL: Map artifact (dist/NL_BromBrom_tagged.obf) does not exist!")
+        sys.exit(1)
+
+    if not os.path.exists(xml_path):
+        print("❌ CRITICAL: Routing artifact (dist/routing.xml) does not exist!")
         sys.exit(1)
         
     size_mb = os.path.getsize(obf_path) / (1024 * 1024)
-    print(f"Artifact Size: {size_mb:.2f} MB")
+    print(f"Map Size: {size_mb:.2f} MB")
     
     if size_mb < MIN_EXPECTED_OBF_SIZE_MB:
-        print(f"❌ CRITICAL: Artifact is suspiciously small (<{MIN_EXPECTED_OBF_SIZE_MB}MB). Build likely failed or data source was empty.")
+        print(f"❌ CRITICAL: Map is suspiciously small (<{MIN_EXPECTED_OBF_SIZE_MB}MB). Build likely failed or data source was empty.")
         sys.exit(1)
         
     # 2. Validate Tagging Logic (if GPKG available)

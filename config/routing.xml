@@ -5,7 +5,7 @@
 	<attribute name="planRoadDirection" value="0" />
 	<attribute name="recalculateDistanceHelp" value="10000" />
 
-	<routingProfile name="microcar" baseProfile="car" restrictionsAware="true" minSpeed="7.0" defaultSpeed="45.0" maxSpeed="45.0" sharpTurn="30" slightTurn="15" roundaboutTurn="15" onewayAware="true">
+	<routingProfile name="BromBrom" baseProfile="car" restrictionsAware="true" minSpeed="7.0" defaultSpeed="45.0" maxSpeed="45.0" sharpTurn="30" slightTurn="15" roundaboutTurn="15" onewayAware="true">
 		<attribute name="penaltyForReverseDirection" value="300" />
 		<attribute name="minPointApproximation" value = "50"/>
 		<attribute name="minStepApproximation" value = "100"/>
