@@ -78,54 +78,48 @@ class _InstallerScreenState extends State<InstallerScreen> {
   }
 
   Future<void> _checkForUpdates() async {
-    setState(() => _statusMessage = 'Controleren... (Checking...)');
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _localVersion = prefs.getString('local_version') ?? 'None';
-    });
+     setState(() => _statusMessage = 'Controleren... (Checking...)');
+     final prefs = await SharedPreferences.getInstance();
+     setState(() {
+       _localVersion = prefs.getString('local_version') ?? 'None';
+     });
+ 
+     try {
+       final response = await http.get(Uri.parse(RELEASE_API));
+       if (response.statusCode == 200) {
+         final data = jsonDecode(response.body);
+         final String tagName = data['tag_name'];
+         
+         // Verify asset exists before saying update available
+         bool hasAsset = false;
+         for (var asset in data['assets']) {
+           if (asset['name'] == OBF_FILENAME) hasAsset = true;
+         }
 
-    try {
-      final response = await http.get(Uri.parse(RELEASE_API));
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final String tagName = data['tag_name'];
-        
-        // Verify asset exists
-        bool hasAsset = false;
-        for (var asset in data['assets']) {
-          if (asset['name'] == OBF_FILENAME) hasAsset = true;
-        }
+         if (!hasAsset) {
+            setState(() => _statusMessage = 'Error: Map file missing in release!');
+            return;
+         }
 
-        if (!hasAsset) {
-           setState(() => _statusMessage = 'Error: Map missing in release!');
-           return;
-        }
-
-        setState(() {
-          _latestVersion = tagName;
-          _updateAvailable = _localVersion != _latestVersion;
-          _statusMessage = _updateAvailable 
-              ? 'Nieuwe update beschikbaar!' 
-              : 'Je bent helemaal bij.';
-        });
-      } else {
-        setState(() => _statusMessage = 'Error: GitHub API ${response.statusCode}');
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-             content: Text('API Error: ${response.statusCode}'), 
-             backgroundColor: Colors.red
-           ));
-        }
-      }
-    } catch (e) {
-      setState(() => _statusMessage = 'Error verbinding (Connection)');
-      if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-           content: Text('Connection Error: $e'), 
-           backgroundColor: Colors.red
-         ));
-      }
-    }
+         setState(() {
+           _latestVersion = tagName;
+           _updateAvailable = _localVersion != _latestVersion;
+           _statusMessage = _updateAvailable 
+               ? 'Nieuwe update beschikbaar!' 
+               : 'Je bent helemaal bij.';
+         });
+       } else {
+         setState(() => _statusMessage = 'Error: GitHub API ${response.statusCode}');
+         if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('API Error: ${response.statusCode} - ${response.reasonPhrase}'), backgroundColor: Colors.red));
+         }
+       }
+     } catch (e) {
+       setState(() => _statusMessage = 'Error verbinding (Connection)');
+       if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+       }
+     }
   }
 
   Future<void> _downloadAndInstall() async {
@@ -369,7 +363,6 @@ class _InstallerScreenState extends State<InstallerScreen> {
     );
   }
 
-  /* ... _buildVersionInfo helper ... */
   Widget _buildVersionInfo(String label, String version) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,4 +373,4 @@ class _InstallerScreenState extends State<InstallerScreen> {
       ],
     );
   }
-
+}
