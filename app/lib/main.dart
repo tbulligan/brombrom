@@ -47,26 +47,35 @@ class _InstallerScreenState extends State<InstallerScreen> {
   static const String RELEASE_API = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
   static const String OBF_FILENAME = "NL_BromBrom_tagged.obf";
   
-  /* New State Variables */
-  bool _osmandInstalled = true;
+  /* Diagnostic Logging */
+  final List<String> _logs = [];
+  void _log(String msg) {
+    print(msg);
+    setState(() {
+      _logs.add("${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second} - $msg");
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    _log("App Initialized");
     _checkSystemState();
   }
 
   Future<void> _checkSystemState() async {
+    _log("Checking System State...");
     await _checkForUpdates();
     await _checkOsmAndInstalled();
   }
 
   Future<void> _checkOsmAndInstalled() async {
-    // Basic check using package manager via intent
     try {
       // Intentionally empty for MVP/Play Store policy reasons
-      // Just assume true, but we provide the download link if user needs it.
-    } catch (_) {}
+      // checking intents without queries can fail on Android 11+
+    } catch (e) {
+      _log("OsmAnd Check Error: $e");
+    }
   }
   
   void _launchOsmAndStore() {
@@ -78,26 +87,38 @@ class _InstallerScreenState extends State<InstallerScreen> {
   }
 
   Future<void> _checkForUpdates() async {
+     _log("Starting Update Check...");
      setState(() => _statusMessage = 'Controleren... (Checking...)');
+     
      final prefs = await SharedPreferences.getInstance();
      setState(() {
        _localVersion = prefs.getString('local_version') ?? 'None';
      });
+     _log("Local Version: $_localVersion");
  
      try {
-       final response = await http.get(Uri.parse(RELEASE_API));
+       final uri = Uri.parse(RELEASE_API);
+       _log("Fetching: $uri");
+       final response = await http.get(uri);
+       _log("Response Code: ${response.statusCode}");
+       
        if (response.statusCode == 200) {
          final data = jsonDecode(response.body);
          final String tagName = data['tag_name'];
+         _log("Latest Tag: $tagName");
          
-         // Verify asset exists before saying update available
+         // Verify asset
          bool hasAsset = false;
          for (var asset in data['assets']) {
-           if (asset['name'] == OBF_FILENAME) hasAsset = true;
+           if (asset['name'] == OBF_FILENAME) {
+              hasAsset = true;
+              _log("Found asset: ${asset['name']}");
+           }
          }
 
          if (!hasAsset) {
-            setState(() => _statusMessage = 'Error: Map file missing in release!');
+            _log("ERROR: Map file missing in release assets!");
+            setState(() => _statusMessage = 'Error: Map missing in release!');
             return;
          }
 
@@ -108,23 +129,22 @@ class _InstallerScreenState extends State<InstallerScreen> {
                ? 'Nieuwe update beschikbaar!' 
                : 'Je bent helemaal bij.';
          });
+         _log("Update Available: $_updateAvailable");
        } else {
+         _log("API Error: ${response.reasonPhrase}");
          setState(() => _statusMessage = 'Error: GitHub API ${response.statusCode}');
-         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('API Error: ${response.statusCode} - ${response.reasonPhrase}'), backgroundColor: Colors.red));
-         }
        }
      } catch (e) {
+       _log("EXCEPTION: $e");
        setState(() => _statusMessage = 'Error verbinding (Connection)');
-       if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
-       }
      }
   }
 
   Future<void> _downloadAndInstall() async {
+    _log("Starting Download Sequence...");
     // 1. Permissions
     if (await Permission.storage.request().isDenied) {
+      _log("Permission Denied: Storage");
       setState(() => _statusMessage = 'Storage permission needed.');
       return;
     }
@@ -149,10 +169,14 @@ class _InstallerScreenState extends State<InstallerScreen> {
       }
 
       if (mapUrl == null) throw Exception("Map file not found in release!");
+      _log("Download URL found: $mapUrl");
 
       // 3. Download File
       final dir = await getExternalStorageDirectory(); 
-      final File file = File('${dir!.path}/$OBF_FILENAME');
+      final String filePath = '${dir!.path}/$OBF_FILENAME';
+      _log("Writing to: $filePath");
+      
+      final File file = File(filePath);
       final request = http.Request('GET', Uri.parse(mapUrl));
       final streamedResponse = await request.send();
 
@@ -170,6 +194,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
         },
       ).asFuture();
       await sink.close();
+      _log("Download Complete. Size: $received bytes");
 
       // 4. Update Preferences
       final prefs = await SharedPreferences.getInstance();
@@ -185,6 +210,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       _openInOsmAnd(file.path);
 
     } catch (e) {
+      _log("DOWNLOAD ERROR: $e");
       setState(() {
         _isDownloading = false;
         _statusMessage = 'Error: $e';
@@ -198,7 +224,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
     final String fileName = file.uri.pathSegments.last;
     final String contentUri = "content://$authority/map_imports/$fileName";
 
-    print("Opening Intent with URI: $contentUri");
+    _log("Opening Intent: $contentUri");
 
     final AndroidIntent intent = AndroidIntent(
       action: 'action_view',
@@ -213,6 +239,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
     try {
       await intent.launch();
     } catch (e) {
+      _log("INTENT ERROR: $e");
       if (mounted) {
         showDialog(
           context: context, 
@@ -236,131 +263,150 @@ class _InstallerScreenState extends State<InstallerScreen> {
         foregroundColor: Colors.white,
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 1. Logo Section
-              Center(
-                child: Container(
-                  height: 120,
-                  width: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [const BoxShadow(blurRadius: 10, color: Colors.black12)],
-                    image: const DecorationImage(
-                      image: AssetImage('assets/logos/brombrom-logo.jpg'),
-                      fit: BoxFit.cover
-                    )
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // 2. Status Card
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                  child: Column(
-                    children: [
-                      Text(
-                        _updateAvailable ? "Nieuwe update beschikbaar" : "Je bent helemaal bij",
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: _updateAvailable ? Colors.orange[800] : Colors.green[700],
-                        ),
-                      ),
-                      Text(
-                        _updateAvailable ? "New update available" : "System up to date",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                          fontStyle: FontStyle.italic
-                        ),
-                      ),
-                      const Divider(height: 32),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildVersionInfo("Geïnstalleerd", _localVersion ?? "-"),
-                          _buildVersionInfo("Nieuwste", _latestVersion ?? "..."),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // 3. Action Buttons
-              if (_isDownloading)
-                Column(
-                  children: [
-                    LinearProgressIndicator(value: _progress, minHeight: 8),
-                    const SizedBox(height: 8),
-                    Text("${(_progress * 100).toInt()}%", style: TextStyle(color: Colors.grey[700])),
-                  ],
-                )
-              else
-                Column(
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // A. Update Button (Primary)
-                    ElevatedButton(
-                      onPressed: _updateAvailable ? _downloadAndInstall : null,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        backgroundColor: Colors.blue[700],
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        elevation: 3,
+                    // 1. Logo Section
+                    Center(
+                      child: Container(
+                        height: 120,
+                        width: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [const BoxShadow(blurRadius: 10, color: Colors.black12)],
+                          image: const DecorationImage(
+                            image: AssetImage('assets/logos/brombrom-logo.jpg'),
+                            fit: BoxFit.cover
+                          )
+                        ),
                       ),
-                      child: const Text(
-                        "UPDATE KAART  /  BIJWERKEN",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // 2. Status Card
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      color: Colors.white,
+                      child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                      child: Column(
+                        children: [
+                          Text(
+                            _updateAvailable ? "Nieuwe update beschikbaar" : "Je bent helemaal bij",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: _updateAvailable ? Colors.orange[800] : Colors.green[700],
+                            ),
+                          ),
+                          Text(
+                            _updateAvailable ? "New update available" : "System up to date",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                              fontStyle: FontStyle.italic
+                            ),
+                          ),
+                          const Divider(height: 32),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildVersionInfo("Geïnstalleerd", _localVersion ?? "-"),
+                              _buildVersionInfo("Nieuwste", _latestVersion ?? "..."),
+                            ],
+                          )
+                        ],
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // 3. Action Buttons
+                  if (_isDownloading)
+                    Column(
+                      children: [
+                        LinearProgressIndicator(value: _progress, minHeight: 8),
+                        const SizedBox(height: 8),
+                        Text("${(_progress * 100).toInt()}%", style: TextStyle(color: Colors.grey[700])),
+                      ],
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // A. Update Button (Primary)
+                        ElevatedButton(
+                          onPressed: _updateAvailable ? _downloadAndInstall : null,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            backgroundColor: Colors.blue[700],
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            elevation: 3,
+                          ),
+                          child: const Text(
+                            "UPDATE KAART  /  BIJWERKEN",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 16),
+
+                        // B. Check for Updates (Secondary)
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.refresh),
+                          label: const Text("Controleer op updates (Check)"),
+                          onPressed: _checkSystemState,
+                          style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                        ),
+                      ],
                     ),
                     
-                    const SizedBox(height: 16),
-
-                    // B. Check for Updates (Secondary)
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.refresh),
-                      label: const Text("Controleer op updates (Check)"),
-                      onPressed: _checkSystemState,
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                  const SizedBox(height: 16),
+                  
+                  // Secondary Options
+                  if (!_updateAvailable && !_isDownloading)
+                    TextButton(
+                      onPressed: _downloadAndInstall,
+                      child: const Text("Forceer Herinstallatie (Force Re-install)", style: TextStyle(color: Colors.grey)),
                     ),
-                  ],
-                ),
-                
-              const SizedBox(height: 16),
-              
-              // Secondary Options
-              if (!_updateAvailable && !_isDownloading)
-                TextButton(
-                  onPressed: _downloadAndInstall,
-                  child: const Text("Forceer Herinstallatie (Force Re-install)", style: TextStyle(color: Colors.grey)),
-                ),
-                
-              const SizedBox(height: 24),
-              TextButton.icon(
-                icon: const Icon(Icons.download),
-                label: const Text("Download OsmAnd (Play Store)"),
-                onPressed: _launchOsmAndStore,
-              )
-            ],
+                    
+                  const SizedBox(height: 24),
+                  TextButton.icon(
+                    icon: const Icon(Icons.download),
+                    label: const Text("Download OsmAnd (Play Store)"),
+                    onPressed: _launchOsmAndStore,
+                  )
+                ],
+              ),
+            ),
           ),
         ),
-      ),
-    );
+        
+        // Debug Console
+        Container(
+          height: 100,
+          color: Colors.black12,
+          child: ListView.builder(
+            itemCount: _logs.length,
+            itemBuilder: (ctx, i) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              child: Text(_logs[i], style: const TextStyle(fontFamily: 'monospace', fontSize: 10)),
+            ),
+          ),
+        )
+      ],
+    ),
+  );
   }
 
   Widget _buildVersionInfo(String label, String version) {
