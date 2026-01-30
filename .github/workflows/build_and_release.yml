@@ -34,27 +34,36 @@ jobs:
           # The runner has ~7GB physical RAM. We stay at 6GB to avoid swap/OOM.
           docker run --rm -v ${{ github.workspace }}:/app --memory="6g" brombrom-builder
 
-      - name: Zero-Downtime Release Update
+      - name: Generate Release Tag
+        id: tag
+        run: echo "TAG_NAME=build-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Reset Latest Release and Tag
         run: |
-          # 1. Force move the 'latest' tag to the current commit locally and on remote
-          git tag -f latest
-          git push origin latest -f
-          
-          # 2. Update the release metadata and upload artifacts with --clobber
-          # This overwrites existing files in-place, avoiding a 404 window.
-          gh release upload latest \
-            dist/routing.xml \
-            dist/NL_BromBrom_tagged.obf \
-            --clobber \
-            --name "Latest BromBrom OsmAnd Build" \
-            --body "## Automated Monthly Build
+          # Delete the existing 'latest' release and its git tag from the server
+          gh release delete latest --yes --cleanup-tag || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Latest Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/routing.xml
+            dist/NL_BromBrom_tagged.obf
+          tag_name: latest
+          name: Latest BromBrom OsmAnd Build
+          body: |
+            ## Automated Monthly Build
             This release contains the latest map data and routing profiles for microcars in the Netherlands.
 
             **Installation Instructions**: 
             1. Download both files below.
             2. Follow the Quick Way instructions in the [README](https://github.com/tbulligan/brombrom#installation--setup).
 
-            **Build Date**: build-$(date +'%Y-%m-%d')
-            **Base Branch**: ${{ github.ref_name }}"
+            **Build Date**: ${{ steps.tag.outputs.TAG_NAME }}
+            **Base Branch**: ${{ github.ref_name }}
+          prerelease: false
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
