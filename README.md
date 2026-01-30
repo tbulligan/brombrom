@@ -4,6 +4,8 @@
 
 # BromBrom: OsmAnd Microcar Navigation (Netherlands)
 
+[![Latest Map Update](https://img.shields.io/github/v/release/tbulligan/brombrom?label=Latest%20Map%20Update&color=blue&logo=github)](https://github.com/tbulligan/brombrom/releases/latest)
+
 **BromBrom** creates a professional-grade **OsmAnd** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
 
 OsmAnd is a free and open-source offline navigation app for Android and iOS: https://osmand.net.
