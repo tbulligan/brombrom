@@ -33,6 +33,17 @@ jobs:
         id: tag
         run: echo "TAG_NAME=build-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
+      - name: Clear Old Release Assets
+        run: |
+          # List all assets for the 'latest' release and delete them one by one
+          assets=$(gh release view latest --json assets --jq '.assets[].name' 2>/dev/null || echo "")
+          for asset in $assets; do
+            echo "Deleting old asset: $asset"
+            gh release delete-asset latest "$asset" -y
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Update Latest Release
         uses: softprops/action-gh-release@v2
         with:
