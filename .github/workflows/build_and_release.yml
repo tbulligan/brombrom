@@ -3,6 +3,11 @@ name: Build and Release BromBrom
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'assets/**'
+      - 'LICENSE'
   schedule:
     - cron: '0 0 2 * *' # Monthly on the 2nd at midnight
   workflow_dispatch:   # Allow manual trigger
