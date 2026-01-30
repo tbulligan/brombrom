@@ -173,10 +173,12 @@ class _InstallerScreenState extends State<InstallerScreen> {
       if (mapUrl == null) throw Exception("Map file not found in release!");
       _log("Download URL found: $mapUrl");
 
-      // 3. Download File (Internal Storage - Safe from Scoped Storage)
-      final dir = await getApplicationDocumentsDirectory(); 
-      final String filePath = '${dir.path}/$OBF_FILENAME';
-      _log("Writing to internal: $filePath");
+      // 3. Download File (External App Storage - No Permission Needed for App-Specific Dir)
+      // We use getExternalStorageDirectory because getApplicationDocumentsDirectory maps to 'app_flutter'
+      // which FileProvider <files-path> cannot see (it sees 'files').
+      final dir = await getExternalStorageDirectory(); 
+      final String filePath = '${dir!.path}/$OBF_FILENAME';
+      _log("Writing to external (app-specific): $filePath");
       
       final File file = File(filePath);
       final request = http.Request('GET', Uri.parse(mapUrl));
@@ -225,8 +227,8 @@ class _InstallerScreenState extends State<InstallerScreen> {
     final File file = File(filePath);
     final String fileName = file.uri.pathSegments.last;
     
-    // Use the 'map_imports_int' path defined in file_paths.xml for internal files
-    final String contentUri = "content://$authority/map_imports_int/$fileName";
+    // Use 'map_imports_ext' as defined in file_paths.xml for external files
+    final String contentUri = "content://$authority/map_imports_ext/$fileName";
 
     _log("Opening Intent: $contentUri");
 
