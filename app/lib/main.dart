@@ -365,6 +365,15 @@ class _InstallerScreenState extends State<InstallerScreen> {
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
                           ),
                         ),
+                        if (_updateAvailable)
+                           Padding(
+                             padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
+                             child: Text(
+                               "⚠️ Tip: If install fails, delete old map in OsmAnd first.",
+                               style: TextStyle(fontSize: 12, color: Colors.orange[800], fontStyle: FontStyle.italic),
+                               textAlign: TextAlign.center,
+                             ),
+                           ),
                         
                         const SizedBox(height: 16),
 
