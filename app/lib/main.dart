@@ -168,15 +168,17 @@ class _InstallerScreenState extends State<InstallerScreen> {
 
       // 3. Download File
       final dir = await getExternalStorageDirectory(); 
-      // USE TIMESTAMP to avoid OsmAnd overwrite failure
-      final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final String uniqueName = "NL_BromBrom_tagged_$timestamp.obf";
-      final String filePath = '${dir!.path}/$uniqueName';
+      // Reverted to static name as per user request
+      final String filePath = '${dir!.path}/$OBF_FILENAME';
       final File file = File(filePath);
       
-      // (No need to delete old file since name is unique)
+      // FIX: Delete existing file locally to prevent conflicts
+      if (await file.exists()) {
+        _log("Deleting old file: ${file.path}");
+        await file.delete();
+      }
 
-      _log("Downloading to: $uniqueName");
+      _log("Writing to: $filePath");
       
       final request = http.Request('GET', Uri.parse(mapUrl));
       final streamedResponse = await request.send();
