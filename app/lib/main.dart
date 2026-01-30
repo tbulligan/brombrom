@@ -35,6 +35,18 @@ class InstallerScreen extends StatefulWidget {
   State<InstallerScreen> createState() => _InstallerScreenState();
 }
 
+class _InstallerScreenState extends State<InstallerScreen> {
+  String _statusMessage = 'Checking for updates...';
+  bool _isDownloading = false;
+  double _progress = 0.0;
+  String? _latestVersion;
+  String? _localVersion;
+  bool _updateAvailable = false;
+  
+  // Constants
+  static const String RELEASE_API = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
+  static const String OBF_FILENAME = "NL_BromBrom_tagged.obf";
+  
   /* New State Variables */
   bool _osmandInstalled = true;
 
@@ -51,17 +63,9 @@ class InstallerScreen extends StatefulWidget {
 
   Future<void> _checkOsmAndInstalled() async {
     // Basic check using package manager via intent
-    // Note: On Android 11+ this requires <queries> in AndroidManifest (which we added)
     try {
-      final AndroidIntent intent = AndroidIntent(
-        action: 'action_view',
-        package: 'net.osmand',
-        componentName: 'net.osmand.plus.MainActivity'
-      );
-      // We can't easily check 'isInstalled' with android_intent_plus directly without a plugin like device_apps
-      // But we can try to launch a query or just assume true for MVP. 
-      // BETTER MVP: Just provide a link to Play Store if the user says "Help"
-      // For now, let's keep it simple: Add a button to "Get OsmAnd"
+      // Intentionally empty for MVP/Play Store policy reasons
+      // Just assume true, but we provide the download link if user needs it.
     } catch (_) {}
   }
   
@@ -73,12 +77,141 @@ class InstallerScreen extends StatefulWidget {
     intent.launch();
   }
 
-  /* ... Keep existing methods (_checkForUpdates, _downloadAndInstall, _openInOsmAnd) ... */
+  Future<void> _checkForUpdates() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _localVersion = prefs.getString('local_version') ?? 'None';
+    });
+
+    try {
+      final response = await http.get(Uri.parse(RELEASE_API));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String tagName = data['tag_name'];
+        
+        setState(() {
+          _latestVersion = tagName;
+          _updateAvailable = _localVersion != _latestVersion;
+          _statusMessage = _updateAvailable 
+              ? 'New Update Available!' 
+              : 'You are up to date.';
+        });
+      } else {
+        setState(() => _statusMessage = 'Make sure you are online.');
+      }
+    } catch (e) {
+      setState(() => _statusMessage = 'Error checking GitHub: $e');
+    }
+  }
+
+  Future<void> _downloadAndInstall() async {
+    // 1. Permissions
+    if (await Permission.storage.request().isDenied) {
+      setState(() => _statusMessage = 'Storage permission needed.');
+      return;
+    }
+
+    setState(() {
+      _isDownloading = true;
+      _statusMessage = 'Downloading Map...';
+      _progress = 0.1;
+    });
+
+    try {
+      // 2. Locate Download URL
+      final response = await http.get(Uri.parse(RELEASE_API));
+      final data = jsonDecode(response.body);
+      final List assets = data['assets'];
+      
+      String? mapUrl;
+      for (var asset in assets) {
+        if (asset['name'] == OBF_FILENAME) {
+          mapUrl = asset['browser_download_url'];
+        }
+      }
+
+      if (mapUrl == null) throw Exception("Map file not found in release!");
+
+      // 3. Download File
+      final dir = await getExternalStorageDirectory(); 
+      final File file = File('${dir!.path}/$OBF_FILENAME');
+      final request = http.Request('GET', Uri.parse(mapUrl));
+      final streamedResponse = await request.send();
+
+      final contentLength = streamedResponse.contentLength ?? 1;
+      int received = 0;
+
+      final sink = file.openWrite();
+      await streamedResponse.stream.listen(
+        (chunk) {
+          sink.add(chunk);
+          received += chunk.length;
+          setState(() {
+            _progress = received / contentLength;
+          });
+        },
+      ).asFuture();
+      await sink.close();
+
+      // 4. Update Preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('local_version', _latestVersion!);
+      setState(() {
+         _localVersion = _latestVersion;
+         _isDownloading = false;
+         _statusMessage = 'Download Complete!';
+         _progress = 1.0;
+      });
+
+      // 5. Trigger Import in OsmAnd
+      _openInOsmAnd(file.path);
+
+    } catch (e) {
+      setState(() {
+        _isDownloading = false;
+        _statusMessage = 'Error: $e';
+      });
+    }
+  }
+
+  Future<void> _openInOsmAnd(String filePath) async {
+    const String authority = "com.brombrom.app.fileprovider";
+    final File file = File(filePath);
+    final String fileName = file.uri.pathSegments.last;
+    final String contentUri = "content://$authority/map_imports/$fileName";
+
+    print("Opening Intent with URI: $contentUri");
+
+    final AndroidIntent intent = AndroidIntent(
+      action: 'action_view',
+      data: contentUri,
+      type: 'application/octet-stream', 
+      flags: <int>[
+        0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
+        0x10000000, // FLAG_ACTIVITY_NEW_TASK
+      ],
+    );
+    
+    try {
+      await intent.launch();
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context, 
+          builder: (ctx) => AlertDialog(
+            title: const Text("Import Error"),
+            content: Text("Could not launch OsmAnd automatically.\n\nFile location:\n$filePath"),
+            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK"))],
+          )
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Cleaner background
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('BromBrom Manager'),
         backgroundColor: Colors.blue[800],
@@ -100,9 +233,9 @@ class InstallerScreen extends StatefulWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    boxShadow: [BoxShadow(blurRadius: 10, color: Colors.black12)],
-                    image: DecorationImage(
-                      image: AssetImage('assets/logos/brombrom-logo.jpg'), // We will move the logo here
+                    boxShadow: [const BoxShadow(blurRadius: 10, color: Colors.black12)],
+                    image: const DecorationImage(
+                      image: AssetImage('assets/logos/brombrom-logo.jpg'),
                       fit: BoxFit.cover
                     )
                   ),
@@ -110,7 +243,7 @@ class InstallerScreen extends StatefulWidget {
               ),
               const SizedBox(height: 32),
 
-              // 2. Status Card (Cleaner Typography)
+              // 2. Status Card
               Card(
                 elevation: 2,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
