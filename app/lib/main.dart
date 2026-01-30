@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:share_plus/share_plus.dart';
 
 void main() {
   runApp(const BromBromApp());
@@ -142,14 +143,6 @@ class _InstallerScreenState extends State<InstallerScreen> {
 
   Future<void> _downloadAndInstall() async {
     _log("Starting Download Sequence...");
-    // 1. Permissions (No longer needed for internal storage)
-    /*
-    if (await Permission.storage.request().isDenied) {
-      _log("Permission Denied: Storage");
-      setState(() => _statusMessage = 'Storage permission needed.');
-      return;
-    }
-    */
 
     setState(() {
       _isDownloading = true;
@@ -164,7 +157,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       final List assets = data['assets'];
       
       String? mapUrl;
-      for (var asset in assets) {
+      for (var asset in data['assets']) {
         if (asset['name'] == OBF_FILENAME) {
           mapUrl = asset['browser_download_url'];
         }
@@ -173,14 +166,19 @@ class _InstallerScreenState extends State<InstallerScreen> {
       if (mapUrl == null) throw Exception("Map file not found in release!");
       _log("Download URL found: $mapUrl");
 
-      // 3. Download File (External App Storage - No Permission Needed for App-Specific Dir)
-      // We use getExternalStorageDirectory because getApplicationDocumentsDirectory maps to 'app_flutter'
-      // which FileProvider <files-path> cannot see (it sees 'files').
+      // 3. Download File
       final dir = await getExternalStorageDirectory(); 
       final String filePath = '${dir!.path}/$OBF_FILENAME';
-      _log("Writing to external (app-specific): $filePath");
-      
       final File file = File(filePath);
+      
+      // FIX: Delete existing file to prevent conflicts
+      if (await file.exists()) {
+        _log("Deleting old file: ${file.path}");
+        await file.delete();
+      }
+
+      _log("Writing to: $filePath");
+      
       final request = http.Request('GET', Uri.parse(mapUrl));
       final streamedResponse = await request.send();
 
@@ -349,53 +347,52 @@ class _InstallerScreenState extends State<InstallerScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // A. Update Button (Primary)
+                        // A. UPDATE / REINSTALL BUTTON (Primary)
                         ElevatedButton(
-                          onPressed: _updateAvailable ? _downloadAndInstall : null,
+                          onPressed: _downloadAndInstall,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 18),
-                            backgroundColor: Colors.blue[700],
+                            backgroundColor: _updateAvailable ? Colors.blue[700] : Colors.grey[800],
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             elevation: 3,
                           ),
-                          child: const Text(
-                            "UPDATE KAART  /  BIJWERKEN",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                          child: Text(
+                            _updateAvailable 
+                                ? "UPDATE KAART  /  BIJWERKEN" 
+                                : "HERINSTALLEER KAART (RE-INSTALL)",
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
                           ),
                         ),
                         
                         const SizedBox(height: 16),
 
-                        // B. Check for Updates (Secondary)
+                        // B. CHECK UPDATES
                         OutlinedButton.icon(
                           icon: const Icon(Icons.refresh),
-                          label: const Text("Controleer op updates (Check)"),
+                          label: const Text("Check updates"),
                           onPressed: _checkSystemState,
                           style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                         ),
-                      ],
-                    ),
-                    
-                  const SizedBox(height: 16),
-                  
-                  // Secondary Options
-                  if (!_updateAvailable && !_isDownloading)
-                    Column(
-                      children: [
-                        TextButton(
-                          onPressed: _downloadAndInstall,
-                          child: const Text("Forceer Herinstallatie (Force Re-install)", style: TextStyle(color: Colors.grey)),
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: _downloadRoutingXml,
-                          child: const Text("Update Routing Rules (Manual)", style: TextStyle(color: Colors.blueGrey)),
+
+                        const SizedBox(height: 16),
+
+                        // C. UPDATE ROUTING (Always Visible)
+                        OutlinedButton.icon(
+                           icon: const Icon(Icons.alt_route),
+                           label: const Text("Update Routing Rules (Manual)"),
+                           onPressed: _downloadRoutingXml,
+                           style: OutlinedButton.styleFrom(
+                             padding: const EdgeInsets.symmetric(vertical: 16),
+                             backgroundColor: Colors.white,
+                           ),
                         ),
                       ],
                     ),
                     
                   const SizedBox(height: 24),
+                  
+                  // D. Play Store Link
                   TextButton.icon(
                     icon: const Icon(Icons.download),
                     label: const Text("Download OsmAnd (Play Store)"),
@@ -456,6 +453,12 @@ class _InstallerScreenState extends State<InstallerScreen> {
        // 2. Download
        final dir = await getExternalStorageDirectory(); 
        final File file = File('${dir!.path}/routing.xml');
+       
+       // Delete existing if needed
+       if (await file.exists()) {
+         await file.delete();
+       }
+
        final request = http.Request('GET', Uri.parse(xmlUrl));
        final streamedResponse = await request.send();
        
@@ -497,20 +500,21 @@ class _InstallerScreenState extends State<InstallerScreen> {
   }
 
   Future<void> _shareFile(String filePath) async {
-    const String authority = "com.brombrom.app.fileprovider";
+    // Newer share_plus uses XFile
     final File file = File(filePath);
-    final String fileName = file.uri.pathSegments.last;
-    final String contentUri = "content://$authority/map_imports_ext/$fileName"; // Use external path
+    if (!await file.exists()) {
+      _log("Share Error: File does not exist at $filePath");
+      return;
+    }
 
-    final AndroidIntent intent = AndroidIntent(
-      action: 'action_send',
-      data: contentUri, // Intent data is usually null for SEND, uses Extra Stream
-      type: 'text/xml',
-      flags: <int>[0x00000001], // Grant Read
-      arguments: <String, dynamic>{
-        'android.intent.extra.STREAM': contentUri,
-      }
-    );
-    await intent.launch();
+    try {
+      final xFile = XFile(filePath);
+      // Wait a moment for UI to settle
+      await Future.delayed(const Duration(milliseconds: 300));
+      await Share.shareXFiles([xFile], text: 'Move this file to Android/data/net.osmand/files/routing/');
+      _log("Share Sheet Opened");
+    } catch (e) {
+      _log("Share Error: $e");
+    }
   }
 }
