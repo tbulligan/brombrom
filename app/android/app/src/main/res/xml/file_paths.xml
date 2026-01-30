@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- We are storing downloads in external-files-path (Android/data/com.brombrom.app/files/) -->
+    <external-files-path name="map_imports" path="." />
+</paths>
