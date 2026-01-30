@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="BromBrom Banner" width="100%">
+  <img src="assets/brombrom/banner.png" alt="BromBrom Banner" width="100%">
 </p>
 
 # BromBrom: OsmAnd Microcar Navigation (Netherlands)
