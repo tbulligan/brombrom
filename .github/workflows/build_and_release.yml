@@ -24,9 +24,11 @@ jobs:
         run: |
           docker buildx build -t brombrom-builder . --load
 
-      - name: Run Build Pipeline
+      - name: Run Build Pipeline (SKIPPED FOR FAST TEST)
         run: |
-          docker run --rm -v ${{ github.workspace }}:/app --memory="6g" brombrom-builder
+          mkdir -p dist
+          echo "test data" > dist/routing.xml
+          echo "test data map" > dist/NL_BromBrom_tagged.obf
 
       - name: Zero-Downtime Release Update (TEST)
         run: |
