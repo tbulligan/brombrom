@@ -120,7 +120,7 @@ class InstallerScreen extends StatefulWidget {
                   child: Column(
                     children: [
                       Text(
-                        _updateAvailable ? "New Update Available" : "Up to Date",
+                        _updateAvailable ? "Nieuwe update beschikbaar" : "Je bent helemaal bij",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -128,7 +128,7 @@ class InstallerScreen extends StatefulWidget {
                         ),
                       ),
                       Text(
-                        _updateAvailable ? "Nieuwe update beschikbaar" : "Je bent helemaal bij",
+                        _updateAvailable ? "New update available" : "System up to date",
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -139,8 +139,8 @@ class InstallerScreen extends StatefulWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildVersionInfo("Installed", _localVersion ?? "-"),
-                          _buildVersionInfo("Latest", _latestVersion ?? "..."),
+                          _buildVersionInfo("Geïnstalleerd", _localVersion ?? "-"),
+                          _buildVersionInfo("Nieuwste", _latestVersion ?? "..."),
                         ],
                       )
                     ],
@@ -169,7 +169,7 @@ class InstallerScreen extends StatefulWidget {
                     elevation: 3,
                   ),
                   child: const Text(
-                    "UPDATE MAP  /  BIJWERKEN",
+                    "UPDATE KAART  /  BIJWERKEN",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
                   ),
                 ),
@@ -180,13 +180,13 @@ class InstallerScreen extends StatefulWidget {
               if (!_updateAvailable && !_isDownloading)
                 OutlinedButton(
                   onPressed: _downloadAndInstall,
-                  child: const Text("Re-install Map (Herinstalleer)"),
+                  child: const Text("Herinstalleer (Force Re-install)"),
                 ),
                 
               const SizedBox(height: 24),
               TextButton.icon(
                 icon: const Icon(Icons.download),
-                label: const Text("Get OsmAnd (Play Store)"),
+                label: const Text("Download OsmAnd (Play Store)"),
                 onPressed: _launchOsmAndStore,
               )
             ],
