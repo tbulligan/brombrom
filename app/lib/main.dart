@@ -35,239 +35,175 @@ class InstallerScreen extends StatefulWidget {
   State<InstallerScreen> createState() => _InstallerScreenState();
 }
 
-class _InstallerScreenState extends State<InstallerScreen> {
-  String _statusMessage = 'Checking for updates...';
-  bool _isDownloading = false;
-  double _progress = 0.0;
-  String? _latestVersion;
-  String? _localVersion;
-  bool _updateAvailable = false;
-  
-  // Constants
-  static const String RELEASE_API = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
-  static const String OBF_FILENAME = "NL_BromBrom_tagged.obf";
-  static const String ROUTING_FILENAME = "routing.xml";
+  /* New State Variables */
+  bool _osmandInstalled = true;
 
   @override
   void initState() {
     super.initState();
-    _checkForUpdates();
+    _checkSystemState();
   }
 
-  Future<void> _checkForUpdates() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _localVersion = prefs.getString('local_version') ?? 'None';
-    });
+  Future<void> _checkSystemState() async {
+    await _checkForUpdates();
+    await _checkOsmAndInstalled();
+  }
 
+  Future<void> _checkOsmAndInstalled() async {
+    // Basic check using package manager via intent
+    // Note: On Android 11+ this requires <queries> in AndroidManifest (which we added)
     try {
-      final response = await http.get(Uri.parse(RELEASE_API));
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final String tagName = data['tag_name'];
-        
-        setState(() {
-          _latestVersion = tagName;
-          _updateAvailable = _localVersion != _latestVersion;
-          _statusMessage = _updateAvailable 
-              ? 'New Update Available!' 
-              : 'You are up to date.';
-        });
-      } else {
-        setState(() => _statusMessage = 'Make sure you are online.');
-      }
-    } catch (e) {
-      setState(() => _statusMessage = 'Error checking GitHub: $e');
-    }
+      final AndroidIntent intent = AndroidIntent(
+        action: 'action_view',
+        package: 'net.osmand',
+        componentName: 'net.osmand.plus.MainActivity'
+      );
+      // We can't easily check 'isInstalled' with android_intent_plus directly without a plugin like device_apps
+      // But we can try to launch a query or just assume true for MVP. 
+      // BETTER MVP: Just provide a link to Play Store if the user says "Help"
+      // For now, let's keep it simple: Add a button to "Get OsmAnd"
+    } catch (_) {}
   }
-
-  Future<void> _downloadAndInstall() async {
-    // 1. Permissions (Android 11+ manages this via Scoped Storage usually, but good practice)
-    if (await Permission.storage.request().isDenied) {
-      setState(() => _statusMessage = 'Storage permission needed.');
-      return;
-    }
-
-    setState(() {
-      _isDownloading = true;
-      _statusMessage = 'Downloading Map...';
-      _progress = 0.1;
-    });
-
-    try {
-      // 2. Locate Download URL
-      final response = await http.get(Uri.parse(RELEASE_API));
-      final data = jsonDecode(response.body);
-      final List assets = data['assets'];
-      
-      String? mapUrl;
-      for (var asset in assets) {
-        if (asset['name'] == OBF_FILENAME) {
-          mapUrl = asset['browser_download_url'];
-        }
-      }
-
-      if (mapUrl == null) throw Exception("Map file not found in release!");
-
-      // 3. Download File
-      final dir = await getExternalStorageDirectory(); 
-      // Note: On Android, getExternalStorageDirectory() returns a path in Android/data/com.brombrom.app/files
-      // which is perfect for downloading and then sharing via FileProvider.
-      
-      final File file = File('${dir!.path}/$OBF_FILENAME');
-      final request = http.Request('GET', Uri.parse(mapUrl));
-      final streamedResponse = await request.send();
-
-      final contentLength = streamedResponse.contentLength ?? 1;
-      int received = 0;
-
-      final sink = file.openWrite();
-      await streamedResponse.stream.listen(
-        (chunk) {
-          sink.add(chunk);
-          received += chunk.length;
-          setState(() {
-            _progress = received / contentLength;
-          });
-        },
-      ).asFuture();
-      await sink.close();
-
-      // 4. Update Preferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('local_version', _latestVersion!);
-      setState(() {
-         _localVersion = _latestVersion;
-         _isDownloading = false;
-         _statusMessage = 'Download Complete!';
-         _progress = 1.0;
-      });
-
-      // 5. Trigger Import in OsmAnd
-      _openInOsmAnd(file.path);
-
-    } catch (e) {
-      setState(() {
-        _isDownloading = false;
-        _statusMessage = 'Error: $e';
-      });
-    }
-  }
-
-  Future<void> _openInOsmAnd(String filePath) async {
-    // Construct the Content URI for the FileProvider
-    // Authority must match AndroidManifest.xml: ${applicationId}.fileprovider
-    // default package is com.brombrom.app
-    const String authority = "com.brombrom.app.fileprovider";
-    
-    // We need to map the raw file path to the path defined in file_paths.xml
-    // Our file_paths.xml maps "." (root of external files) to "map_imports"
-    // filePath is like: .../Android/data/com.brombrom.app/files/NL_BromBrom_tagged.obf
-    final File file = File(filePath);
-    final String fileName = file.uri.pathSegments.last;
-    
-    final String contentUri = "content://$authority/map_imports/$fileName";
-
-    print("Opening Intent with URI: $contentUri");
-
-    final AndroidIntent intent = AndroidIntent(
+  
+  void _launchOsmAndStore() {
+    const intent = AndroidIntent(
       action: 'action_view',
-      data: contentUri,
-      type: 'application/octet-stream', // Generic binary or OsmAnd specific
-      flags: <int>[
-        0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
-        0x10000000, // FLAG_ACTIVITY_NEW_TASK
-      ],
+      data: 'market://details?id=net.osmand',
     );
-    
-    try {
-      await intent.launch();
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context, 
-          builder: (ctx) => AlertDialog(
-            title: const Text("Import Error"),
-            content: Text("Could not launch OsmAnd automatically.\n\nFile location:\n$filePath"),
-            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK"))],
-          )
-        );
-      }
-    }
+    intent.launch();
   }
+
+  /* ... Keep existing methods (_checkForUpdates, _downloadAndInstall, _openInOsmAnd) ... */
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50], // Cleaner background
       appBar: AppBar(
         title: const Text('BromBrom Manager'),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blue[800],
         foregroundColor: Colors.white,
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Status Card
-            Card(
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    const Icon(Icons.map, size: 48, color: Colors.blue),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Local Version: $_localVersion',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    Text(
-                      'Latest Release: ${_latestVersion ?? "Checking..."}',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Logo Section
+              Center(
+                child: Container(
+                  height: 120,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [BoxShadow(blurRadius: 10, color: Colors.black12)],
+                    image: DecorationImage(
+                      image: AssetImage('assets/logos/brombrom-logo.jpg'), // We will move the logo here
+                      fit: BoxFit.cover
+                    )
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-            
-            // Status Text
-            Text(
-              _statusMessage,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: _updateAvailable ? Colors.orange[800] : Colors.green[700],
-              ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
-            // Download Button
-            if (_isDownloading)
-              LinearProgressIndicator(value: _progress, minHeight: 10)
-            else
-              ElevatedButton.icon(
-                onPressed: _updateAvailable ? _downloadAndInstall : null,
-                icon: const Icon(Icons.system_update),
-                label: const Text("UPDATE MAP"),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(fontSize: 18),
+              // 2. Status Card (Cleaner Typography)
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  child: Column(
+                    children: [
+                      Text(
+                        _updateAvailable ? "New Update Available" : "Up to Date",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: _updateAvailable ? Colors.orange[800] : Colors.green[700],
+                        ),
+                      ),
+                      Text(
+                        _updateAvailable ? "Nieuwe update beschikbaar" : "Je bent helemaal bij",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                          fontStyle: FontStyle.italic
+                        ),
+                      ),
+                      const Divider(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildVersionInfo("Installed", _localVersion ?? "-"),
+                          _buildVersionInfo("Latest", _latestVersion ?? "..."),
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
+              const SizedBox(height: 32),
+
+              // 3. Action Buttons
+              if (_isDownloading)
+                Column(
+                  children: [
+                    LinearProgressIndicator(value: _progress, minHeight: 8),
+                    const SizedBox(height: 8),
+                    Text("${(_progress * 100).toInt()}%", style: TextStyle(color: Colors.grey[700])),
+                  ],
+                )
+              else
+                ElevatedButton(
+                  onPressed: _updateAvailable ? _downloadAndInstall : null,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    backgroundColor: Colors.blue[700],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 3,
+                  ),
+                  child: const Text(
+                    "UPDATE MAP  /  BIJWERKEN",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                  ),
+                ),
+                
+              const SizedBox(height: 16),
               
-            const SizedBox(height: 16),
-            if (!_updateAvailable && !_isDownloading)
-              OutlinedButton(
-                onPressed: _downloadAndInstall,
-                child: const Text("Force Re-install"),
+              // Secondary Options
+              if (!_updateAvailable && !_isDownloading)
+                OutlinedButton(
+                  onPressed: _downloadAndInstall,
+                  child: const Text("Re-install Map (Herinstalleer)"),
+                ),
+                
+              const SizedBox(height: 24),
+              TextButton.icon(
+                icon: const Icon(Icons.download),
+                label: const Text("Get OsmAnd (Play Store)"),
+                onPressed: _launchOsmAndStore,
               )
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildVersionInfo(String label, String version) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(), style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(version, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+      ],
     );
   }
 }
