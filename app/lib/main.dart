@@ -142,12 +142,14 @@ class _InstallerScreenState extends State<InstallerScreen> {
 
   Future<void> _downloadAndInstall() async {
     _log("Starting Download Sequence...");
-    // 1. Permissions
+    // 1. Permissions (No longer needed for internal storage)
+    /*
     if (await Permission.storage.request().isDenied) {
       _log("Permission Denied: Storage");
       setState(() => _statusMessage = 'Storage permission needed.');
       return;
     }
+    */
 
     setState(() {
       _isDownloading = true;
@@ -171,10 +173,10 @@ class _InstallerScreenState extends State<InstallerScreen> {
       if (mapUrl == null) throw Exception("Map file not found in release!");
       _log("Download URL found: $mapUrl");
 
-      // 3. Download File
-      final dir = await getExternalStorageDirectory(); 
-      final String filePath = '${dir!.path}/$OBF_FILENAME';
-      _log("Writing to: $filePath");
+      // 3. Download File (Internal Storage - Safe from Scoped Storage)
+      final dir = await getApplicationDocumentsDirectory(); 
+      final String filePath = '${dir.path}/$OBF_FILENAME';
+      _log("Writing to internal: $filePath");
       
       final File file = File(filePath);
       final request = http.Request('GET', Uri.parse(mapUrl));
@@ -222,7 +224,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
     const String authority = "com.brombrom.app.fileprovider";
     final File file = File(filePath);
     final String fileName = file.uri.pathSegments.last;
-    final String contentUri = "content://$authority/map_imports/$fileName";
+    
+    // Use the 'map_imports_int' path defined in file_paths.xml for internal files
+    final String contentUri = "content://$authority/map_imports_int/$fileName";
 
     _log("Opening Intent: $contentUri");
 
