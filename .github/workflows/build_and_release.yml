@@ -2,7 +2,7 @@ name: Build and Release BromBrom
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main, develop ]
   schedule:
     - cron: '0 0 2 * *' # Monthly on the 2nd at midnight
   workflow_dispatch:   # Allow manual trigger
@@ -36,17 +36,22 @@ jobs:
       - name: Update Latest Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/brombrom_osmand_deploy.zip
+          files: |
+            dist/routing.xml
+            dist/NL_BromBrom_tagged.obf
           tag_name: latest
           name: Latest BromBrom OsmAnd Build
           body: |
             ## Automated Monthly Build
-            This package contains the latest map data and routing profiles for microcars in the Netherlands.
+            This release contains the latest map data and routing profiles for microcars in the Netherlands.
 
-            
+            **Installation Instructions**: 
+            1. Download both files below.
+            2. Follow the Quick Way instructions in the [README](https://github.com/tbulligan/brombrom#installation--setup).
+
             **Build Date**: ${{ steps.tag.outputs.TAG_NAME }}
             **Base Branch**: ${{ github.ref_name }}
           prerelease: false
-          overwrite: true
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
