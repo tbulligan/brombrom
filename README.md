@@ -11,7 +11,7 @@
 **BromBrom** creates a professional-grade **OsmAnd** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
 
 OsmAnd is a free and open-source offline navigation app for Android and iOS: https://osmand.net.
- 
+
 ## ✨ Features
 
 - **Advanced Routing Engine**: Custom `.obf` maps with "C9-forbidden" tags baked into the road network.
@@ -23,71 +23,44 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
 > **Support the Project**: If BromBrom helps you navigate safely, [consider buying me a coffee ☕](https://buymeacoffee.com/brombrom).
 
 ---
- 
+
 ## 📲 Installation & Setup
+
+> [!IMPORTANT]
+> **Prerequisite**: You must have **OsmAnd** installed on your device first. Download it from the [Google Play Store](https://play.google.com/store/apps/details?id=net.osmand) or [iOS App Store](https://apps.apple.com/app/osmand-maps-navigation/id934850257).
 
 ### ✅ Option A: BromBrom Manager (Recommended)
 The easiest way to install and update BromBrom on Android.
 
 1.  **Download** the **BromBrom Manager App** (`BromBrom.apk`) from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
-    *   *Note: If your browser warns about the file being harmful, this is normal for apps downloaded outside the Play Store. Tap "Download Anyway".*
 2.  **Install** and **Open** the app.
-    *   Grant the "All Files Access" permission when prompted (required to manage maps in your Downloads folder).
-3.  **Update Map**:
-    *   Tap the orange **"UPDATE MAP"** button.
-    *   Once downloaded, follow the prompt to import it into OsmAnd.
-4.  **Update Routing**:
-    *   Tap **"UPDATE BromBrom Routing"**.
-    *   Follow the on-screen instructions to import it in OsmAnd settings.
+    *   Grant the "All Files Access" permission when prompted.
+3.  **Update Map**: Tap the orange **"UPDATE MAP"** button.
+4.  **Update Routing**: Tap **"UPDATE BromBrom Routing"**.
 
 ### 🛠️ Option B: Manual Installation (Advanced / iOS)
-Use this method if you encounter any issues with the manager app, are on iOS, or simply prefer manual file management.
-
-#### 🆕 First-Time Installation
-1.  **Download** the following two files from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**:
-    *   `routing.xml`
-    *   `NL_BromBrom_tagged.obf`
-2.  **Transfer** them to your phone. 
-3.  **Create Profile**:
-    *   In OsmAnd: **Settings** -> **App Profiles** -> **New Profile**.
-    *   Base it on **Driving**. Name it **BromBrom**. Tap **Apply**.
-4.  **Import Routing**:
-    *   Select your new **BromBrom** profile.
-    *   Go to **Navigation Settings** -> **Navigation Type**.
-    *   Tap **Import routing file** and select the `routing.xml` you transferred.
-    *   Select **BromBrom** from the list.
-5.  **Install Map**:
-    *   Locate `NL_BromBrom_tagged.obf` in your file manager and choose **"Open with OsmAnd"**.
-    *   Once OsmAnd confirms the import, the map is **copied** to OsmAnd's internal storage and you can delete the original to save space.
-
-### 🔄 Monthly Update (Manual)
-1.  **Download** the new `NL_BromBrom_tagged.obf` from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)** (you usually don't need a new `routing.xml`).
-2.  **Delete Old Map**:
-    *   In OsmAnd: Go to **Settings** -> **Maps & Resources** -> **Local**.
-    *   Tap **Standard maps**.
-    *   Find `NL_BromBrom_tagged`.
-    *   Tap the **three-dot menu** (⋮) next to it -> **Delete**.
-3.  **Install New Map**:
-    *   Locate the new `NL_BromBrom_tagged.obf` in your file manager.
-    *   Tap it and choose **"Open with OsmAnd"**.
+See the [Manual Install Guide](docs/manual_install.md) for step-by-step instructions for iOS and advanced users.
 
 ---
 
-### iOS Support (Manual Transfer)
+## 🧪 Testing & QA
 
-> [!NOTE]
-> iOS support is Experimental. The iOS version of OsmAnd lacks the "Import routing file" button, so a manual workaround is required.
+We ensure road safety through a combination of unit tests and post-build validation.
 
-1.  **Download** the files from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
-2.  **Transfer** `routing.xml` and `NL_BromBrom_tagged.obf` to your iPhone (AirDrop or iCloud).
-3.  **Install Map**: Tap `NL_BromBrom_tagged.obf` -> Share -> **OsmAnd**.
-4.  **Install Routing**:
-    *   Open the iOS **Files** app.
-    *   **Move** `routing.xml` to: `On My iPhone` -> `OsmAnd` -> `AppData` -> `routing` (create the `routing` folder if it is missing).
-5.  **Configure Profile**:
-    *   In OsmAnd: **Settings** -> **App Profiles** -> **New Profile** (Base on **Driving**, name it **BromBrom**). Tap **Apply**.
-    *   Select your new **BromBrom** profile -> **Navigation Settings** -> **Navigation Type**.
-    *   Select **BromBrom** from the list.
+- **Fast Iteration**: We use `pytest` for unit testing the core ETL logic.
+- **Visual Audit**: In `DEBUG` mode, we generate `debug_snaps.gpkg` for spatial verification.
+- **Build Guard**: Automated QA script `validate_results.py` checks artifact integrity.
+
+> [!TIP]
+> **Run Tests**: `pytest`
+> **Learn More**: See [Testing & QA Architecture](docs/testing.md).
+
+---
+
+## 🔬 Core Algorithms
+The heart of BromBrom is its directional snapping and exemption parsing logic. 
+- **Snapping**: Uses 2D cross-products to determine the correct side of the road. See [Snapping & Spatial Logic](docs/snapping_logic.md).
+- **Exceptions**: Handles complex Dutch signage like `OB65` and OCR-prone text.
 
 ---
 
@@ -100,46 +73,19 @@ BromBrom doesn't just "prefer" certain roads; it programmatically enforces legal
 3. **Semantic Tagging**: Injects `motor_vehicle=no` and `microcar=no` tags directly into the road network.
 4. **Hard Blocking**: The routing engine treats these roads as physically inaccessible for your vehicle type.
 
-### Safety & Resilience (What if I get lost?)
+### Safety & Resilience
 If you mistakenly enter a forbidden road (e.g., following traffic or missing a sign):
 - **GPS Snapping**: The app will try to "snap" your position to the nearest **legal** road on the map.
-- **Beeline Recovery**: If you are too far from a legal road, OsmAnd shows a "beeline" to the nearest exit point. guidance resumes once you reach a permitted street.
-- **Legal Safety**: The app will never plan a route through a C9 road or use one as a shortcut. If you accidentally end up on a restricted road, the app will immediately guide you to the nearest legal exit. **Crucially: Digital maps can have errors; if you see a physical C9 sign, always obey the sign over the app.**
+- **Legal Safety**: The app will never plan a route through a C9 road. If you end up on a restricted road, the app will guide you to the nearest legal exit. **Always obey physical signs over the app.**
 
 ---
 
-## 🗺️ Primary Navigation: OsmAnd
+## 🛠️ Development & Source Build
 
-OsmAnd is the **required** primary experience for BromBrom. By baking the C9 and motorway restrictions directly into the `.obf` map data, OsmAnd provides:
-- **Android Auto Support**: Seamless dashboard integration (requires OsmAnd Pro).
-- **Full Voice Guidance**: Street names and turn instructions.
-- **Lane Assistance**: Visual indicators for complex intersections.
-- **Offline Reliability**: 100% offline navigation without data usage.
-
----
-
-## 🛠️ Development & Building from Source
-
-There are two ways to build BromBrom. **Native** is recommended for developers who want fast iteration and debugging. **Docker** is the "source of truth" used for official releases and CI.
-
-**Build Requirements**: At least **6GB of RAM** is required for the OBF generation stage. (Compatible with GitHub free runners).
-
-### Option A: Native (Fastest for Devs)
-*Requires [micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) or Conda.*
-
-1. **Setup Environment**:
-   ```bash
-   micromamba env create -f environment.yml
-   micromamba activate brombrom
-   ```
-2. **Install Heavy Tools**: (Downloads OsmAndMapCreator & builds BRouter)
-   ```bash
-   ./scripts/setup_tools.sh
-   ```
-3. **Run Build**:
-   ```bash
-   ./run_full_build.sh
-   ```
+### Option A: Native (Fastest)
+1. **Setup Environment**: `micromamba env create -f environment.yml`
+2. **Install Tools**: `./scripts/setup_tools.sh`
+3. **Run Build**: `./run_full_build.sh`
 
 ### Option B: Docker (Source of Truth)
 ```bash
@@ -149,35 +95,11 @@ docker run --rm -v $(pwd):/app brombrom-builder
 
 ---
 
-## 🔍 Debug Mode
-For technical auditing or advanced configuration, you can enable **Debug Mode**. This generates additional diagnostic files (like `debug_snaps.gpkg`) and optional BRouter segments.
-
-**How to enable:**
-*   **Native**: `DEBUG=true ./run_full_build.sh`
-*   **Docker**: `docker run --rm -v $(pwd):/app -e DEBUG=true brombrom-builder`
-
-**What Debug Mode enables:**
-1. **Visual Snapping Audit**: Generates `debug_snaps.gpkg`. This file contains lines connecting every C9 sign to its snapped road position, allowing you to verify alignment accuracy in QGIS.
-2. **BRouter Support**: Generates BRouter `.rd5` segments and includes the `brommobiel.brf` profile in the deployment package. 
-3. **Verbose Logging**: Provides more detailed feedback during the snapping and tagging stages.
-
----
-
-## 📈 Performance & Build Notes
-
-- **Initial Build**: Downloads ~1.5GB of geospatial data. Ensure a stable connection.
-- **OsmAnd OBF Generation**: This is the most resource-intensive part.
-  - **Memory**: It is configured to use up to **6GB** of RAM (compatible with GitHub free runners).
-  - **Duration**: 20-40 minutes depending on hardware.
-  - **Feedback**: Progress over 100% (e.g., `Done 450%`) is normal as it cycles through data layers.
-- **Idempotency**: The pipeline skips finished stages. Run `./clean.sh` for a fresh start.
-
----
-
 ## 📂 Project Structure
 - `scripts/`: Python ETL pipelines (Fetching, Snapping, Tagging).
 - `config/`: Routing profiles (`.brf`) and XML configurations.
-- `Dockerfile`: Multi-stage build environment.
+- `app/`: Source code for the BromBrom Manager (Flutter).
+- `tests/`: Unit tests for critical spatial logic.
 
 ---
 
@@ -188,5 +110,4 @@ For technical auditing or advanced configuration, you can enable **Debug Mode**.
 - **Traffic signs**: Provided by [NDW](https://www.ndw.nu/) (Nationaal Dataportaal Wegverkeer).
 
 ### Project License
-© 2026 Tomaso Bulligan. All Rights Reserved.
-**Personal, non-commercial use only.** Redistribution or commercial exploitation is strictly prohibited without prior written consent.
+© 2026 Tomaso Bulligan. All Rights Reserved. **Personal, non-commercial use only.**

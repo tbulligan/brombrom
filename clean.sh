@@ -6,6 +6,7 @@ echo "Cleaning project to pristine state..."
 
 # We use a Docker helper to ensure we have permissions to remove files
 # created by the builder container (which runs as root).
+# Note: We NEVER clean the tests/ directory as they are critical for QA
 docker run --rm -v "$(pwd):/app" -w /app alpine sh -c "rm -rf \
     dist/ \
     segments4/ \
@@ -16,7 +17,6 @@ docker run --rm -v "$(pwd):/app" -w /app alpine sh -c "rm -rf \
     temp_map_test/ \
     srtm/ \
     tools/ \
-    tests/ \
     *.pbf \
     *.gpkg \
     *.json \

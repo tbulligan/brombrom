@@ -1,4 +1,3 @@
-
 # Enhanced Snapping Logic
 
 ## Challenge
