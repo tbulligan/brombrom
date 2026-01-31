@@ -209,10 +209,15 @@ def main():
     # Highway filtering
     highway_priority = {
         "motorway": 0,
+        "motorway_link": 0,
         "trunk": 1,
+        "trunk_link": 1,
         "primary": 1,
+        "primary_link": 1,
         "secondary": 2,
+        "secondary_link": 2,
         "tertiary": 3,
+        "tertiary_link": 3,
         "residential": 4,
         "unclassified": 4
     }

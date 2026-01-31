@@ -17,10 +17,23 @@ class TagC9Handler(osmium.SimpleHandler):
         self.writer.add_relation(r)
 
     def way(self, w):
-        if int(w.id) in self.forbidden_ways:
-            tags = dict(w.tags)
+        tags = dict(w.tags)
+        modified = False
+        
+        # 1. Existing OSM Coverage: Promote 'microcar=no' to 'motor_vehicle=no'
+        # This ensures OsmAnd (which mainly looks at motor_vehicle) respects these.
+        if tags.get('microcar') == 'no' and tags.get('motor_vehicle') != 'no':
             tags['motor_vehicle'] = 'no'
-            tags['microcar'] = 'no'
+            modified = True
+
+        # 2. NDW Pipeline Coverage: Tag ways identified as C9-forbidden
+        if int(w.id) in self.forbidden_ways:
+            if tags.get('motor_vehicle') != 'no' or tags.get('microcar') != 'no':
+                tags['motor_vehicle'] = 'no'
+                tags['microcar'] = 'no'
+                modified = True
+            
+        if modified:
             w = w.replace(tags=tags)
         self.writer.add_way(w)
 
