@@ -30,7 +30,6 @@ tools/
 osmconvert64
 osmfilter64
 META-INF/
-tests/
 OsmAndMapCreator/
 
 # Python

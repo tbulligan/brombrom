@@ -6,8 +6,13 @@ import json
 import os
 from shapely.geometry import LineString
 
-PRIMARY_TOL = 2.0  # 2 m
-FALLBACK_TOL = 12.0  # 12 m (Increased from 5m to catch imprecise sign coordinates)
+try:
+    import build_config as config
+except ImportError:
+    from scripts import build_config as config
+
+PRIMARY_TOL = config.PRIMARY_TOL
+FALLBACK_TOL = config.FALLBACK_TOL
 
 def has_microcar_exemption(row):
     """Check textSigns for 'brommobielen' exemptions"""
@@ -30,6 +35,7 @@ def has_microcar_exemption(row):
     # Common exemption keywords
     # CRITICAL: Do NOT use generic 'uitgezonderd' as it allows 'uitgezonderd tractoren', 'bestemmingsverkeer', etc.
     # We only want explicit microcar exemptions.
+    # 'brommoblelen' is an intentional typo to catch common OCR errors
     keywords = ['brommobiel', 'brommoblelen', 'ob65']
     return any(k in texts for k in keywords)
 
