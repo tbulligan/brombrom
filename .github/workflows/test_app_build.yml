@@ -33,20 +33,20 @@ jobs:
         working-directory: ./app
         run: flutter build apk --release
 
+      - name: Rename APK
+        run: mv app/build/app/outputs/flutter-apk/app-release.apk app/build/app/outputs/flutter-apk/BromBrom.apk
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: BromBrom
-          path: app/build/app/outputs/flutter-apk/app-release.apk
+          path: app/build/app/outputs/flutter-apk/BromBrom.apk
 
       - name: Push APK to Latest Release
-        if: github.ref == 'refs/heads/main'  # Only on main branch
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/manager-app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Rename for standard release name
-          mv app/build/app/outputs/flutter-apk/app-release.apk app/build/app/outputs/flutter-apk/BromBrom.apk
-          
           # Check if 'latest' release exists
           if gh release view latest > /dev/null 2>&1; then
             echo "Uploading APK to 'latest' release..."
