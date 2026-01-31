@@ -40,6 +40,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
   static const String RELEASE_API = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
   static const String OBF_FILENAME = "NL_BromBrom_tagged.obf";
   static const String XML_FILENAME = "routing.xml";
+  static const String APK_FILENAME = "app-release.apk"; // Standard artifact name
   
   // PATHS (Public Downloads)
   final String _targetDir = "/storage/emulated/0/Download";
@@ -206,7 +207,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
       });
 
       // 4. Trigger Handoff
-      if (isMap) {
+      if (fileName.endsWith(".apk")) { // APP UPDATE
+        _installApk(file.path);
+      } else if (isMap) {
         _openMapInOsmAnd(file.path);
       } else {
         _showRoutingInstructions(file.path);
@@ -259,6 +262,30 @@ class _InstallerScreenState extends State<InstallerScreen> {
     } catch (e) {
       _log("Launch Error: $e. Using Share Sheet.");
       _shareFile(path);
+    }
+  }
+  
+  Future<void> _installApk(String path) async {
+    // Trigger APK install
+    final fileName = path.split('/').last;
+    final contentUri = "content://com.brombrom.app.fileprovider/external_files/Download/$fileName";
+    
+    _log("Installing APK: $contentUri");
+    
+    try {
+       final AndroidIntent intent = AndroidIntent(
+        action: 'action_view',
+        data: contentUri,
+        type: 'application/vnd.android.package-archive',
+        flags: <int>[
+          0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
+          0x10000000, // FLAG_ACTIVITY_NEW_TASK
+        ],
+      );
+      await intent.launch();
+    } catch (e) {
+      _log("Install Error: $e");
+      // Fallback?
     }
   }
 
@@ -323,7 +350,18 @@ class _InstallerScreenState extends State<InstallerScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("BromBrom Manager"), backgroundColor: Colors.blue[800], foregroundColor: Colors.white),
+      appBar: AppBar(
+          title: const Text("BromBrom Manager"), 
+          backgroundColor: Colors.blue[800], 
+          foregroundColor: Colors.white,
+          actions: [
+             IconButton(
+               icon: const Icon(Icons.system_update),
+               tooltip: "Update App",
+               onPressed: () => _downloadFile(APK_FILENAME, isMap: false),
+             )
+          ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
