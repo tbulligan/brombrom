@@ -1,15 +1,26 @@
-name: Unit Tests
+name: Python Unit Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ develop ]
+    paths:
+      - '**.py'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'requirements.txt'
+      - '.github/workflows/python_tests.yml'
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - '**.py'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'requirements.txt'
+      - '.github/workflows/python_tests.yml'
 
 jobs:
-  test:
+  python_test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -23,6 +34,6 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run Unit Tests
+      - name: Run Python Tests
         run: |
           pytest

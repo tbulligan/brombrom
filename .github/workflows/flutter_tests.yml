@@ -1,0 +1,40 @@
+name: Flutter Unit Tests
+
+on:
+  push:
+    branches: [ develop ]
+    paths:
+      - 'app/**'
+      - '.github/workflows/flutter_tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'app/**'
+      - '.github/workflows/flutter_tests.yml'
+
+jobs:
+  flutter_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.0'
+          channel: 'stable'
+
+      - name: Install Dependencies
+        working-directory: ./app
+        run: flutter pub get
+
+      - name: Run Flutter Tests
+        working-directory: ./app
+        run: flutter test
