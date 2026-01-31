@@ -38,3 +38,19 @@ jobs:
         with:
           name: BromBrom
           path: app/build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Push APK to Latest Release
+        if: github.ref == 'refs/heads/main'  # Only on main branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Rename for standard release name
+          mv app/build/app/outputs/flutter-apk/app-release.apk app/build/app/outputs/flutter-apk/app-release.apk
+          
+          # Check if 'latest' release exists
+          if gh release view latest > /dev/null 2>&1; then
+            echo "Uploading APK to 'latest' release..."
+            gh release upload latest app/build/app/outputs/flutter-apk/app-release.apk --clobber
+          else
+            echo "No 'latest' release found. Skipping APK upload."
+          fi
