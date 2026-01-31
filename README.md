@@ -29,7 +29,7 @@ If you are installing BromBrom for the first time, follow these steps to set up 
 
 1.  **Download** the following two files from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**:
     *   `routing.xml`
-    *   `NL_BromBrom_tagged.obf` (Should be ~270MB)
+    *   `NL_BromBrom_tagged.obf`
 2.  **Transfer** them to your phone. 
 3.  **Create Profile**:
     *   In OsmAnd: **Settings** -> **App Profiles** -> **New Profile**.
@@ -46,7 +46,7 @@ If you are installing BromBrom for the first time, follow these steps to set up 
 ### 🔄 Monthly Update
 Brombrom packages are updated automatically on the **2nd of every month**. To update, you must **replace** your old map file with the new version.
 
-1.  **Download** the new `NL_BromBrom_tagged.obf` (approx 270MB) from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)** (you usually don't need a new `routing.xml`).
+1.  **Download** the new `NL_BromBrom_tagged.obf` from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)** (you usually don't need a new `routing.xml`).
 2.  **Delete Old Map**:
     *   In OsmAnd: Go to **Settings** -> **Maps & Resources** -> **Local**.
     *   Tap **Standard maps**.

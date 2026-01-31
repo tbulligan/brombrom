@@ -266,24 +266,16 @@ class _InstallerScreenState extends State<InstallerScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("BromBrom Routing Downloaded"),
+        title: const Text("Routing File Downloaded"),
         content: const Text(
           "File saved to 'Downloads'.\n\n"
-          "ACTION REQUIRED:\n"
-          "1. Open 'Total Commander' or 'Files'.\n"
-          "2. Move 'routing.xml' to:\n"
-          "   Android/data/net.osmand/files/routing/\n\n"
-          "⚠️ IF ACCESS IS DENIED:\n"
-          "Connect phone to PC via USB works 100%."
+          "HOW TO INSTALL:\n"
+          "1. Open OsmAnd.\n"
+          "2. Settings -> Configure Profile -> Navigation Settings -> Navigation Type.\n"
+          "3. Tap 'Import routing file' at the bottom.\n"
+          "4. Select 'routing.xml' from Downloads."
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _shareFile(path);
-            },
-            child: const Text("Open Share Sheet")
-          ),
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK")),
         ],
       )
@@ -336,13 +328,25 @@ class _InstallerScreenState extends State<InstallerScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // STATUS
+            // STATUS
             Card(
               color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    Text(_statusMessage, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    if (!_mapUpdateAvailable && !_routingUpdateAvailable)
+                       const Row(
+                         mainAxisAlignment: MainAxisAlignment.center,
+                         children: [
+                           Icon(Icons.check_circle, color: Colors.green),
+                           SizedBox(width: 8),
+                           Expanded(child: Text("BromBrom files in Download are up to date", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green))),
+                         ],
+                       )
+                    else 
+                       Text(_statusMessage, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+
                     const SizedBox(height: 8),
                     if (_latestReleaseDate != null)
                       Text("Latest Release: ${DateFormat('yyyy-MM-dd HH:mm').format(_latestReleaseDate!)}"),
@@ -367,27 +371,28 @@ class _InstallerScreenState extends State<InstallerScreen> {
                   onPressed: () => _downloadFile(OBF_FILENAME, isMap: true),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 20),
-                    backgroundColor: _mapUpdateAvailable ? Colors.blue[700] : Colors.grey[700],
-                    foregroundColor: Colors.white,
+                    // User requested Orange for Update
+                    backgroundColor: _mapUpdateAvailable ? Colors.orange[800] : Colors.grey[300],
+                    foregroundColor: _mapUpdateAvailable ? Colors.white : Colors.black87,
                   ),
                   child: Column(
                     children: [
-                      Text(_mapUpdateAvailable ? "UPDATE MAP (New Version)" : "RE-DOWNLOAD MAP"),
+                      Text(_mapUpdateAvailable ? "UPDATE MAP" : "RE-DOWNLOAD MAP"),
                       if (_localMapDate != null)
-                        Text("On disk: ${(_localMapDate!.isBefore(_latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", style: const TextStyle(fontSize: 10)),
+                        Text("On disk: ${(_localMapDate!.isBefore(_latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", style: TextStyle(fontSize: 10, color: _mapUpdateAvailable ? Colors.white70 : Colors.black54)),
                     ],
                   ),
                 ),
-                if (_mapUpdateAvailable)
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "Tip: If import fails, delete the old map in OsmAnd first.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.orange, fontStyle: FontStyle.italic, fontSize: 13, fontWeight: FontWeight.bold),
-                    ),
+                // Show tip always for Map action
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    "⚠️ Tip: If import fails, delete the old map in OsmAnd first.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.orange, fontStyle: FontStyle.italic, fontSize: 13, fontWeight: FontWeight.bold),
                   ),
-                  
+                ),
+                
                 const SizedBox(height: 24),
                 
                 // ROUTING
@@ -395,18 +400,28 @@ class _InstallerScreenState extends State<InstallerScreen> {
                   onPressed: () => _downloadFile(XML_FILENAME, isMap: false),
                    style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 20),
-                    backgroundColor: _routingUpdateAvailable ? Colors.orange[800] : Colors.grey[700],
-                    foregroundColor: Colors.white,
+                    backgroundColor: _routingUpdateAvailable ? Colors.orange[800] : Colors.grey[300],
+                    foregroundColor: _routingUpdateAvailable ? Colors.white : Colors.black87,
                   ),
                   child: Text(_routingUpdateAvailable ? "UPDATE BromBrom Routing" : "RE-DOWNLOAD Routing"),
                 ),
-                const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "Essential for correct navigation logic.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
+                
+                // Only show essential warning if update available or first install (local is null)
+                if (_routingUpdateAvailable || _localRoutingDate == null)
+                  Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Essential for correct navigation logic!",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.red[800], fontSize: 14, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                   ),
             ],
             
