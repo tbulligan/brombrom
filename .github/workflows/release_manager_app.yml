@@ -1,11 +1,11 @@
-name: Build Android App (Test)
+name: Build & Release Manager App
 
 on:
   push:
-    branches: [ feature/manager-app ]
+    branches: [ main, develop ]
     paths:
       - 'app/**'
-      - '.github/workflows/test_app_build.yml'
+      - '.github/workflows/release_manager_app.yml'
 
 jobs:
   build_apk:
@@ -44,7 +44,7 @@ jobs:
           path: app/build/app/outputs/flutter-apk/BromBrom.apk
 
       - name: Push APK to Latest Release
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/manager-app'
+        if: github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
