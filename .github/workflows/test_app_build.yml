@@ -3,8 +3,6 @@ name: Build Android App (Test)
 on:
   push:
     branches: [ feature/manager-app ]
-    paths:
-      - 'app/**'
 
 jobs:
   build_apk:
