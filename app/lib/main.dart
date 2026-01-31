@@ -232,18 +232,29 @@ class _InstallerScreenState extends State<InstallerScreen> {
   }
 
   Future<void> _openMapInOsmAnd(String path) async {
-    // Open using View Intent
-    // OsmAnd should handle .obf files
+    // Open using View Intent with FileProvider URI
+    // Path: /storage/emulated/0/Download/filename.obf
+    // XML: <external-path name="external_files" path="." />
+    // URI: content://com.brombrom.app.fileprovider/external_files/Download/filename.obf
+    
+    final fileName = path.split('/').last;
+    final contentUri = "content://com.brombrom.app.fileprovider/external_files/Download/$fileName";
+    
+    _log("Opening Intent: $contentUri");
+
     try {
       final AndroidIntent intent = AndroidIntent(
         action: 'action_view',
-        data: Uri.parse("file://$path").toString(), // Using file URI
+        data: contentUri,
         type: 'application/octet-stream',
-        flags: <int>[0x10000000], // FLAG_ACTIVITY_NEW_TASK
+        flags: <int>[
+          0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
+          0x10000000, // FLAG_ACTIVITY_NEW_TASK
+        ],
       );
       await intent.launch();
     } catch (e) {
-      _log("Launch Error: $e. Try opening from File Manager.");
+      _log("Launch Error: $e. Using Share Sheet.");
       _shareFile(path);
     }
   }

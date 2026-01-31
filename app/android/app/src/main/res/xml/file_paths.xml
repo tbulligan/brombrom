@@ -2,6 +2,6 @@
 <paths>
     <!-- We are storing downloads in external-files-path (Android/data/com.brombrom.app/files/) -->
     <external-files-path name="map_imports_ext" path="." />
-    <!-- Also allow internal storage -->
-    <files-path name="map_imports_int" path="." />
+    <!-- Allow access to public storage (Downloads) -->
+    <external-path name="external_files" path="." />
 </paths>
