@@ -22,6 +22,8 @@ docker run --rm -v "$(pwd):/app" -w /app alpine sh -c "rm -rf \
     *.json \
     *.odb \
     *.ocbf \
+    *.obf \
+    OsmAndMapCreator/*.obf \
     *.log"
 
 echo "✓ Workspace is pristine."
