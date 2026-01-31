@@ -270,10 +270,12 @@ class _InstallerScreenState extends State<InstallerScreen> {
         content: const Text(
           "File saved to 'Downloads'.\n\n"
           "HOW TO INSTALL:\n"
-          "1. Open OsmAnd.\n"
-          "2. Settings -> Configure Profile -> Navigation Settings -> Navigation Type.\n"
-          "3. Tap 'Import routing file' at the bottom.\n"
-          "4. Select 'routing.xml' from Downloads."
+          "1. Open OsmAnd and ensure you have a BromBrom profile (if not: Settings → App Profiles → New → Driving → BromBrom).\n"
+          "2. Select your BromBrom profile.\n"
+          "3. Go to Navigation Settings → Navigation Type.\n"
+          "4. Tap 'Import routing file' and select 'routing.xml' from Downloads.\n"
+          "5. If prompted, choose Replace to update the existing version.\n"
+          "6. Ensure BromBrom is selected as the active type."
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK")),
