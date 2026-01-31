@@ -4,9 +4,8 @@ import 'dart:io';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
+import 'package:intl/intl.dart'; // Add to pubspec if missing, or use manual parsing
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 
 void main() {
@@ -37,360 +36,332 @@ class InstallerScreen extends StatefulWidget {
 }
 
 class _InstallerScreenState extends State<InstallerScreen> {
-  String _statusMessage = 'Checking for updates...';
-  bool _isDownloading = false;
-  double _progress = 0.0;
-  String? _latestVersion;
-  String? _localVersion;
-  bool _updateAvailable = false;
-  
-  // Constants
+  // CONFIG
   static const String RELEASE_API = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
   static const String OBF_FILENAME = "NL_BromBrom_tagged.obf";
+  static const String XML_FILENAME = "routing.xml";
   
-  /* Diagnostic Logging */
+  // PATHS (Public Downloads)
+  final String _targetDir = "/storage/emulated/0/Download";
+  
+  // STATE
+  bool _hasPermission = false;
+  String _statusMessage = 'Checking permissions...';
+  bool _isDownloading = false;
+  double _progress = 0.0;
+  
+  // VERSION INFO
+  DateTime? _latestReleaseDate;
+  DateTime? _localMapDate;
+  DateTime? _localRoutingDate;
+  bool _mapUpdateAvailable = false;
+  bool _routingUpdateAvailable = false;
+
   final List<String> _logs = [];
   void _log(String msg) {
     print(msg);
     setState(() {
-      _logs.add("${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second} - $msg");
+      _logs.add("${DateFormat('HH:mm:ss').format(DateTime.now())} - $msg");
     });
   }
 
   @override
   void initState() {
     super.initState();
-    _log("App Initialized");
-    _checkSystemState();
+    _checkPermissions();
   }
 
-  Future<void> _checkSystemState() async {
-    _log("Checking System State...");
-    await _checkForUpdates();
-  }
-  
-  void _launchOsmAndStore() {
-    const intent = AndroidIntent(
-      action: 'action_view',
-      data: 'market://details?id=net.osmand',
-    );
-    intent.launch();
-  }
-  
-  Future<void> _clearVersionCache() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('local_version');
-    setState(() {
-      _localVersion = 'None';
-      _updateAvailable = true;
-      _statusMessage = 'Cache Cleared. Update enabled.';
-    });
-    _log("Version Cache Cleared");
-    _checkForUpdates();
+  Future<void> _checkPermissions() async {
+    // Check MANAGE_EXTERNAL_STORAGE for Android 11+ functionality
+    // This allows us to read/write Downloads freely and check timestamps
+    var status = await Permission.manageExternalStorage.status;
+    if (!status.isGranted) {
+      setState(() {
+         _hasPermission = false;
+         _statusMessage = "Please grant 'All Files Access' to manage Downloads.";
+      });
+    } else {
+      setState(() => _hasPermission = true);
+      _checkVersions();
+    }
   }
 
-  Future<void> _checkForUpdates() async {
-     _log("Starting Update Check...");
-     setState(() => _statusMessage = 'Controleren... (Checking...)');
-     
-     final prefs = await SharedPreferences.getInstance();
-     setState(() {
-       _localVersion = prefs.getString('local_version') ?? 'None';
-     });
-     _log("Local Version: $_localVersion");
- 
-     try {
-       final uri = Uri.parse(RELEASE_API);
-       final response = await http.get(uri);
-       
-       if (response.statusCode == 200) {
-         final data = jsonDecode(response.body);
-         final String tagName = data['tag_name'];
-         
-         // Verify asset exists
-         bool hasAsset = false;
-         for (var asset in data['assets']) {
-           if (asset['name'] == OBF_FILENAME) hasAsset = true;
-         }
-
-         if (!hasAsset) {
-            setState(() => _statusMessage = 'Error: Map file missing in release!');
-            return;
-         }
-
-         setState(() {
-           _latestVersion = tagName;
-           _updateAvailable = _localVersion != _latestVersion;
-           _statusMessage = _updateAvailable 
-               ? 'Update Available!' 
-               : 'You are up to date.';
-         });
-       } else {
-         setState(() => _statusMessage = 'GitHub API Error: ${response.statusCode}');
-       }
-     } catch (e) {
-       _log("Only Check Error: $e");
-       setState(() => _statusMessage = 'Connection Error / API Limit');
-     }
+  Future<void> _requestPermission() async {
+    await Permission.manageExternalStorage.request();
+    _checkPermissions();
   }
 
-  Future<void> _downloadAndInstall() async {
-    _log("Starting Download Sequence...");
+  Future<void> _checkVersions() async {
+    setState(() => _statusMessage = 'Checking GitHub & Local files...');
+    
+    try {
+      // 1. Get GitHub Info
+      final response = await http.get(Uri.parse(RELEASE_API));
+      if (response.statusCode != 200) throw Exception("API Error ${response.statusCode}");
+      
+      final data = jsonDecode(response.body);
+      final String publishedAt = data['published_at']; // "2025-01-30T10:00:00Z"
+      _latestReleaseDate = DateTime.parse(publishedAt);
+      
+      _log("Latest Release: $_latestReleaseDate");
 
+      // 2. Check Local Files
+      final File mapFile = File('$_targetDir/$OBF_FILENAME');
+      if (await mapFile.exists()) {
+        _localMapDate = await mapFile.lastModified();
+      } else {
+        _localMapDate = null;
+      }
+
+      final File xmlFile = File('$_targetDir/$XML_FILENAME');
+      if (await xmlFile.exists()) {
+        _localRoutingDate = await xmlFile.lastModified();
+      } else {
+        _localRoutingDate = null;
+      }
+      
+      // 3. Compare (If local is older than release OR missing, update needed)
+      // Note: Download time is always > Release time, so simple logic:
+      // If we downloaded AFTER the release date, we are good.
+      // If Local Date < Release Date, then new release came out after we downloaded.
+      
+      _mapUpdateAvailable = _localMapDate == null || _localMapDate!.isBefore(_latestReleaseDate!);
+      _routingUpdateAvailable = _localRoutingDate == null || _localRoutingDate!.isBefore(_latestReleaseDate!);
+
+      setState(() {
+        _statusMessage = (_mapUpdateAvailable || _routingUpdateAvailable) 
+            ? "Updates Available!" 
+            : "Files in Downloads are up to date.";
+      });
+
+    } catch (e) {
+      _log("Check Error: $e");
+      setState(() => _statusMessage = "Connection/API Error");
+    }
+  }
+
+  Future<void> _downloadFile(String fileName, {bool isMap = true}) async {
     setState(() {
       _isDownloading = true;
-      _statusMessage = 'Downloading Map...';
-      _progress = 0.1;
+      _statusMessage = "Downloading $fileName...";
+      _progress = 0.0;
     });
 
     try {
-      // 2. Locate Download URL
+      // 1. Get URL
       final response = await http.get(Uri.parse(RELEASE_API));
       final data = jsonDecode(response.body);
-      
-      String? mapUrl;
+      String? dlUrl;
       for (var asset in data['assets']) {
-        if (asset['name'] == OBF_FILENAME) {
-          mapUrl = asset['browser_download_url'];
-        }
+        if (asset['name'] == fileName) dlUrl = asset['browser_download_url'];
       }
+      if (dlUrl == null) throw Exception("File not found in release");
 
-      if (mapUrl == null) throw Exception("Map file not found");
-      _log("DL URL: $mapUrl");
-
-      // 3. Download File
-      final dir = await getExternalStorageDirectory(); 
-      final String filePath = '${dir!.path}/$OBF_FILENAME';
-      final File file = File(filePath);
+      // 2. Download to Public Downloads
+      final File file = File('$_targetDir/$fileName');
       
-      // Delete existing to allow clean download
-      if (await file.exists()) {
-        await file.delete();
-      }
+      // Delete existing? Not strictly needed if openWrite overwrites, but safer
+      if (await file.exists()) await file.delete();
 
-      final request = http.Request('GET', Uri.parse(mapUrl));
+      final request = http.Request('GET', Uri.parse(dlUrl));
       final streamedResponse = await request.send();
-
       final contentLength = streamedResponse.contentLength ?? 1;
       int received = 0;
-
-      final sink = file.openWrite();
-      await streamedResponse.stream.listen(
-        (chunk) {
-          sink.add(chunk);
-          received += chunk.length;
-          setState(() {
-            _progress = received / contentLength;
-          });
-        },
-      ).asFuture();
-      await sink.close();
-      _log("Download Complete.");
-
-      // 4. Update Preferences
-      if (_latestVersion != null) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('local_version', _latestVersion!);
-          setState(() => _localVersion = _latestVersion);
-      }
       
+      final sink = file.openWrite();
+      await streamedResponse.stream.listen((chunk) {
+        sink.add(chunk);
+        received += chunk.length;
+        setState(() => _progress = received / contentLength);
+      }).asFuture();
+      await sink.close();
+      
+      // 3. Post-Download
+      _log("Saved to: ${file.path}");
+      
+      // Update check state immediately
+      await _checkVersions();
+
       setState(() {
-         _isDownloading = false;
-         _statusMessage = 'Opening Import Dialog...';
-         _progress = 1.0;
-         _updateAvailable = false;
+        _isDownloading = false;
+        _progress = 1.0;
+        _statusMessage = "Download Complete!";
       });
 
-      // 5. Trigger Import in OsmAnd
-      _openInOsmAnd(file.path);
+      // 4. Trigger Handoff
+      if (isMap) {
+        _openMapInOsmAnd(file.path);
+      } else {
+        _showRoutingInstructions(file.path);
+      }
 
     } catch (e) {
       _log("DL Error: $e");
       setState(() {
         _isDownloading = false;
-        _statusMessage = 'Error: $e';
+        _statusMessage = "Error: $e";
       });
     }
   }
-  
-  Future<void> _downloadRoutingXml() async {
-     _log("Downloading Routing Style...");
-     try {
-       final response = await http.get(Uri.parse(RELEASE_API));
-       final data = jsonDecode(response.body);
-       String? xmlUrl;
-       for (var asset in data['assets']) {
-         if (asset['name'] == 'routing.xml') {
-           xmlUrl = asset['browser_download_url'];
-         }
-       }
-       
-       if (xmlUrl == null) {
-         _log("routing.xml not found");
-         return;
-       }
 
-       final dir = await getExternalStorageDirectory(); 
-       final File file = File('${dir!.path}/routing.xml');
-       if (await file.exists()) await file.delete();
-
-       final request = http.Request('GET', Uri.parse(xmlUrl));
-       final streamedResponse = await request.send();
-       
-       final sink = file.openWrite();
-       await streamedResponse.stream.listen((chunk) => sink.add(chunk)).asFuture();
-       await sink.close();
-       
-       // Show Instructions
-       if (mounted) {
-         showDialog(
-           context: context,
-           builder: (ctx) => AlertDialog(
-             title: const Text("Manual Action Required"),
-             content: const Text(
-               "Routing file downloaded.\n\n"
-               "Open 'Files' app -> Move this file to:\n"
-               "Android/data/net.osmand/files/routing/\n\n"
-               "Note: If access is denied, use a PC or install a file manager like 'Solid Explorer'."
-             ),
-             actions: [
-               TextButton(
-                 onPressed: () {
-                   Navigator.pop(ctx);
-                   _shareFile(file.path, isXml: true);
-                 },
-                 child: const Text("Share File")
-               ),
-               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Close")),
-             ],
-           )
-         );
-       }
-
-     } catch (e) {
-       _log("Routing DL Error: $e");
-     }
-  }
-
-  Future<void> _openInOsmAnd(String filePath) async {
-    const String authority = "com.brombrom.app.fileprovider";
-    final File file = File(filePath);
-    final String fileName = file.uri.pathSegments.last;
-    final String contentUri = "content://$authority/map_imports_ext/$fileName";
-
-    _log("Opening Intent...");
-
-    final AndroidIntent intent = AndroidIntent(
-      action: 'action_view',
-      data: contentUri,
-      type: 'application/octet-stream', 
-      flags: <int>[
-        0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
-        0x10000000, // FLAG_ACTIVITY_NEW_TASK
-      ],
-    );
-    
+  Future<void> _openMapInOsmAnd(String path) async {
+    // Open using View Intent
+    // OsmAnd should handle .obf files
     try {
+      final AndroidIntent intent = AndroidIntent(
+        action: 'action_view',
+        data: Uri.parse("file://$path").toString(), // Using file URI
+        type: 'application/octet-stream',
+        flags: <int>[0x10000000], // FLAG_ACTIVITY_NEW_TASK
+      );
       await intent.launch();
     } catch (e) {
-      _log("Intent Error: $e");
+      _log("Launch Error: $e. Try opening from File Manager.");
+      _shareFile(path);
     }
   }
 
-  Future<void> _shareFile(String filePath, {bool isXml = false}) async {
-    final File file = File(filePath);
-    if (!await file.exists()) return;
-
-    try {
-      final xFile = XFile(filePath);
-      await Share.shareXFiles(
-          [xFile], 
-          text: isXml 
-              ? 'Move to Android/data/net.osmand/files/routing/' 
-              : 'Import into OsmAnd'
-      );
-    } catch (e) {
-      _log("Share Error: $e");
-    }
+  void _showRoutingInstructions(String path) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("BromBrom Routing Downloaded"),
+        content: const Text(
+          "File saved to 'Downloads'.\n\n"
+          "ACTION REQUIRED:\n"
+          "1. Open 'Total Commander' or 'Files'.\n"
+          "2. Move 'routing.xml' to:\n"
+          "   Android/data/net.osmand/files/routing/\n\n"
+          "If access is denied, please use a PC/Mac via USB."
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _shareFile(path);
+            },
+            child: const Text("Open Share Sheet")
+          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK")),
+        ],
+      )
+    );
+  }
+  
+  Future<void> _shareFile(String path) async {
+    final xFile = XFile(path);
+    await Share.shareXFiles([xFile]);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_hasPermission) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.folder_shared, size: 64, color: Colors.blue),
+                const SizedBox(height: 24),
+                const Text(
+                  "Access Required",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "To download files to your Downloads folder and check versions, we need 'All Files Access'.",
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _requestPermission,
+                  child: const Text("ALLOW ACCESS"),
+                )
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text('BromBrom Manager'),
-        backgroundColor: Colors.blue[800],
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(title: const Text("BromBrom Manager"), backgroundColor: Colors.blue[800], foregroundColor: Colors.white),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Status Card
+            // STATUS
             Card(
               color: Colors.white,
               child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text(
-                        _updateAvailable ? "New Update Available" : "Up to Date",
-                        style: TextStyle(
-                            fontSize: 20, 
-                            fontWeight: FontWeight.bold, 
-                            color: _updateAvailable ? Colors.orange : Colors.green
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text("Installed: ${_localVersion ?? '-'}"),
-                      Text("Latest: ${_latestVersion ?? '-'}"),
-                      const SizedBox(height: 8),
-                      TextButton(
-                         onPressed: _clearVersionCache,
-                         child: const Text("Reset Cache / Check Again", style: TextStyle(fontSize: 10, color: Colors.grey))
-                      )
-                    ],
-                  ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(_statusMessage, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 8),
+                    /*
+                    Text("Latest Release: ${_latestReleaseDate?.toString().substring(0,10) ?? '...'}"),
+                    Text("Local Map: ${_localMapDate?.toString().substring(0,16) ?? 'Not Found'}"),
+                    */
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             
+            // DOWNLOADERS
             if (_isDownloading)
                LinearProgressIndicator(value: _progress),
-            
+
             if (!_isDownloading) ...[
+                // MAP
                 ElevatedButton(
-                  onPressed: _downloadAndInstall,
+                  onPressed: () => _downloadFile(OBF_FILENAME, isMap: true),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 20),
-                    backgroundColor: _updateAvailable ? Colors.blue[800] : Colors.grey[700],
+                    backgroundColor: _mapUpdateAvailable ? Colors.blue[700] : Colors.grey[700],
                     foregroundColor: Colors.white,
                   ),
-                  child: Text(_updateAvailable ? "UPDATE MAP" : "RE-INSTALL MAP"),
+                  child: Text(_mapUpdateAvailable ? "UPDATE MAP (New Version)" : "RE-DOWNLOAD MAP"),
+                ),
+                if (_mapUpdateAvailable)
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      "Tip: If import fails, delete the old map in OsmAnd first.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.orange, fontStyle: FontStyle.italic, fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  
+                const SizedBox(height: 24),
+                
+                // ROUTING
+                ElevatedButton(
+                  onPressed: () => _downloadFile(XML_FILENAME, isMap: false),
+                   style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    backgroundColor: _routingUpdateAvailable ? Colors.orange[800] : Colors.grey[700],
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(_routingUpdateAvailable ? "UPDATE BromBrom Routing" : "RE-DOWNLOAD Routing"),
                 ),
                 const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    "⚠️ Tip: If OsmAnd fails to import, delete the old map in OsmAnd first.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: Colors.orange),
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      "Essential for correct navigation logic.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
                   ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                OutlinedButton.icon(
-                   icon: const Icon(Icons.alt_route),
-                   label: const Text("Update Routing (XML)"),
-                   onPressed: _downloadRoutingXml,
-                ),
             ],
             
             const Spacer(),
-            
-            Container(
+            // LOGS
+             Container(
               height: 100,
               color: Colors.black12,
               child: ListView.builder(
@@ -400,7 +371,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
             )
           ],
         ),
-      ),
+      )
     );
   }
 }
