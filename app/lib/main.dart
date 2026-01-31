@@ -40,7 +40,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
   static const String RELEASE_API = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
   static const String OBF_FILENAME = "NL_BromBrom_tagged.obf";
   static const String XML_FILENAME = "routing.xml";
-  static const String APK_FILENAME = "app-release.apk"; // Standard artifact name
+  static const String APK_FILENAME = "BromBrom.apk"; // Standard artifact name
   
   // PATHS (Public Downloads)
   final String _targetDir = "/storage/emulated/0/Download";

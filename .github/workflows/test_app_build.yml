@@ -45,12 +45,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Rename for standard release name
-          mv app/build/app/outputs/flutter-apk/app-release.apk app/build/app/outputs/flutter-apk/app-release.apk
+          mv app/build/app/outputs/flutter-apk/app-release.apk app/build/app/outputs/flutter-apk/BromBrom.apk
           
           # Check if 'latest' release exists
           if gh release view latest > /dev/null 2>&1; then
             echo "Uploading APK to 'latest' release..."
-            gh release upload latest app/build/app/outputs/flutter-apk/app-release.apk --clobber
+            gh release upload latest app/build/app/outputs/flutter-apk/BromBrom.apk --clobber
           else
             echo "No 'latest' release found. Skipping APK upload."
           fi
