@@ -159,12 +159,24 @@ class _InstallerScreenState extends State<InstallerScreen> {
 
       // 2. Download to Public Downloads
       final File file = File('$_targetDir/$fileName');
-      
-      // Delete existing? Not strictly needed if openWrite overwrites, but safer
       if (await file.exists()) await file.delete();
 
-      final request = http.Request('GET', Uri.parse(dlUrl));
-      final streamedResponse = await request.send();
+      _log("DL Start: $dlUrl");
+      
+      // Use Client to handle potential redirects manually if needed, or set headers
+      final client = http.Client();
+      var request = http.Request('GET', Uri.parse(dlUrl!));
+      request.headers['User-Agent'] = 'BromBromApp/1.0';
+      request.followRedirects = true; // Ensure redirects are followed
+      
+      final streamedResponse = await client.send(request);
+      
+      if (streamedResponse.statusCode != 200) {
+         // Read error
+         final body = await streamedResponse.stream.bytesToString();
+         throw Exception("HTTP ${streamedResponse.statusCode}: $body");
+      }
+
       final contentLength = streamedResponse.contentLength ?? 1;
       int received = 0;
       
@@ -175,9 +187,11 @@ class _InstallerScreenState extends State<InstallerScreen> {
         setState(() => _progress = received / contentLength);
       }).asFuture();
       await sink.close();
+      client.close();
       
-      // 3. Post-Download
-      _log("Saved to: ${file.path}");
+      // 3. Post-Download: Media Scan
+      _log("Saved: ${file.path} ($received bytes)");
+      _scanFile(file.path);
       
       // Update check state immediately
       await _checkVersions();
@@ -201,6 +215,19 @@ class _InstallerScreenState extends State<InstallerScreen> {
         _isDownloading = false;
         _statusMessage = "Error: $e";
       });
+    }
+  }
+  
+  void _scanFile(String path) {
+    // Notify MediaScanner so it shows up in Google Files
+    try {
+      final AndroidIntent intent = AndroidIntent(
+        action: 'android.intent.action.MEDIA_SCANNER_SCAN_FILE',
+        data: Uri.parse("file://$path").toString(),
+      );
+      intent.launch();
+    } catch (e) {
+      _log("Scan Error: $e");
     }
   }
 
@@ -232,7 +259,8 @@ class _InstallerScreenState extends State<InstallerScreen> {
           "1. Open 'Total Commander' or 'Files'.\n"
           "2. Move 'routing.xml' to:\n"
           "   Android/data/net.osmand/files/routing/\n\n"
-          "If access is denied, please use a PC/Mac via USB."
+          "⚠️ IF ACCESS IS DENIED:\n"
+          "Connect phone to PC via USB works 100%."
         ),
         actions: [
           TextButton(
