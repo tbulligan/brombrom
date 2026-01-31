@@ -24,9 +24,24 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
  
 ## 📲 Installation & Setup
 
-### 🆕 First-Time Installation
-If you are installing BromBrom for the first time, follow these steps to set up your profile and routing.
+### ✅ Option A: BromBrom Manager (Recommended)
+The easiest way to install and update BromBrom on Android.
 
+1.  **Download** the **BromBrom Manager App** (`BromBrom.apk`) from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
+    *   *Note: If your browser warns about the file being harmful, this is normal for apps downloaded outside the Play Store. Tap "Download Anyway".*
+2.  **Install** and **Open** the app.
+    *   Grant the "All Files Access" permission when prompted (required to manage maps in your Downloads folder).
+3.  **Update Map**:
+    *   Tap the orange **"UPDATE MAP"** button.
+    *   Once downloaded, follow the prompt to import it into OsmAnd.
+4.  **Update Routing**:
+    *   Tap **"UPDATE BromBrom Routing"**.
+    *   Follow the on-screen instructions to verify the import in OsmAnd settings.
+
+### 🛠️ Option B: Manual Installation (Advanced / iOS)
+Use this method if you are on iOS or prefer manual file management.
+
+#### 🆕 First-Time Installation
 1.  **Download** the following two files from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**:
     *   `routing.xml`
     *   `NL_BromBrom_tagged.obf`
@@ -43,9 +58,7 @@ If you are installing BromBrom for the first time, follow these steps to set up 
     *   Locate `NL_BromBrom_tagged.obf` in your file manager and choose **"Open with OsmAnd"**.
     *   Once OsmAnd confirms the import, the map is **copied** to OsmAnd's internal storage and you can delete the original to save space.
 
-### 🔄 Monthly Update
-Brombrom packages are updated automatically on the **2nd of every month**. To update, you must **replace** your old map file with the new version.
-
+### 🔄 Monthly Update (Manual)
 1.  **Download** the new `NL_BromBrom_tagged.obf` from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)** (you usually don't need a new `routing.xml`).
 2.  **Delete Old Map**:
     *   In OsmAnd: Go to **Settings** -> **Maps & Resources** -> **Local**.
@@ -55,9 +68,6 @@ Brombrom packages are updated automatically on the **2nd of every month**. To up
 3.  **Install New Map**:
     *   Locate the new `NL_BromBrom_tagged.obf` in your file manager.
     *   Tap it and choose **"Open with OsmAnd"**.
-
-> [!TIP]
-> You usually do **not** need to update `routing.xml` unless the release notes mention a "Routing Logic Update".
 
 ---
 
