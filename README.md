@@ -4,6 +4,8 @@
 
 # BromBrom: OsmAnd Microcar Navigation (Netherlands)
 
+⚠️ **Important**: BromBrom is a *planning aid* only. You are responsible for following traffic signs and Dutch law.
+
 [![Latest Release](https://img.shields.io/github/v/release/tbulligan/brombrom?label=Latest%20Release&color=blue&logo=github)](https://github.com/tbulligan/brombrom/releases/latest)
 
 **BromBrom** creates a professional-grade **OsmAnd** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
@@ -18,7 +20,7 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
 - **Premium Experience**: Full support for voice guidance, lane assistance, and **Android Auto** (with OsmAnd Pro).
 - **Zero-Touch Deployment**: [Latest files](https://github.com/tbulligan/brombrom/releases/latest) ready for your phone.
 
-> **Support the Project**: If BromBrom helps you navigate safely, [consider buying me a coffee](https://buymeacoffee.com/brombrom).
+> **Support the Project**: If BromBrom helps you navigate safely, [consider buying me a coffee ☕](https://buymeacoffee.com/brombrom).
 
 ---
  
@@ -36,10 +38,10 @@ The easiest way to install and update BromBrom on Android.
     *   Once downloaded, follow the prompt to import it into OsmAnd.
 4.  **Update Routing**:
     *   Tap **"UPDATE BromBrom Routing"**.
-    *   Follow the on-screen instructions to verify the import in OsmAnd settings.
+    *   Follow the on-screen instructions to import it in OsmAnd settings.
 
 ### 🛠️ Option B: Manual Installation (Advanced / iOS)
-Use this method if you are on iOS or prefer manual file management.
+Use this method if you encounter any issues with the manager app, are on iOS, or simply prefer manual file management.
 
 #### 🆕 First-Time Installation
 1.  **Download** the following two files from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**:
