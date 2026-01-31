@@ -191,6 +191,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
       
       // 3. Post-Download: Media Scan
       _log("Saved: ${file.path} ($received bytes)");
+      if (received < 1000) {
+        _log("WARNING: File is tiny! Check GitHub Assets.");
+      }
       _scanFile(file.path);
       
       // Update check state immediately
@@ -341,10 +344,8 @@ class _InstallerScreenState extends State<InstallerScreen> {
                   children: [
                     Text(_statusMessage, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 8),
-                    /*
-                    Text("Latest Release: ${_latestReleaseDate?.toString().substring(0,10) ?? '...'}"),
-                    Text("Local Map: ${_localMapDate?.toString().substring(0,16) ?? 'Not Found'}"),
-                    */
+                    if (_latestReleaseDate != null)
+                      Text("Latest Release: ${DateFormat('yyyy-MM-dd HH:mm').format(_latestReleaseDate!)}"),
                   ],
                 ),
               ),
@@ -352,8 +353,13 @@ class _InstallerScreenState extends State<InstallerScreen> {
             const SizedBox(height: 32),
             
             // DOWNLOADERS
-            if (_isDownloading)
+            if (_isDownloading) ...[
                LinearProgressIndicator(value: _progress),
+               Padding(
+                 padding: const EdgeInsets.only(top: 8.0),
+                 child: Text("${(_progress * 100).toStringAsFixed(1)}%", textAlign: TextAlign.center),
+               )
+            ],
 
             if (!_isDownloading) ...[
                 // MAP
@@ -364,7 +370,13 @@ class _InstallerScreenState extends State<InstallerScreen> {
                     backgroundColor: _mapUpdateAvailable ? Colors.blue[700] : Colors.grey[700],
                     foregroundColor: Colors.white,
                   ),
-                  child: Text(_mapUpdateAvailable ? "UPDATE MAP (New Version)" : "RE-DOWNLOAD MAP"),
+                  child: Column(
+                    children: [
+                      Text(_mapUpdateAvailable ? "UPDATE MAP (New Version)" : "RE-DOWNLOAD MAP"),
+                      if (_localMapDate != null)
+                        Text("On disk: ${(_localMapDate!.isBefore(_latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", style: const TextStyle(fontSize: 10)),
+                    ],
+                  ),
                 ),
                 if (_mapUpdateAvailable)
                   const Padding(
