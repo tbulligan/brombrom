@@ -3,11 +3,14 @@ name: Build and Release BromBrom
 on:
   push:
     branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - '.gitignore'
-      - 'assets/**'
-      - 'LICENSE'
+    paths:
+      - 'scripts/**'
+      - 'config/**'
+      - 'tests/**'
+      - 'Dockerfile'
+      - 'requirements.txt'
+      - 'run_full_build.sh'
+      - '.github/workflows/build_and_release.yml'
   schedule:
     - cron: '0 0 2 * *' # Monthly on the 2nd at midnight
   workflow_dispatch:   # Allow manual trigger
