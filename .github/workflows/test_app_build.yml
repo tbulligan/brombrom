@@ -3,6 +3,9 @@ name: Build Android App (Test)
 on:
   push:
     branches: [ feature/manager-app ]
+    paths:
+      - 'app/**'
+      - '.github/workflows/test_app_build.yml'
 
 jobs:
   build_apk:
