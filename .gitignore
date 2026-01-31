@@ -10,6 +10,7 @@
 *.gz
 *.bz2
 *.log
+build_log.txt
 
 # Build Artifacts
 dist/
