@@ -6,6 +6,11 @@ import shutil
 import os
 from pathlib import Path
 
+try:
+    import build_config as config
+except ImportError:
+    from scripts import build_config as config
+
 # Define paths relative to Project Root (parent of 'scripts')
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
@@ -17,24 +22,24 @@ TEMP_DIR = PROJECT_ROOT / "temp_map_build"
 
 # Paths to BRouter assets
 # Check /opt/brouter (Docker isolation) first, then fallback to local
-OPT_BROUTER = Path("/opt/brouter")
+OPT_BROUTER = config.DOCKER_BROUTER_PATH
 if OPT_BROUTER.exists():
-    BROUTER_JAR = OPT_BROUTER / "brouter-server/build/libs/brouter-1.7.8-all.jar"
+    BROUTER_JAR = OPT_BROUTER / f"brouter-server/build/libs/{config.BROUTER_VERSION}"
     PROFILES_DIR = OPT_BROUTER / "misc/profiles2"
 else:
     BROUTER_ROOT = PROJECT_ROOT.parent / "brouter"
     LOCAL_TOOLS_BROUTER = PROJECT_ROOT / "tools" / "brouter"
-    BUNDLED_LIB = PROJECT_ROOT / "libs" / "brouter-1.7.8-all.jar"
+    BUNDLED_LIB = PROJECT_ROOT / "libs" / config.BROUTER_VERSION
     BUNDLED_PROFILES = PROJECT_ROOT / "profiles"
-    
+
     if LOCAL_TOOLS_BROUTER.exists():
-        BROUTER_JAR = LOCAL_TOOLS_BROUTER / "brouter-server" / "build" / "libs" / "brouter-1.7.8-all.jar"
+        BROUTER_JAR = LOCAL_TOOLS_BROUTER / "brouter-server" / "build" / "libs" / config.BROUTER_VERSION
         PROFILES_DIR = LOCAL_TOOLS_BROUTER / "misc" / "profiles2"
     elif BUNDLED_LIB.exists():
         BROUTER_JAR = BUNDLED_LIB
         PROFILES_DIR = BUNDLED_PROFILES
     else:
-        BROUTER_JAR = BROUTER_ROOT / "brouter-server" / "build" / "libs" / "brouter-1.7.8-all.jar"
+        BROUTER_JAR = BROUTER_ROOT / "brouter-server" / "build" / "libs" / config.BROUTER_VERSION
         PROFILES_DIR = BROUTER_ROOT / "misc" / "profiles2"
 
 LOOKUPS = PROFILES_DIR / "lookups.dat"
@@ -46,7 +51,7 @@ SOFTACCESS_BRF = PROFILES_DIR / "softaccess.brf"
 def run_java(class_name, args, jvm_args=None):
     if jvm_args is None:
         jvm_args = ["-Xmx4G", "-Xms1G"]
-    
+
     cmd = ["java"] + jvm_args + ["-cp", str(BROUTER_JAR), class_name] + [str(a) for a in args]
     print(f"Running {class_name}...")
     subprocess.run(cmd, check=True)
@@ -55,7 +60,7 @@ def build():
     if not PBF_IN.exists():
         print(f"Error: {PBF_IN} missing")
         exit(1)
-    
+
     # Skip if output already exists
     if SEG_OUT_DIR.exists() and any(SEG_OUT_DIR.glob("*.rd5")):
         print(f"BRouter segments already exist in {SEG_OUT_DIR}. Skipping.")
@@ -69,21 +74,20 @@ def build():
     if TEMP_DIR.exists():
         shutil.rmtree(TEMP_DIR)
     TEMP_DIR.mkdir()
-    
+
     if SEG_OUT_DIR.exists():
         shutil.rmtree(SEG_OUT_DIR)
     SEG_OUT_DIR.mkdir()
-    
+
     SRTM_DIR.mkdir(exist_ok=True) # Ensure it exists, even if empty
 
-    cwd_original = os.getcwd()
     cwd_original = os.getcwd()
     os.chdir(TEMP_DIR)
     try:
         # 1. OsmCutter
         if not os.path.exists("nodetiles"):
             os.mkdir("nodetiles")
-            run_java("btools.mapcreator.OsmCutter", 
+            run_java("btools.mapcreator.OsmCutter",
                     [LOOKUPS, "nodetiles", "ways.dat", "relations.dat", "restrictions.dat", ALL_BRF, PBF_IN],
                     jvm_args=["-Xmx4G", "-DavoidMapPolling=true"])
 
@@ -167,7 +171,7 @@ def build():
         print("Moving segments...")
         for seg in Path("segments").glob("*.rd5"):
             shutil.move(str(seg), str(SEG_OUT_DIR / seg.name))
-            
+
         print(f"✓ Segments created in {SEG_OUT_DIR}")
 
     finally:
