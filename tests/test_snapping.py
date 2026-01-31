@@ -12,12 +12,24 @@ def test_exemption_logic():
 
     # Test OB65 code
     assert snap_c9_to_roads.has_microcar_exemption({'textSigns': 'OB65'})
+    
+    # Test 45km
+    assert snap_c9_to_roads.has_microcar_exemption({'textSigns': 'uitgezonderd 45km'})
+    assert snap_c9_to_roads.has_microcar_exemption({'textSigns': 'bestemmingsverkeer en 45 km toegestaan'})
 
     # Test negative cases
     assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': 'uitgezonderd fietsers'})
     assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': 'vrachtverkeer'})
     assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': ''})
     assert not snap_c9_to_roads.has_microcar_exemption({})
+
+    # Test explicit prohibitions (Negative Guards)
+    assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': 'Geldt ook voor brommobiel'})
+    assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': 'Dus geen brommobielen'})
+    assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': 'verboden voor brommobielen'})
+
+    # Test missing positive context
+    assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': 'brommobielen'}) # Broadly 'brommobielen' with no context is unsafe
 
 def test_bearing_calculation():
     # Current implementation uses Math Angle (0=East, 90=North)

@@ -14,30 +14,48 @@ except ImportError:
 PRIMARY_TOL = config.PRIMARY_TOL
 FALLBACK_TOL = config.FALLBACK_TOL
 
+import re
+
 def has_microcar_exemption(row):
-    """Check textSigns for 'brommobielen' exemptions"""
+    """
+    Check textSigns for 'brommobielen' exemptions using robust semantic logic.
+    Returns True ONLY if an explicit exemption is found.
+    """
     texts = row.get('textSigns', '')
-    if pd.isna(texts):
+    if pd.isna(texts) or not texts:
         return False
-    try:
-        if isinstance(texts, str):
-            # Safe JSON parse attempt
-            if texts.strip().startswith('[') or texts.strip().startswith('{'):
-                try:
-                    loaded = json.loads(texts)
-                    texts = str(loaded)
-                except json.JSONDecodeError:
-                    pass # Keep as raw string if malformed JSON
-        texts = str(texts).lower()
-    except Exception:
-        texts = str(texts).lower()
     
-    # Common exemption keywords
-    # CRITICAL: Do NOT use generic 'uitgezonderd' as it allows 'uitgezonderd tractoren', 'bestemmingsverkeer', etc.
-    # We only want explicit microcar exemptions.
-    # 'brommoblelen' is an intentional typo to catch common OCR errors
-    keywords = ['brommobiel', 'brommoblelen', 'ob65']
-    return any(k in texts for k in keywords)
+    try:
+        # Normalize text: stringify, lower, and remove brackets/noise
+        if not isinstance(texts, str):
+            texts = str(texts)
+        texts = texts.lower()
+        
+        # 1. Positive Exemption Context (Must have one)
+        # Covers: 'uitgezonderd', 'm.u.v.', 'toegestaan', 'vrijgesteld', etc.
+        pos_pattern = r'uitgezonderd|m\.u\.v\.|toegestaan|vrijgesteld|behalve|uitz|uitgez|muv'
+        
+        # 2. Vehicle Keywords (Must have one)
+        # Covers: 'brommobiel', 'brommo', 'ob65' (official code), '45km', and common typos like 'brommoblelen'
+        veh_pattern = r'bromm[oa][a-z]*|ob65|45\s?km'
+        
+        # 3. Negative Guards (Must NOT have)
+        # Covers: 'geen', 'verboden', 'ook voor' (prohibition reinforcement)
+        neg_pattern = r'geen|verboden|ook voor'
+        
+        # Check logic: (Positive AND Vehicle) AND NOT Negative
+        has_pos = re.search(pos_pattern, texts) is not None
+        has_veh = re.search(veh_pattern, texts) is not None
+        has_neg = re.search(neg_pattern, texts) is not None
+        
+        # Special case: 'ob65' is an official sign code for exemption, treat as safe if present
+        if 'ob65' in texts:
+            return True
+
+        return has_pos and has_veh and not has_neg
+
+    except Exception:
+        return False
 
 def snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms):
     # Original distance-based snap for fallback
