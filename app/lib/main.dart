@@ -541,10 +541,10 @@ class _InstallerScreenState extends State<InstallerScreen> {
               children: [
                 TextButton.icon(
                   onPressed: _launchCoffeeUrl,
-                  icon: const Icon(Icons.coffee, color: Colors.brown, size: 20),
-                  label: const Text(
-                      "Buy me a coffee", 
-                      style: TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
+                  icon: Icon(Icons.token, color: Colors.orange[800], size: 20),
+                  label: Text(
+                      "Buy me a stroopwafel", 
+                      style: TextStyle(color: Colors.orange[800], fontWeight: FontWeight.bold)
                   ),
                 ),
               ],
