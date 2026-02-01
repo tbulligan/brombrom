@@ -55,8 +55,10 @@ class _InstallerScreenState extends State<InstallerScreen> {
   DateTime? _latestReleaseDate;
   DateTime? _remoteMapDate;
   DateTime? _remoteRoutingDate;
+  DateTime? _remoteApkDate;
   DateTime? _localMapDate;
   DateTime? _localRoutingDate;
+  DateTime? _localApkDate;
   bool _mapUpdateAvailable = false;
   bool _routingUpdateAvailable = false;
   bool _apkUpdateAvailable = false;
@@ -133,6 +135,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       _latestReleaseDate = latestDate;
       _remoteMapDate = remoteMapDate;
       _remoteRoutingDate = remoteRoutingDate;
+      _remoteApkDate = remoteApkDate;
       _log("Latest Release: $_latestReleaseDate");
 
       // 2. Check Local Files
@@ -143,7 +146,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       _localRoutingDate = await xmlFile.exists() ? await xmlFile.lastModified() : null;
       
       final File apkFile = File('$_targetDir/$APK_FILENAME');
-      final DateTime? localApkDate = await apkFile.exists() ? await apkFile.lastModified() : null;
+      _localApkDate = await apkFile.exists() ? await apkFile.lastModified() : null;
 
       // 3. Compare (If local is older than remote asset OR missing, update needed)
       // We use the specific asset date if found, falling back to the release date.
@@ -154,11 +157,11 @@ class _InstallerScreenState extends State<InstallerScreen> {
       _routingUpdateAvailable = _localRoutingDate == null || 
           _localRoutingDate!.isBefore(remoteRoutingDate ?? _latestReleaseDate!);
 
-      _apkUpdateAvailable = localApkDate == null || 
-          localApkDate.isBefore(remoteApkDate ?? _latestReleaseDate!);
+      _apkUpdateAvailable = _localApkDate == null || 
+          _localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate!);
 
       setState(() {
-        _statusMessage = (_mapUpdateAvailable || _routingUpdateAvailable) 
+        _statusMessage = (_mapUpdateAvailable || _routingUpdateAvailable || _apkUpdateAvailable) 
             ? "Updates Available!" 
             : "Files in Downloads are up to date.";
       });
@@ -438,8 +441,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
                   child: Column(
                     children: [
                       Text(_apkUpdateAvailable ? "UPDATE BromBrom APP" : "RE-DOWNLOAD APP"),
-                      if (_apkUpdateAvailable)
-                        const Text("New version available on GitHub", style: TextStyle(fontSize: 10, color: Colors.white70)),
+                      if (_localApkDate != null)
+                        Text("On disk: ${(_localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", 
+                          style: TextStyle(fontSize: 10, color: _apkUpdateAvailable ? Colors.white70 : Colors.black54)),
                     ],
                   ),
                 ),
