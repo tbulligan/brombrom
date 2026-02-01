@@ -428,7 +428,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
                              children: [
                                Icon(Icons.check_circle, color: Colors.green),
                                SizedBox(width: 8),
-                               Expanded(child: Text("BromBrom files in Download are up to date", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green))),
+                               Expanded(child: Text("All navigation files are up to date", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green))),
                              ],
                            )
                         else 
