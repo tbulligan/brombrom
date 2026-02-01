@@ -1,14 +1,19 @@
-name: Build & Release Manager App
+name: App CI & Release
 
 on:
   push:
     branches: [ main, develop ]
     paths:
       - 'app/**'
-      - '.github/workflows/release_manager_app.yml'
+      - '.github/workflows/app_ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'app/**'
+  workflow_dispatch:
 
 jobs:
-  build_apk:
+  test_and_build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -30,21 +35,28 @@ jobs:
         working-directory: ./app
         run: flutter pub get
 
-      - name: Build APK
+      - name: Run Flutter Unit Tests
+        working-directory: ./app
+        run: flutter test
+
+      - name: Build APK (Release)
+        if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         working-directory: ./app
         run: flutter build apk --release
 
       - name: Rename APK
+        if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         run: mv app/build/app/outputs/flutter-apk/app-release.apk app/build/app/outputs/flutter-apk/BromBrom.apk
 
       - name: Upload APK Artifact
+        if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: actions/upload-artifact@v4
         with:
           name: BromBrom
           path: app/build/app/outputs/flutter-apk/BromBrom.apk
 
       - name: Push APK to Latest Release
-        if: github.ref == 'refs/heads/main'
+        if: success() && github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
