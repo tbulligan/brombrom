@@ -68,15 +68,18 @@ jobs:
             --notes "## Automated Monthly Build
             This release contains the latest map data and routing profiles for microcars in the Netherlands.
 
-            **Installation Instructions**: 
-            1. Download both files below.
-            2. Follow the Quick Way instructions in the [README](https://github.com/tbulligan/brombrom#installation--setup).
+            **Installation Instructions (Android - Recommended)**: 
+            1. Download and install **BromBrom.apk** below.
+            2. Open the app and tap **UPDATE MAP** and **UPDATE BromBrom Routing**.
+
+            **Installation Instructions (iOS / Manual)**:
+            Follow the [Manual Install Guide](https://github.com/tbulligan/brombrom/blob/main/docs/manual_install.md).
 
             **Build Date**: ${{ steps.tag.outputs.TAG_NAME }}
             **Base Branch**: ${{ github.ref_name }}" || \
           gh release create latest \
             --title "Latest BromBrom OsmAnd Build" \
-            --notes "Initial release setup."
+            --notes "Initial release setup. Please wait for the automated build to finish."
 
           # 3. Upload and Overwrite artifacts (Zero-Downtime)
           gh release upload latest \
