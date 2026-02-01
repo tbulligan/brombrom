@@ -43,7 +43,7 @@ jobs:
         if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         working-directory: ./app
         env:
-          ANDROID_KEYSTORE_FILE: ../app/upload-keystore.jks
+          ANDROID_KEYSTORE_FILE: upload-keystore.jks
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
