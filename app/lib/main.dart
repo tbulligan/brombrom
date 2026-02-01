@@ -353,6 +353,19 @@ class _InstallerScreenState extends State<InstallerScreen> {
     await Share.shareXFiles([xFile]);
   }
 
+  void _launchCoffeeUrl() async {
+    const url = "https://buymeacoffee.com/brombrom";
+    try {
+      final AndroidIntent intent = AndroidIntent(
+        action: 'action_view',
+        data: url,
+      );
+      await intent.launch();
+    } catch (e) {
+      _log("Could not launch coffee link: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_hasPermission) {
@@ -521,6 +534,22 @@ class _InstallerScreenState extends State<InstallerScreen> {
                   ),
             ],
             
+            const SizedBox(height: 16),
+            // Support Project
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton.icon(
+                  onPressed: _launchCoffeeUrl,
+                  icon: const Icon(Icons.coffee, color: Colors.brown, size: 20),
+                  label: const Text(
+                      "Buy me a coffee", 
+                      style: TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
+                  ),
+                ),
+              ],
+            ),
+
             const Spacer(),
             // LOGS
              Container(
