@@ -5,6 +5,7 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // Add to pubspec if missing, or use manual parsing
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -59,6 +60,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
   DateTime? _localMapDate;
   DateTime? _localRoutingDate;
   DateTime? _localApkDate;
+  String? _localAppVersion;
   bool _mapUpdateAvailable = false;
   bool _routingUpdateAvailable = false;
   bool _apkUpdateAvailable = false;
@@ -148,7 +150,11 @@ class _InstallerScreenState extends State<InstallerScreen> {
       final File apkFile = File('$_targetDir/$APK_FILENAME');
       _localApkDate = await apkFile.exists() ? await apkFile.lastModified() : null;
 
-      // 3. Compare (If local is older than remote asset OR missing, update needed)
+      // 3. Get Internal App Version
+      final packageInfo = await PackageInfo.fromPlatform();
+      _localAppVersion = "${packageInfo.version}+${packageInfo.buildNumber}";
+
+      // 4. Compare (If local is older than remote asset OR missing, update needed)
       // We use the specific asset date if found, falling back to the release date.
       
       _mapUpdateAvailable = _localMapDate == null || 
@@ -441,8 +447,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
                   child: Column(
                     children: [
                       Text(_apkUpdateAvailable ? "UPDATE BromBrom APP" : "RE-DOWNLOAD APP"),
+                      Text("Installed: ${_localAppVersion ?? 'Unknown'}", style: const TextStyle(fontSize: 10, color: Colors.blueGrey)),
                       if (_localApkDate != null)
-                        Text("On disk: ${(_localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", 
+                        Text("In Downloads: ${(_localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", 
                           style: TextStyle(fontSize: 10, color: _apkUpdateAvailable ? Colors.white70 : Colors.black54)),
                     ],
                   ),
