@@ -53,10 +53,13 @@ class _InstallerScreenState extends State<InstallerScreen> {
   
   // VERSION INFO
   DateTime? _latestReleaseDate;
+  DateTime? _remoteMapDate;
+  DateTime? _remoteRoutingDate;
   DateTime? _localMapDate;
   DateTime? _localRoutingDate;
   bool _mapUpdateAvailable = false;
   bool _routingUpdateAvailable = false;
+  bool _apkUpdateAvailable = false;
 
   final List<String> _logs = [];
   void _log(String msg) {
@@ -101,33 +104,58 @@ class _InstallerScreenState extends State<InstallerScreen> {
       if (response.statusCode != 200) throw Exception("API Error ${response.statusCode}");
       
       final data = jsonDecode(response.body);
-      final String publishedAt = data['published_at']; // "2025-01-30T10:00:00Z"
-      _latestReleaseDate = DateTime.parse(publishedAt);
       
+      // Use the actual asset update times if available, otherwise fallback to published_at
+      DateTime latestDate = DateTime.parse(data['published_at']);
+      DateTime? remoteMapDate;
+      DateTime? remoteRoutingDate;
+      DateTime? remoteApkDate;
+
+      final List assets = data['assets'] ?? [];
+      for (var asset in assets) {
+        final String name = asset['name'];
+        final DateTime updatedAt = DateTime.parse(asset['updated_at']);
+        
+        // Track the overall latest date for display
+        if (updatedAt.isAfter(latestDate)) {
+          latestDate = updatedAt;
+        }
+
+        if (name == OBF_FILENAME) {
+          remoteMapDate = updatedAt;
+        } else if (name == XML_FILENAME) {
+          remoteRoutingDate = updatedAt;
+        } else if (name == APK_FILENAME) {
+          remoteApkDate = updatedAt;
+        }
+      }
+      
+      _latestReleaseDate = latestDate;
+      _remoteMapDate = remoteMapDate;
+      _remoteRoutingDate = remoteRoutingDate;
       _log("Latest Release: $_latestReleaseDate");
 
       // 2. Check Local Files
       final File mapFile = File('$_targetDir/$OBF_FILENAME');
-      if (await mapFile.exists()) {
-        _localMapDate = await mapFile.lastModified();
-      } else {
-        _localMapDate = null;
-      }
+      _localMapDate = await mapFile.exists() ? await mapFile.lastModified() : null;
 
       final File xmlFile = File('$_targetDir/$XML_FILENAME');
-      if (await xmlFile.exists()) {
-        _localRoutingDate = await xmlFile.lastModified();
-      } else {
-        _localRoutingDate = null;
-      }
+      _localRoutingDate = await xmlFile.exists() ? await xmlFile.lastModified() : null;
       
-      // 3. Compare (If local is older than release OR missing, update needed)
-      // Note: Download time is always > Release time, so simple logic:
-      // If we downloaded AFTER the release date, we are good.
-      // If Local Date < Release Date, then new release came out after we downloaded.
+      final File apkFile = File('$_targetDir/$APK_FILENAME');
+      final DateTime? localApkDate = await apkFile.exists() ? await apkFile.lastModified() : null;
+
+      // 3. Compare (If local is older than remote asset OR missing, update needed)
+      // We use the specific asset date if found, falling back to the release date.
       
-      _mapUpdateAvailable = _localMapDate == null || _localMapDate!.isBefore(_latestReleaseDate!);
-      _routingUpdateAvailable = _localRoutingDate == null || _localRoutingDate!.isBefore(_latestReleaseDate!);
+      _mapUpdateAvailable = _localMapDate == null || 
+          _localMapDate!.isBefore(remoteMapDate ?? _latestReleaseDate!);
+          
+      _routingUpdateAvailable = _localRoutingDate == null || 
+          _localRoutingDate!.isBefore(remoteRoutingDate ?? _latestReleaseDate!);
+
+      _apkUpdateAvailable = localApkDate == null || 
+          localApkDate.isBefore(remoteApkDate ?? _latestReleaseDate!);
 
       setState(() {
         _statusMessage = (_mapUpdateAvailable || _routingUpdateAvailable) 
@@ -356,7 +384,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
           foregroundColor: Colors.white,
           actions: [
              IconButton(
-               icon: const Icon(Icons.system_update),
+               icon: Icon(Icons.system_update, color: _apkUpdateAvailable ? Colors.orange : null),
                tooltip: "Update App",
                onPressed: () => _downloadFile(APK_FILENAME, isMap: false),
              )
@@ -419,7 +447,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
                     children: [
                       Text(_mapUpdateAvailable ? "UPDATE MAP" : "RE-DOWNLOAD MAP"),
                       if (_localMapDate != null)
-                        Text("On disk: ${(_localMapDate!.isBefore(_latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", style: TextStyle(fontSize: 10, color: _mapUpdateAvailable ? Colors.white70 : Colors.black54)),
+                        Text("On disk: ${(_localMapDate!.isBefore(_remoteMapDate ?? _latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", style: TextStyle(fontSize: 10, color: _mapUpdateAvailable ? Colors.white70 : Colors.black54)),
                     ],
                   ),
                 ),
@@ -443,7 +471,13 @@ class _InstallerScreenState extends State<InstallerScreen> {
                     backgroundColor: _routingUpdateAvailable ? Colors.orange[800] : Colors.grey[300],
                     foregroundColor: _routingUpdateAvailable ? Colors.white : Colors.black87,
                   ),
-                  child: Text(_routingUpdateAvailable ? "UPDATE BromBrom Routing" : "RE-DOWNLOAD Routing"),
+                  child: Column(
+                    children: [
+                      Text(_routingUpdateAvailable ? "UPDATE BromBrom Routing" : "RE-DOWNLOAD Routing"),
+                      if (_localRoutingDate != null)
+                        Text("On disk: ${(_localRoutingDate!.isBefore(_remoteRoutingDate ?? _latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", style: TextStyle(fontSize: 10, color: _routingUpdateAvailable ? Colors.white70 : Colors.black54)),
+                    ],
+                  ),
                 ),
                 
                 // Only show essential warning if update available or first install (local is null)
