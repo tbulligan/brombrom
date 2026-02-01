@@ -62,26 +62,25 @@ jobs:
           git tag -f latest
           git push origin latest -f
           
-          # 2. Ensure release exists and update metadata
-          gh release edit latest \
-            --title "Latest BromBrom OsmAnd Build" \
-            --notes "## Automated Monthly Build
-            This release contains the latest map data and routing profiles for microcars in the Netherlands.
+          # 2. Define release notes
+          NOTES="## Automated Monthly Build
+          This release contains the latest map data and routing profiles for microcars in the Netherlands.
 
-            **Installation Instructions (Android - Recommended)**: 
-            1. Download and install **BromBrom.apk** below.
-            2. Open the app and tap **UPDATE MAP** and **UPDATE BromBrom Routing**.
+          **Installation Instructions (Android - Recommended)**: 
+          1. Download and install **BromBrom.apk** below.
+          2. Open the app and tap **UPDATE MAP** and **UPDATE BromBrom Routing**.
 
-            **Installation Instructions (iOS / Manual)**:
-            Follow the [Manual Install Guide](https://github.com/tbulligan/brombrom/blob/main/docs/manual_install.md).
+          **Installation Instructions (iOS / Manual)**:
+          Follow the [Manual Install Guide](https://github.com/tbulligan/brombrom/blob/main/docs/manual_install.md).
 
-            **Build Date**: ${{ steps.tag.outputs.TAG_NAME }}
-            **Base Branch**: ${{ github.ref_name }}" || \
-          gh release create latest \
-            --title "Latest BromBrom OsmAnd Build" \
-            --notes "Initial release setup. Please wait for the automated build to finish."
+          **Build Date**: ${{ steps.tag.outputs.TAG_NAME }}
+          **Base Branch**: ${{ github.ref_name }}"
 
-          # 3. Upload and Overwrite artifacts (Zero-Downtime)
+          # 3. Ensure release exists and update metadata
+          gh release edit latest --title "Latest BromBrom OsmAnd Build" --notes "$NOTES" || \
+          gh release create latest --title "Latest BromBrom OsmAnd Build" --notes "$NOTES"
+
+          # 4. Upload and Overwrite artifacts (Zero-Downtime)
           gh release upload latest \
             dist/routing.xml \
             dist/NL_BromBrom_tagged.obf \
