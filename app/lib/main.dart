@@ -382,13 +382,6 @@ class _InstallerScreenState extends State<InstallerScreen> {
           title: const Text("BromBrom Manager"), 
           backgroundColor: Colors.blue[800], 
           foregroundColor: Colors.white,
-          actions: [
-             IconButton(
-               icon: Icon(Icons.system_update, color: _apkUpdateAvailable ? Colors.orange : null),
-               tooltip: "Update App",
-               onPressed: () => _downloadFile(APK_FILENAME, isMap: false),
-             )
-          ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -434,6 +427,24 @@ class _InstallerScreenState extends State<InstallerScreen> {
             ],
 
             if (!_isDownloading) ...[
+                // APP UPDATE
+                ElevatedButton(
+                  onPressed: () => _downloadFile(APK_FILENAME, isMap: false),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    backgroundColor: _apkUpdateAvailable ? Colors.blue[700] : Colors.grey[300],
+                    foregroundColor: _apkUpdateAvailable ? Colors.white : Colors.black87,
+                  ),
+                  child: Column(
+                    children: [
+                      Text(_apkUpdateAvailable ? "UPDATE BromBrom APP" : "RE-DOWNLOAD APP"),
+                      if (_apkUpdateAvailable)
+                        const Text("New version available on GitHub", style: TextStyle(fontSize: 10, color: Colors.white70)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
                 // MAP
                 ElevatedButton(
                   onPressed: () => _downloadFile(OBF_FILENAME, isMap: true),
