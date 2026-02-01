@@ -64,6 +64,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
   bool _mapUpdateAvailable = false;
   bool _routingUpdateAvailable = false;
   bool _apkUpdateAvailable = false;
+  bool _showLogs = false;
 
   final List<String> _logs = [];
   void _log(String msg) {
@@ -555,17 +556,29 @@ class _InstallerScreenState extends State<InstallerScreen> {
                 ),
     
                 const SizedBox(height: 32),
-                // LOGS
-                 Container(
-                  height: 150,
-                  color: Colors.black12,
-                  child: ListView.builder(
-                     shrinkWrap: true,
-                     physics: const NeverScrollableScrollPhysics(), // Scroll handled by main view
-                     itemCount: _logs.length,
-                     itemBuilder: (ctx, i) => Text(_logs[i], style: const TextStyle(fontSize: 10)),
+                
+                // LOGS TOGGLE
+                Center(
+                  child: TextButton(
+                    onPressed: () => setState(() => _showLogs = !_showLogs),
+                    child: Text(_showLogs ? "Hide Debug Logs" : "Show Debug Logs", 
+                      style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   ),
-                )
+                ),
+
+                if (_showLogs)
+                  Container(
+                    height: 150,
+                    margin: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.all(8),
+                    color: Colors.black12,
+                    child: ListView.builder(
+                       shrinkWrap: true,
+                       physics: const NeverScrollableScrollPhysics(), // Scroll handled by main view
+                       itemCount: _logs.length,
+                       itemBuilder: (ctx, i) => Text(_logs[i], style: const TextStyle(fontSize: 10, fontFamily: 'monospace')),
+                    ),
+                  )
               ],
             ),
           ),
