@@ -432,7 +432,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
                   onPressed: () => _downloadFile(APK_FILENAME, isMap: false),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 20),
-                    backgroundColor: _apkUpdateAvailable ? Colors.blue[700] : Colors.grey[300],
+                    backgroundColor: _apkUpdateAvailable ? Colors.orange[800] : Colors.grey[300],
                     foregroundColor: _apkUpdateAvailable ? Colors.white : Colors.black87,
                   ),
                   child: Column(
