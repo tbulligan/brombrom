@@ -4,7 +4,8 @@
 
 # BromBrom: OsmAnd Microcar Navigation (Netherlands)
 
-⚠️ **Important**: BromBrom is a *planning aid* only. You are responsible for following traffic signs and Dutch law.
+> [!IMPORTANT]
+> BromBrom is a *planning aid* only. You are responsible for following traffic signs and Dutch law.
 
 [![Latest Release](https://img.shields.io/github/v/release/tbulligan/brombrom?label=Latest%20Release&color=blue&logo=github)](https://github.com/tbulligan/brombrom/releases/latest)
 
