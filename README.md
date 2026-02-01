@@ -21,7 +21,7 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
 - **Premium Experience**: Full support for voice guidance, lane assistance, and **Android Auto** (with OsmAnd Pro).
 - **Zero-Touch Deployment**: [Latest files](https://github.com/tbulligan/brombrom/releases/latest) ready for your phone.
 
-> **Support the Project**: If BromBrom helps you navigate safely, [consider buying me a coffee ☕](https://buymeacoffee.com/brombrom).
+> **Support the Project**: If BromBrom helps you navigate safely, [consider buying me a stroopwafel 🪙](https://buymeacoffee.com/brombrom).
 
 ---
 
