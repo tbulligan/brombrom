@@ -348,6 +348,37 @@ class _InstallerScreenState extends State<InstallerScreen> {
       )
     );
   }
+
+  void _showMapDeleteInstructions() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("How to delete the old map"),
+        content: const SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("If importing the new map fails, follow these steps in OsmAnd:"),
+              SizedBox(height: 16),
+              Text("1. Open OsmAnd Settings"),
+              Text("2. Maps & Resources"),
+              Text("3. Tap the 'Local' tab"),
+              Text("4. Open 'Standard maps'"),
+              Text("5. Find 'NL_BromBrom_tagged'"),
+              Text("6. Tap it and select 'Delete'"),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
   
   Future<void> _shareFile(String path) async {
     final xFile = XFile(path);
@@ -492,12 +523,25 @@ class _InstallerScreenState extends State<InstallerScreen> {
                       ),
                     ),
                     // Show tip always for Map action
-                    const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        "⚠️ Tip: If import fails, delete the old map in OsmAnd first.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.orange, fontStyle: FontStyle.italic, fontSize: 13, fontWeight: FontWeight.bold),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              "⚠️ Tip: If import fails, delete the old map in OsmAnd first.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.orange, fontStyle: FontStyle.italic, fontSize: 13, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                            onPressed: _showMapDeleteInstructions,
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.zero,
+                          ),
+                        ],
                       ),
                     ),
                     
