@@ -179,13 +179,13 @@ class _InstallerScreenState extends State<InstallerScreen> {
   }
 
   Widget _buildLanguageSwitcher() {
-    return PopupMenuButton<String>(
-      icon: const Icon(Icons.language),
-      onSelected: _saveLocale,
-      itemBuilder: (ctx) => [
-        const PopupMenuItem(value: 'nl', child: Text("🇳🇱 Nederlands")),
-        const PopupMenuItem(value: 'en', child: Text("🇬🇧 English")),
-      ],
+    final bool isNL = _locale == 'nl';
+    return TextButton(
+      onPressed: () => _saveLocale(isNL ? 'en' : 'nl'),
+      child: Text(
+        isNL ? "🇬🇧" : "🇳🇱",
+        style: const TextStyle(fontSize: 24),
+      ),
     );
   }
 
