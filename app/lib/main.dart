@@ -102,15 +102,15 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'show_logs': 'Logboeken tonen',
       'hide_logs': 'Logboeken verbergen',
       'routing_dl_title': 'Routing-bestand gedownload',
-      'routing_dl_desc': 'Bestand opgeslagen in \'Downloads\'.\n\nHOE TE INSTALLEREN:\n1. Open OsmAnd en zorg dat je een BromBrom-profiel hebt (indien niet: Instellingen → App-profielen → Nieuw → Rijden → BromBrom).\n2. Selecteer je BromBrom-profiel.\n3. Ga naar Navigatie-instellingen → Navigatietype.\n4. Tik op \'Navigatiebestand importeren\' en selecteer \'routing.xml\'.\n5. Kies indien gevraagd voor Vervangen.\n6. Zorg dat BromBrom is geselecteerd als het actieve type.',
+      'routing_dl_desc': 'Bestand opgeslagen in \'Downloads\'.\n\nHOE TE INSTALLEREN:\n1. Open OsmAnd en zorg dat je een BromBrom-profiel hebt (indien niet: Settings → App Profiles → New → Driving → BromBrom).\n2. Selecteer je BromBrom-profiel.\n3. Ga naar Navigation Settings (Navigatie-instellingen) → Navigation Type (Navigatietype).\n4. Tik op \'Import routing file\' (Navigatiebestand importeren) en selecteer \'routing.xml\'.\n5. Kies indien gevraagd voor Replace (Vervangen).\n6. Zorg dat BromBrom is geselecteerd als het actieve type.',
       'map_del_title': 'Oude kaart verwijderen',
       'map_del_desc': 'Als het importeren van de nieuwe kaart mislukt, volg dan deze stappen in OsmAnd:',
-      'step_1': '1. Open OsmAnd Instellingen',
-      'step_2': '2. Kaarten & Bronnen',
-      'step_3': '3. Tik op het tabblad \'Lokaal\'',
-      'step_4': '4. Open \'Standaard kaarten\'',
+      'step_1': '1. Open OsmAnd Settings (Instellingen)',
+      'step_2': '2. Maps & Resources (Kaarten & bronnen)',
+      'step_3': '3. Tik op de tab \'Local\' (Lokaal)',
+      'step_4': '4. Open \'Standard maps\' (Standaard kaarten)',
       'step_5': '5. Zoek naar \'NL_BromBrom_tagged\'',
-      'step_6': '6. Tik erop en kies \'Verwijderen\'',
+      'step_6': '6. Tik erop en kies \'Delete\' (Verwijderen)',
     },
     'en': {
       'app_name': 'BromBrom Manager',
@@ -161,9 +161,13 @@ class _InstallerScreenState extends State<InstallerScreen> {
 
   Future<void> _loadLocale() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _locale = prefs.getString('language_code') ?? 'nl';
-    });
+    String? saved = prefs.getString('language_code');
+    if (saved == null) {
+      // Automatic detection: if system is NL, use NL, else EN
+      final String systemLoc = Platform.localeName.split('_')[0];
+      saved = (systemLoc == 'nl') ? 'nl' : 'en';
+    }
+    setState(() => _locale = saved!);
   }
 
   Future<void> _saveLocale(String code) async {
@@ -172,6 +176,17 @@ class _InstallerScreenState extends State<InstallerScreen> {
     setState(() {
       _locale = code;
     });
+  }
+
+  Widget _buildLanguageSwitcher() {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.language),
+      onSelected: _saveLocale,
+      itemBuilder: (ctx) => [
+        const PopupMenuItem(value: 'nl', child: Text("🇳🇱 Nederlands")),
+        const PopupMenuItem(value: 'en', child: Text("🇬🇧 English")),
+      ],
+    );
   }
 
   final List<String> _logs = [];
@@ -501,6 +516,12 @@ class _InstallerScreenState extends State<InstallerScreen> {
   Widget build(BuildContext context) {
     if (!_hasPermission) {
       return Scaffold(
+        appBar: AppBar(
+          title: Text(_t('app_name')),
+          backgroundColor: Colors.blue[800],
+          foregroundColor: Colors.white,
+          actions: [_buildLanguageSwitcher()],
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32.0),
@@ -536,20 +557,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
           backgroundColor: Colors.blue[800], 
           foregroundColor: Colors.white,
           actions: [
-            TextButton(
-              onPressed: () => _saveLocale('nl'),
-              child: Opacity(
-                opacity: _locale == 'nl' ? 1.0 : 0.5,
-                child: const Text("🇳🇱", style: TextStyle(fontSize: 24)),
-              ),
-            ),
-            TextButton(
-              onPressed: () => _saveLocale('en'),
-              child: Opacity(
-                opacity: _locale == 'en' ? 1.0 : 0.5,
-                child: const Text("🇬🇧", style: TextStyle(fontSize: 24)),
-              ),
-            ),
+            _buildLanguageSwitcher(),
             const SizedBox(width: 8),
           ],
       ),
