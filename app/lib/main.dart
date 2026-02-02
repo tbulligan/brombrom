@@ -538,11 +538,17 @@ class _InstallerScreenState extends State<InstallerScreen> {
           actions: [
             TextButton(
               onPressed: () => _saveLocale('nl'),
-              child: Text("🇳🇱", style: TextStyle(fontSize: 24, opacity: _locale == 'nl' ? 1.0 : 0.5)),
+              child: Opacity(
+                opacity: _locale == 'nl' ? 1.0 : 0.5,
+                child: const Text("🇳🇱", style: TextStyle(fontSize: 24)),
+              ),
             ),
             TextButton(
               onPressed: () => _saveLocale('en'),
-              child: Text("🇬🇧", style: TextStyle(fontSize: 24, opacity: _locale == 'en' ? 1.0 : 0.5)),
+              child: Opacity(
+                opacity: _locale == 'en' ? 1.0 : 0.5,
+                child: const Text("🇬🇧", style: TextStyle(fontSize: 24)),
+              ),
             ),
             const SizedBox(width: 8),
           ],
