@@ -84,7 +84,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'status_dl_done': 'Download voltooid!',
       'status_dl_error': 'Fout: {error}',
       'latest_release': 'Laatste release',
-      'btn_apk_update': 'UPDATE BromBrom APP',
+      'btn_apk_update': 'BIJWERKEN BromBrom APP',
       'btn_apk_download': 'APP OPNIEUW DOWNLOADEN',
       'installed_version': 'Geïnstalleerd',
       'in_downloads': 'In Downloads',
@@ -98,7 +98,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'btn_routing_update': 'BromBrom Routing BIJWERKEN',
       'btn_routing_download': 'Routing OPNIEUW DOWNLOADEN',
       'essential_logic': 'Essentieel voor correcte navigatie logica!',
-      'buy_coffee': 'Koop een bakje koffie',
+      'buy_coffee': 'Trakteer me op een koffie',
       'show_logs': 'Logboeken tonen',
       'hide_logs': 'Logboeken verbergen',
       'routing_dl_title': 'Routing-bestand gedownload',
@@ -110,7 +110,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'step_3': '3. Tik op de tab \'Local\' (Lokaal)',
       'step_4': '4. Open \'Standard maps\' (Standaard kaarten)',
       'step_5': '5. Zoek naar \'NL_BromBrom_tagged\'',
-      'step_6': '6. Tik erop en kies \'Delete\' (Verwijderen)',
+      'step_6': '6. Tik erop en kies \'Remove\' (Verwijderen)',
     },
     'en': {
       'app_name': 'BromBrom Manager',
@@ -153,7 +153,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'step_3': '3. Tap the \'Local\' tab',
       'step_4': '4. Open \'Standard maps\'',
       'step_5': '5. Find \'NL_BromBrom_tagged\'',
-      'step_6': '6. Tap it and select \'Delete\'',
+      'step_6': '6. Tap it and select \'Remove\'',
     }
   };
 
@@ -176,6 +176,8 @@ class _InstallerScreenState extends State<InstallerScreen> {
     setState(() {
       _locale = code;
     });
+    // Refresh versions to update the status message localization
+    _checkVersions();
   }
 
   Widget _buildLanguageSwitcher() {
