@@ -86,16 +86,17 @@ async function fetchLatestVersion() {
   try {
     const response = await fetch('https://api.github.com/repos/tbulligan/brombrom/releases/latest');
     const data = await response.json();
-    if (data.tag_name) {
+
+    if (data.assets) {
+      // Find the map file specifically
+      const mapAsset = data.assets.find(a => a.name.endsWith('.obf'));
+      const timestamp = mapAsset ? mapAsset.updated_at : data.published_at;
+
       const versionEl = document.getElementById('version-tag');
-      if (versionEl) {
-        // If tag is literally 'latest', use the publish date for a cleaner look
-        let displayVersion = data.tag_name;
-        if (displayVersion === 'latest' && data.published_at) {
-          const date = new Date(data.published_at);
-          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          displayVersion = `${months[date.getMonth()]} ${date.getFullYear()}`;
-        }
+      if (versionEl && timestamp) {
+        const date = new Date(timestamp);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const displayVersion = `${months[date.getMonth()]} ${date.getFullYear()}`;
 
         // Update all version placeholders
         document.querySelectorAll('.version-plh').forEach(el => el.textContent = displayVersion);
