@@ -314,12 +314,15 @@ class _InstallerScreenState extends State<InstallerScreen> {
     try {
       // 1. Get URL
       final response = await http.get(Uri.parse(RELEASE_API));
+      if (response.statusCode != 200) throw Exception("API Error ${response.statusCode}");
+      
       final data = jsonDecode(response.body);
       String? dlUrl;
-      for (var asset in data['assets']) {
+      final List assets = data['assets'] ?? [];
+      for (var asset in assets) {
         if (asset['name'] == fileName) dlUrl = asset['browser_download_url'];
       }
-      if (dlUrl == null) throw Exception("File not found in release");
+      if (dlUrl == null) throw Exception("File '$fileName' not found in release");
 
       // 2. Download to Public Downloads
       final File file = File('$_targetDir/$fileName');
