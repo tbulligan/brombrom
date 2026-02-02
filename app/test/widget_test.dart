@@ -15,8 +15,9 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const BromBromApp());
 
-    // Verify that the app shows the permission request screen initially (Dutch default).
-    expect(find.text('Toegang Vereist'), findsOneWidget);
-    expect(find.text('TOEGANG TOEGESTAAN'), findsOneWidget);
+    // Verify that the app shows the permission request screen initially.
+    // We use Keys to remain independent of the current language/translation.
+    expect(find.byKey(const Key('onboarding_title')), findsOneWidget);
+    expect(find.byKey(const Key('allow_access_button')), findsOneWidget);
   });
 }
