@@ -89,11 +89,19 @@ async function fetchLatestVersion() {
     if (data.tag_name) {
       const versionEl = document.getElementById('version-tag');
       if (versionEl) {
+        // If tag is literally 'latest', use the publish date for a cleaner look
+        let displayVersion = data.tag_name;
+        if (displayVersion === 'latest' && data.published_at) {
+          const date = new Date(data.published_at);
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          displayVersion = `${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+
         // Update all version placeholders
-        document.querySelectorAll('.version-plh').forEach(el => el.textContent = data.tag_name);
+        document.querySelectorAll('.version-plh').forEach(el => el.textContent = displayVersion);
 
         // Update the main badge
-        document.getElementById('version-tag').textContent = data.tag_name;
+        versionEl.textContent = displayVersion;
         document.getElementById('version-badge').style.opacity = '1';
       }
     }
@@ -123,7 +131,5 @@ document.addEventListener('DOMContentLoaded', () => {
   animatedElements.forEach((el) => observer.observe(el));
 
   updateLanguage('nl');
-  // Initial placeholder
-  document.querySelectorAll('.version-plh').forEach(el => el.textContent = 'latest');
   fetchLatestVersion();
 });
