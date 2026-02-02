@@ -8,6 +8,7 @@ import 'package:intl/intl.dart'; // Add to pubspec if missing, or use manual par
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const BromBromApp());
@@ -65,6 +66,113 @@ class _InstallerScreenState extends State<InstallerScreen> {
   bool _routingUpdateAvailable = false;
   bool _apkUpdateAvailable = false;
   bool _showLogs = false;
+  String _locale = 'nl';
+
+  final Map<String, Map<String, String>> _translations = {
+    'nl': {
+      'app_name': 'BromBrom Manager',
+      'access_required': 'Toegang Vereist',
+      'access_desc': 'Om bestanden te downloaden naar je Downloads-map en versies te controleren, hebben we \'Toegang tot alle bestanden\' nodig.',
+      'allow_access': 'TOEGANG TOEGESTAAN',
+      'status_permissions': 'Permissies controleren...',
+      'status_checking': 'GitHub & lokale bestanden controleren...',
+      'status_updates': 'Updates beschikbaar!',
+      'status_uptodate_brief': 'Bestanden zijn up-to-date.',
+      'status_uptodate_full': 'Alle navigatiebestanden zijn up-to-date',
+      'status_error': 'Verbindings-/API-fout',
+      'status_dl': 'Bezig met downloaden van {file}...',
+      'status_dl_done': 'Download voltooid!',
+      'status_dl_error': 'Fout: {error}',
+      'latest_release': 'Laatste release',
+      'btn_apk_update': 'UPDATE BromBrom APP',
+      'btn_apk_download': 'APP OPNIEUW DOWNLOADEN',
+      'installed_version': 'Geïnstalleerd',
+      'in_downloads': 'In Downloads',
+      'version_old': 'Oude versie',
+      'version_current': 'Huidige',
+      'btn_map_update': 'KAART UPDATEN',
+      'btn_map_download': 'KAART OPNIEUW DOWNLOADEN',
+      'on_disk': 'Op schijf',
+      'map_tip': '⚠️ Tip: Als de import mislukt, verwijder dan eerst de oude kaart in OsmAnd.',
+      'help': 'Help',
+      'btn_routing_update': 'BromBrom Routing BIJWERKEN',
+      'btn_routing_download': 'Routing OPNIEUW DOWNLOADEN',
+      'essential_logic': 'Essentieel voor correcte navigatie logica!',
+      'buy_coffee': 'Koop een bakje koffie',
+      'show_logs': 'Logboeken tonen',
+      'hide_logs': 'Logboeken verbergen',
+      'routing_dl_title': 'Routing-bestand gedownload',
+      'routing_dl_desc': 'Bestand opgeslagen in \'Downloads\'.\n\nHOE TE INSTALLEREN:\n1. Open OsmAnd en zorg dat je een BromBrom-profiel hebt (indien niet: Instellingen → App-profielen → Nieuw → Rijden → BromBrom).\n2. Selecteer je BromBrom-profiel.\n3. Ga naar Navigatie-instellingen → Navigatietype.\n4. Tik op \'Navigatiebestand importeren\' en selecteer \'routing.xml\'.\n5. Kies indien gevraagd voor Vervangen.\n6. Zorg dat BromBrom is geselecteerd als het actieve type.',
+      'map_del_title': 'Oude kaart verwijderen',
+      'map_del_desc': 'Als het importeren van de nieuwe kaart mislukt, volg dan deze stappen in OsmAnd:',
+      'step_1': '1. Open OsmAnd Instellingen',
+      'step_2': '2. Kaarten & Bronnen',
+      'step_3': '3. Tik op het tabblad \'Lokaal\'',
+      'step_4': '4. Open \'Standaard kaarten\'',
+      'step_5': '5. Zoek naar \'NL_BromBrom_tagged\'',
+      'step_6': '6. Tik erop en kies \'Verwijderen\'',
+    },
+    'en': {
+      'app_name': 'BromBrom Manager',
+      'access_required': 'Access Required',
+      'access_desc': 'To download files to your Downloads folder and check versions, we need \'All Files Access\'.',
+      'allow_access': 'ALLOW ACCESS',
+      'status_permissions': 'Checking permissions...',
+      'status_checking': 'Checking GitHub & Local files...',
+      'status_updates': 'Updates Available!',
+      'status_uptodate_brief': 'Files are up to date.',
+      'status_uptodate_full': 'All navigation files are up to date',
+      'status_error': 'Connection/API Error',
+      'status_dl': 'Downloading {file}...',
+      'status_dl_done': 'Download Complete!',
+      'status_dl_error': 'Error: {error}',
+      'latest_release': 'Latest Release',
+      'btn_apk_update': 'UPDATE BromBrom APP',
+      'btn_apk_download': 'RE-DOWNLOAD APP',
+      'installed_version': 'Installed',
+      'in_downloads': 'In Downloads',
+      'version_old': 'Old Version',
+      'version_current': 'Current',
+      'btn_map_update': 'UPDATE MAP',
+      'btn_map_download': 'RE-DOWNLOAD MAP',
+      'on_disk': 'On disk',
+      'map_tip': '⚠️ Tip: If import fails, delete the old map in OsmAnd first.',
+      'help': 'Help',
+      'btn_routing_update': 'UPDATE BromBrom Routing',
+      'btn_routing_download': 'RE-DOWNLOAD Routing',
+      'essential_logic': 'Essential for correct navigation logic!',
+      'buy_coffee': 'Buy me a coffee',
+      'show_logs': 'Show Debug Logs',
+      'hide_logs': 'Hide Debug Logs',
+      'routing_dl_title': 'Routing File Downloaded',
+      'routing_dl_desc': 'File saved to \'Downloads\'.\n\nHOW TO INSTALL:\n1. Open OsmAnd and ensure you have a BromBrom profile (if not: Settings → App Profiles → New → Driving → BromBrom).\n2. Select your BromBrom profile.\n3. Go to Navigation Settings → Navigation Type.\n4. Tap \'Import routing file\' and select \'routing.xml\'.\n5. If prompted, choose Replace.\n6. Ensure BromBrom is selected as active.',
+      'map_del_title': 'Delete Old Map',
+      'map_del_desc': 'If importing the new map fails, follow these steps in OsmAnd:',
+      'step_1': '1. Open OsmAnd Settings',
+      'step_2': '2. Maps & Resources',
+      'step_3': '3. Tap the \'Local\' tab',
+      'step_4': '4. Open \'Standard maps\'',
+      'step_5': '5. Find \'NL_BromBrom_tagged\'',
+      'step_6': '6. Tap it and select \'Delete\'',
+    }
+  };
+
+  String _t(String key) => _translations[_locale]?[key] ?? key;
+
+  Future<void> _loadLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _locale = prefs.getString('language_code') ?? 'nl';
+    });
+  }
+
+  Future<void> _saveLocale(String code) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language_code', code);
+    setState(() {
+      _locale = code;
+    });
+  }
 
   final List<String> _logs = [];
   void _log(String msg) {
@@ -77,7 +185,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
   @override
   void initState() {
     super.initState();
-    _checkPermissions();
+    _loadLocale().then((_) => _checkPermissions());
   }
 
   Future<void> _checkPermissions() async {
@@ -87,7 +195,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
     if (!status.isGranted) {
       setState(() {
          _hasPermission = false;
-         _statusMessage = "Please grant 'All Files Access' to manage Downloads.";
+         _statusMessage = _t('access_desc');
       });
     } else {
       setState(() => _hasPermission = true);
@@ -101,7 +209,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
   }
 
   Future<void> _checkVersions() async {
-    setState(() => _statusMessage = 'Checking GitHub & Local files...');
+    setState(() => _statusMessage = _t('status_checking'));
     
     try {
       // 1. Get GitHub Info
@@ -169,20 +277,20 @@ class _InstallerScreenState extends State<InstallerScreen> {
 
       setState(() {
         _statusMessage = (_mapUpdateAvailable || _routingUpdateAvailable || _apkUpdateAvailable) 
-            ? "Updates Available!" 
-            : "Files in Downloads are up to date.";
+            ? _t('status_updates') 
+            : _t('status_uptodate_brief');
       });
 
     } catch (e) {
       _log("Check Error: $e");
-      setState(() => _statusMessage = "Connection/API Error");
+      setState(() => _statusMessage = _t('status_error'));
     }
   }
 
   Future<void> _downloadFile(String fileName, {bool isMap = true}) async {
     setState(() {
       _isDownloading = true;
-      _statusMessage = "Downloading $fileName...";
+      _statusMessage = _t('status_dl').replaceFirst('{file}', fileName);
       _progress = 0.0;
     });
 
@@ -241,7 +349,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       setState(() {
         _isDownloading = false;
         _progress = 1.0;
-        _statusMessage = "Download Complete!";
+        _statusMessage = _t('status_dl_done');
       });
 
       // 4. Trigger Handoff
@@ -257,7 +365,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       _log("DL Error: $e");
       setState(() {
         _isDownloading = false;
-        _statusMessage = "Error: $e";
+        _statusMessage = _t('status_dl_error').replaceFirst('{error}', e.toString());
       });
     }
   }
@@ -331,17 +439,8 @@ class _InstallerScreenState extends State<InstallerScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Routing File Downloaded"),
-        content: const Text(
-          "File saved to 'Downloads'.\n\n"
-          "HOW TO INSTALL:\n"
-          "1. Open OsmAnd and ensure you have a BromBrom profile (if not: Settings → App Profiles → New → Driving → BromBrom).\n"
-          "2. Select your BromBrom profile.\n"
-          "3. Go to Navigation Settings → Navigation Type.\n"
-          "4. Tap 'Import routing file' and select 'routing.xml' from Downloads.\n"
-          "5. If prompted, choose Replace to update the existing version.\n"
-          "6. Ensure BromBrom is selected as the active type."
-        ),
+        title: Text(_t('routing_dl_title')),
+        content: Text(_t('routing_dl_desc')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK")),
         ],
@@ -353,20 +452,20 @@ class _InstallerScreenState extends State<InstallerScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("How to delete the old map"),
-        content: const SingleChildScrollView(
+        title: Text(_t('map_del_title')),
+        content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("If importing the new map fails, follow these steps in OsmAnd:"),
-              SizedBox(height: 16),
-              Text("1. Open OsmAnd Settings"),
-              Text("2. Maps & Resources"),
-              Text("3. Tap the 'Local' tab"),
-              Text("4. Open 'Standard maps'"),
-              Text("5. Find 'NL_BromBrom_tagged'"),
-              Text("6. Tap it and select 'Delete'"),
+              Text(_t('map_del_desc')),
+              const SizedBox(height: 16),
+              Text(_t('step_1')),
+              Text(_t('step_2')),
+              Text(_t('step_3')),
+              Text(_t('step_4')),
+              Text(_t('step_5')),
+              Text(_t('step_6')),
             ],
           ),
         ),
@@ -408,21 +507,21 @@ class _InstallerScreenState extends State<InstallerScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.folder_shared, size: 64, color: Colors.blue),
+                Icon(Icons.folder_shared, size: 64, color: Colors.blue[800]),
                 const SizedBox(height: 24),
-                const Text(
-                  "Access Required",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Text(
+                  _t('access_required'),
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  "To download files to your Downloads folder and check versions, we need 'All Files Access'.",
+                Text(
+                  _t('access_desc'),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: _requestPermission,
-                  child: const Text("ALLOW ACCESS"),
+                  child: Text(_t('allow_access')),
                 )
               ],
             ),
@@ -433,9 +532,20 @@ class _InstallerScreenState extends State<InstallerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-          title: const Text("BromBrom Manager"), 
+          title: Text(_t('app_name')), 
           backgroundColor: Colors.blue[800], 
           foregroundColor: Colors.white,
+          actions: [
+            TextButton(
+              onPressed: () => _saveLocale('nl'),
+              child: Text("🇳🇱", style: TextStyle(fontSize: 24, opacity: _locale == 'nl' ? 1.0 : 0.5)),
+            ),
+            TextButton(
+              onPressed: () => _saveLocale('en'),
+              child: Text("🇬🇧", style: TextStyle(fontSize: 24, opacity: _locale == 'en' ? 1.0 : 0.5)),
+            ),
+            const SizedBox(width: 8),
+          ],
       ),
       body: RefreshIndicator(
         onRefresh: _checkVersions,
@@ -455,12 +565,12 @@ class _InstallerScreenState extends State<InstallerScreen> {
                     child: Column(
                       children: [
                         if (!_mapUpdateAvailable && !_routingUpdateAvailable && !_apkUpdateAvailable)
-                           const Row(
+                           Row(
                              mainAxisAlignment: MainAxisAlignment.center,
                              children: [
-                               Icon(Icons.check_circle, color: Colors.green),
-                               SizedBox(width: 8),
-                               Expanded(child: Text("All navigation files are up to date", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green))),
+                               const Icon(Icons.check_circle, color: Colors.green),
+                               const SizedBox(width: 8),
+                               Expanded(child: Text(_t('status_uptodate_full'), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green))),
                              ],
                            )
                         else 
@@ -468,7 +578,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
     
                         const SizedBox(height: 8),
                         if (_latestReleaseDate != null)
-                          Text("Latest Release: ${DateFormat('yyyy-MM-dd HH:mm').format(_latestReleaseDate!)}"),
+                          Text("${_t('latest_release')}: ${DateFormat('yyyy-MM-dd HH:mm').format(_latestReleaseDate!)}"),
                       ],
                     ),
                   ),
@@ -495,10 +605,10 @@ class _InstallerScreenState extends State<InstallerScreen> {
                       ),
                       child: Column(
                         children: [
-                          Text(_apkUpdateAvailable ? "UPDATE BromBrom APP" : "RE-DOWNLOAD APP"),
-                          Text("Installed: ${_localAppVersion ?? 'Unknown'}", style: const TextStyle(fontSize: 10, color: Colors.blueGrey)),
+                          Text(_apkUpdateAvailable ? _t('btn_apk_update') : _t('btn_apk_download')),
+                          Text("${_t('installed_version')}: ${_localAppVersion ?? 'Unknown'}", style: const TextStyle(fontSize: 10, color: Colors.blueGrey)),
                           if (_localApkDate != null)
-                            Text("In Downloads: ${(_localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", 
+                            Text("${_t('in_downloads')}: ${(_localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate ?? DateTime(0))) ? _t('version_old') : _t('version_current')}", 
                               style: TextStyle(fontSize: 10, color: _apkUpdateAvailable ? Colors.white70 : Colors.black54)),
                         ],
                       ),
@@ -510,38 +620,42 @@ class _InstallerScreenState extends State<InstallerScreen> {
                       onPressed: () => _downloadFile(OBF_FILENAME, isMap: true),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 20),
-                        // User requested Orange for Update
                         backgroundColor: _mapUpdateAvailable ? Colors.orange[800] : Colors.grey[300],
                         foregroundColor: _mapUpdateAvailable ? Colors.white : Colors.black87,
                       ),
                       child: Column(
                         children: [
-                          Text(_mapUpdateAvailable ? "UPDATE MAP" : "RE-DOWNLOAD MAP"),
+                          Text(_mapUpdateAvailable ? _t('btn_map_update') : _t('btn_map_download')),
                           if (_localMapDate != null)
-                            Text("On disk: ${(_localMapDate!.isBefore(_remoteMapDate ?? _latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", style: TextStyle(fontSize: 10, color: _mapUpdateAvailable ? Colors.white70 : Colors.black54)),
+                            Text("${_t('on_disk')}: ${(_localMapDate!.isBefore(_remoteMapDate ?? _latestReleaseDate ?? DateTime(0))) ? _t('version_old') : _t('version_current')}", style: TextStyle(fontSize: 10, color: _mapUpdateAvailable ? Colors.white70 : Colors.black54)),
                         ],
                       ),
                     ),
-                    // Show tip always for Map action
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              "⚠️ Tip: If import fails, delete the old map in OsmAnd first.",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.orange, fontStyle: FontStyle.italic, fontSize: 13, fontWeight: FontWeight.bold),
+                    InkWell(
+                      onTap: _showMapDeleteInstructions,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _t('map_tip'),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.orange, fontStyle: FontStyle.italic, fontSize: 13, fontWeight: FontWeight.bold),
+                              ),
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.info_outline, color: Colors.orange, size: 20),
-                            onPressed: _showMapDeleteInstructions,
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.zero,
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                                Text(_t('help'), style: const TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     
@@ -557,9 +671,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
                       ),
                       child: Column(
                         children: [
-                          Text(_routingUpdateAvailable ? "UPDATE BromBrom Routing" : "RE-DOWNLOAD Routing"),
+                          Text(_routingUpdateAvailable ? _t('btn_routing_update') : _t('btn_routing_download')),
                           if (_localRoutingDate != null)
-                            Text("On disk: ${(_localRoutingDate!.isBefore(_remoteRoutingDate ?? _latestReleaseDate ?? DateTime(0))) ? 'Old Version' : 'Current'}", style: TextStyle(fontSize: 10, color: _routingUpdateAvailable ? Colors.white70 : Colors.black54)),
+                            Text("${_t('on_disk')}: ${(_localRoutingDate!.isBefore(_remoteRoutingDate ?? _latestReleaseDate ?? DateTime(0))) ? _t('version_old') : _t('version_current')}", style: TextStyle(fontSize: 10, color: _routingUpdateAvailable ? Colors.white70 : Colors.black54)),
                         ],
                       ),
                     ),
@@ -573,8 +687,8 @@ class _InstallerScreenState extends State<InstallerScreen> {
                             children: [
                               const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 16),
                               const SizedBox(width: 4),
-                              Text(
-                                "Essential for correct navigation logic!",
+                                Text(
+                                _t('essential_logic'),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(color: Colors.red[800], fontSize: 14, fontWeight: FontWeight.bold),
                               ),
@@ -591,9 +705,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
                     TextButton.icon(
                       onPressed: _launchCoffeeUrl,
                       icon: const Icon(Icons.coffee, color: Colors.brown, size: 20),
-                      label: const Text(
-                          "Buy me a coffee", 
-                          style: TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
+                      label: Text(
+                          _t('buy_coffee'), 
+                          style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
                       ),
                     ),
                   ],
@@ -605,7 +719,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
                 Center(
                   child: TextButton(
                     onPressed: () => setState(() => _showLogs = !_showLogs),
-                    child: Text(_showLogs ? "Hide Debug Logs" : "Show Debug Logs", 
+                    child: Text(_showLogs ? _t('hide_logs') : _t('show_logs'), 
                       style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   ),
                 ),
