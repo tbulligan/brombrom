@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="nl">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/brombrom/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/brombrom/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/brombrom/favicon-16x16.png">
+  <link rel="manifest" href="/brombrom/site.webmanifest">
+  <link rel="shortcut icon" href="/brombrom/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BromBrom - Navigatie voor Brommobielen</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <meta name="description"
+    content="Offline OsmAnd navigation package for L6e microcars (Brommobielen) in the Netherlands. Safe, legal routing avoiding motorways and C9 zones.">
+
+  <meta property="og:title" content="BromBrom - Navigatie voor Brommobielen" />
+  <meta property="og:description" content="Veilig en legaal navigeren met je brommobiel. Vermijd C9 en snelwegen." />
+  <meta property="og:image"
+    content="https://raw.githubusercontent.com/tbulligan/brombrom/main/assets/brombrom-banner.png" />
+</head>
+
+<body>
+
+  <div class="container">
+    <header class="fade-in">
+      <div class="header-left">
+        <a href="#" class="logo">
+          <i class="ph-fill ph-car-profile" style="color: var(--primary);"></i>
+          BromBrom
+        </a>
+      </div>
+
+      <div class="header-right">
+        <!-- Language Switcher -->
+        <div class="lang-switch">
+          <div class="lang-option active" data-lang="nl">NL</div>
+          <div class="lang-option" data-lang="en">EN</div>
+        </div>
+
+        <nav>
+          <a href="https://github.com/tbulligan/brombrom" target="_blank" class="github-link">
+            <i class="ph-fill ph-github-logo"></i>
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <!-- Hero Section -->
+      <section class="hero fade-in">
+        <!-- Dynamic Version Badge -->
+        <span class="badge" id="version-badge" style="opacity: 0; transition: opacity 0.5s;">
+          <span id="version-tag">...</span> <span data-i18n="badge_label">Nu Beschikbaar</span>
+        </span>
+
+        <h1 data-i18n="hero_title">Navigeer met <br /> Vertrouwen.</h1>
+        <p data-i18n="hero_desc">Het enige offline OsmAnd navigatiepakket specifiek ontworpen voor <strong>L6e microcars
+            (Brommobielen)</strong> in Nederland. Vermijd snelwegen, respecteer C9 borden en rijd veilig.</p>
+
+        <div class="hero-actions">
+          <a href="https://github.com/tbulligan/brombrom/releases/latest/download/BromBrom.apk" class="btn btn-primary">
+            <i class="ph-bold ph-download-simple"></i>
+            <span data-i18n="btn_download">Download BromBrom Manager</span>
+          </a>
+          <a href="#install" class="btn btn-secondary" data-i18n="btn_how">
+            Hoe het werkt
+          </a>
+        </div>
+
+        <!-- Hero Banner Image -->
+        <div class="fade-in" style="width:100%; display:flex; justify-content:center;">
+          <img src="https://raw.githubusercontent.com/tbulligan/brombrom/main/assets/brombrom-banner.png"
+            alt="BromBrom OsmAnd Interface" class="hero-banner">
+        </div>
+      </section>
+
+      <!-- Features -->
+      <section id="features">
+        <div class="grid">
+          <div class="card fade-in">
+            <div class="card-icon">
+              <i class="ph-duotone ph-traffic-sign"></i>
+            </div>
+            <h3 data-i18n="feat_1_title">C9 Handhaving</h3>
+            <p data-i18n="feat_1_desc">Vermijdt automatisch wegen gemarkeerd met het C9 verkeersbord (gesloten voor
+              langzaam motorverkeer), zodat u legaal en veilig blijft.</p>
+          </div>
+
+          <div class="card fade-in">
+            <div class="card-icon">
+              <i class="ph-duotone ph-road-horizon"></i>
+            </div>
+            <h3 data-i18n="feat_2_title">Snelwegen Verbod</h3>
+            <p data-i18n="feat_2_desc">Routeert nooit over snelwegen en autowegen waar brommobielen niet zijn
+              toegestaan, en kiest slimme alternatieven via service-wegen.</p>
+          </div>
+
+          <div class="card fade-in">
+            <div class="card-icon">
+              <i class="ph-duotone ph-globe-stand"></i>
+            </div>
+            <h3 data-i18n="feat_3_title">100% Offline</h3>
+            <p data-i18n="feat_3_desc">Gebouwd op OsmAnd. Navigeer overal in Nederland zonder internetverbinding. Geen
+              dataverbruik nodig.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Installation -->
+      <section id="install">
+        <h2 class="fade-in" data-i18n="install_title">Start binnen enkele minuten</h2>
+        <p class="fade-in" data-i18n="install_desc">De makkelijkste manier om te installeren en kaarten up-to-date te
+          houden is via de <strong>BromBrom Manager</strong> voor Android (Sideload Only).</p>
+
+        <div class="steps margin-top-lg">
+
+          <div class="step-item fade-in">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4 data-i18n="step_1_title">Download de App</h4>
+              <p><span data-i18n="step_1_desc">Download de BromBrom.apk van de releases pagina.</span></p>
+            </div>
+          </div>
+
+          <div class="step-item fade-in">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4 data-i18n="step_2_title">Installeer & Geef Toestemming</h4>
+              <p data-i18n="step_2_desc">Open de APK om te installeren. U moet "Alle Bestanden Toegang" geven zodat de
+                manager uw OsmAnd kaartenmap kan bijwerken.</p>
+            </div>
+          </div>
+
+          <div class="step-item fade-in">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4 data-i18n="step_3_title">Eén-klik Update</h4>
+              <p data-i18n="step_3_desc">Open BromBrom Manager en tik op <strong>Update Kaart</strong> en <strong>Update
+                  Routing</strong>. U bent klaar om te rijden!</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Pro Tip Card -->
+        <div class="tip-card fade-in">
+          <h3 data-i18n="tip_title">iOS of Handmatige Installatie?</h3>
+          <p data-i18n="tip_desc">Voor iPhone-gebruikers of geavanceerde gebruikers die liever handmatig bestanden
+            kopiëren.</p>
+          <a href="https://github.com/tbulligan/brombrom/blob/main/docs/manual_install.md" target="_blank"
+            class="btn btn-secondary btn-sm" data-i18n="tip_btn">
+            Bekijk de Gids
+          </a>
+        </div>
+      </section>
+      <!-- Support Section -->
+      <section id="support" class="fade-in" style="text-align: center; padding-top: 2rem;">
+        <h2 data-i18n="support_title" style="font-size: 1.5rem; margin-bottom: 1rem;">Steun het Project</h2>
+        <a href="https://buymeacoffee.com/brombrom" target="_blank" class="btn btn-coffee">
+          <i class="ph-bold ph-coffee"></i>
+          <span data-i18n="coffee">Trakteer mee op een koffie</span>
+        </a>
+      </section>
+    </main>
+
+    <footer class="fade-in">
+      <div class="footer-content">
+        <p data-i18n="footer_copy">&copy; 2026 BromBrom Project.</p>
+
+        <p style="font-size: 0.9rem; color: var(--text-muted);">
+          Powered by <a href="https://osmand.net" target="_blank"
+            style="text-decoration: underline; color:inherit;">OsmAnd</a>.
+          <span data-i18n="footer_sub">Open source en gratis. Data van OpenStreetMap & NDW.</span>
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
