@@ -15,8 +15,8 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const BromBromApp());
 
-    // Verify that the app shows the permission request screen initially.
-    expect(find.text('Access Required'), findsOneWidget);
-    expect(find.text('ALLOW ACCESS'), findsOneWidget);
+    // Verify that the app shows the permission request screen initially (Dutch default).
+    expect(find.text('Toegang Vereist'), findsOneWidget);
+    expect(find.text('TOEGANG TOEGESTAAN'), findsOneWidget);
   });
 }
