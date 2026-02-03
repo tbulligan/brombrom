@@ -334,7 +334,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
         url: dlUrl,
         filename: fileName,
         displayName: fileName,
-        updates: Updates.progressAndStatus,
+        updates: Updates.statusAndProgress,
         allowPause: true,
       );
 
@@ -357,7 +357,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
         if (await file.exists()) await file.delete();
         
         // Move from internal to public
-        final filePath = await FileDownloader().pathForTask(task);
+        final filePath = await task.filePath();
         final downloadedFile = File(filePath);
         await downloadedFile.copy(file.path);
         await downloadedFile.delete();
