@@ -218,10 +218,10 @@
 			<select value="$maxspeed:advisory" t="maxspeed:advisory"/>
 			<select value="$maxspeed" t="maxspeed"/>
 
-			<select value="45" t="highway" v="primary"/>
-			<select value="45" t="highway" v="primary_link"/>
-			<select value="45" t="highway" v="secondary"/>
-			<select value="45" t="highway" v="secondary_link"/>
+			<select value="65" t="highway" v="primary"/>
+			<select value="65" t="highway" v="primary_link"/>
+			<select value="60" t="highway" v="secondary"/>
+			<select value="60" t="highway" v="secondary_link"/>
 			<select value="45" t="highway" v="tertiary"/>
 			<select value="45" t="highway" v="tertiary_link"/>
 			<select value="35" t="highway" v="unclassified"/>
