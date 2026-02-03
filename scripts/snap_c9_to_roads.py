@@ -149,8 +149,12 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     if side in side_count:
         side_count[side] += 1
 
-    # If still no bearing, pure distance
-    if pd.isna(bearing):
+    # If still no bearing, pure distance ONLY if we also lack side info
+    # This allows signs with Side='R' but Bearing=NaN to use the smart logic below
+    side = str(row.get('side', '')).upper()
+    has_side = side in ['L', 'R']
+    
+    if pd.isna(bearing) and not has_side:
         return snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms)
 
     candidates = list(spatial_index.query(point.buffer(FALLBACK_TOL)))
@@ -172,17 +176,30 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
         seg_end = line.interpolate(ahead_frac)
 
         seg_bearing = bearing_between(proj_pt, seg_end)
-        angle_diff = min(abs(bearing - seg_bearing), 360 - abs(bearing - seg_bearing))
+        
+        # Handle missing bearing gracefully
+        if pd.isna(bearing):
+            angle_diff = 0.0 # No angular penalty if we don't know the sign's angle
+        else:
+            angle_diff = min(abs(bearing - seg_bearing), 360 - abs(bearing - seg_bearing))
         
         # Side Matching Logic
         side_penalty = 0.0
         row_side = str(row.get('side', '')).upper()
         if row_side in ['L', 'R']:
             geom_side = get_geometric_side(point, line, proj_dist)
+            
+            # Check OneWay status (accessing row from roads_gdf using iloc)
+            # We assume indices align with roads_geoms, which they do
+            tags = str(roads_gdf.iloc[idx].get('other_tags', ''))
+            is_oneway = '"oneway"=>"yes"' in tags or '"junction"=>"roundabout"' in tags or '"highway"=>"motorway"' in tags
+
             if geom_side == row_side:
-                side_penalty = -5.0 # Bonus for matching side
-            elif geom_side is not None:
-                side_penalty = 10.0 # Penalty for mismatch
+                side_penalty = -2.0 # Bonus for matching side
+            # No penalty for mismatch: rely on Angle (for opposing) and Bonus (for parallel)
+            # This handles 'Breukelerwaard' where side data conflicts with OneWay geometry
+            else:
+                side_penalty = 0.0
         
         dist = proj_pt.distance(point)
         # Score formulation: Distance is king, but orientation/side refine it.
