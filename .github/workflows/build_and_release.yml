@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/**'
       - 'config/**'
+      - '!config/routing.xml'
       - 'tests/**'
       - 'Dockerfile'
       - 'requirements.txt'

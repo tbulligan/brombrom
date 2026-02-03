@@ -1,0 +1,25 @@
+name: Fast Routing Update
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'config/routing.xml'
+  workflow_dispatch:
+
+jobs:
+  update-routing:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Update Release Asset
+        run: |
+          echo "Uploading updated routing.xml to 'latest' release..."
+          gh release upload latest config/routing.xml --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
