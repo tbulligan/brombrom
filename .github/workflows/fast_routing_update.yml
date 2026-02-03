@@ -1,5 +1,9 @@
 name: Fast Routing Update
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 on:
   push:
     branches: [ main ]
