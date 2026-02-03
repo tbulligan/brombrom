@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <osmand_routing_config defaultProfile="car" name="default">
+	<!-- Last updated: 2026-02-03 17:45 -->
 	<attribute name="heuristicCoefficient" value="1.0" />
 	<attribute name="zoomToLoadTiles" value="16" />
 	<attribute name="planRoadDirection" value="0" />
