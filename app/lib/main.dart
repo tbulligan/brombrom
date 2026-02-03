@@ -9,6 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:background_downloader/background_downloader.dart';
 
 void main() {
   runApp(const BromBromApp());
@@ -312,7 +313,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
     });
 
     try {
-      // 1. Get URL
+      // 1. Get URL (same as before)
       final response = await http.get(Uri.parse(RELEASE_API));
       if (response.statusCode != 200) throw Exception("API Error ${response.statusCode}");
       
@@ -324,69 +325,74 @@ class _InstallerScreenState extends State<InstallerScreen> {
       }
       if (dlUrl == null) throw Exception("File '$fileName' not found in release");
 
-      // 2. Download to Public Downloads
-      final File file = File('$_targetDir/$fileName');
-      if (await file.exists()) await file.delete();
+      _log("Starting background download: $fileName");
 
-      _log("DL Start: $dlUrl");
-      
-      // Use Client to handle potential redirects manually if needed, or set headers
-      final client = http.Client();
-      var request = http.Request('GET', Uri.parse(dlUrl!));
-      request.headers['User-Agent'] = 'BromBromApp/1.0';
-      request.followRedirects = true; // Ensure redirects are followed
-      
-      final streamedResponse = await client.send(request);
-      
-      if (streamedResponse.statusCode != 200) {
-         // Read error
-         final body = await streamedResponse.stream.bytesToString();
-         throw Exception("HTTP ${streamedResponse.statusCode}: $body");
-      }
+      // 2. Setup Download Task
+      // We download to internal storage first, then move to public Downloads
+      // this is more robust regarding permissions during the background phase.
+      final task = DownloadTask(
+        url: dlUrl,
+        filename: fileName,
+        displayName: fileName,
+        updates: Updates.progressAndStatus,
+        allowPause: true,
+      );
 
-      final contentLength = streamedResponse.contentLength ?? 1;
-      int received = 0;
-      
-      final sink = file.openWrite();
-      await streamedResponse.stream.listen((chunk) {
-        sink.add(chunk);
-        received += chunk.length;
-        setState(() => _progress = received / contentLength);
-      }).asFuture();
-      await sink.close();
-      client.close();
-      
-      // 3. Post-Download: Media Scan
-      _log("Saved: ${file.path} ($received bytes)");
-      if (received < 1000) {
-        _log("WARNING: File is tiny! Check GitHub Assets.");
-      }
-      _scanFile(file.path);
-      
-      // Update check state immediately
-      await _checkVersions();
+      // 3. Execute Download with progress tracking
+      final result = await FileDownloader().download(
+        task,
+        onProgress: (progress) {
+          if (mounted) {
+            setState(() => _progress = progress);
+          }
+        },
+        onStatus: (status) {
+          _log("Download status: $status");
+        },
+      );
 
-      setState(() {
-        _isDownloading = false;
-        _progress = 1.0;
-        _statusMessage = _t('status_dl_done');
-      });
+      if (result.status == TaskStatus.complete) {
+        // 4. Move to Public Downloads
+        final File file = File('$_targetDir/$fileName');
+        if (await file.exists()) await file.delete();
+        
+        // Move from internal to public
+        final filePath = await FileDownloader().pathForTask(task);
+        final downloadedFile = File(filePath);
+        await downloadedFile.copy(file.path);
+        await downloadedFile.delete();
 
-      // 4. Trigger Handoff
-      if (fileName.endsWith(".apk")) { // APP UPDATE
-        _installApk(file.path);
-      } else if (isMap) {
-        _openMapInOsmAnd(file.path);
+        _log("Saved to public storage: ${file.path}");
+        _scanFile(file.path);
+        
+        await _checkVersions();
+
+        setState(() {
+          _isDownloading = false;
+          _progress = 1.0;
+          _statusMessage = _t('status_dl_done');
+        });
+
+        // 5. Trigger Handoff
+        if (fileName.endsWith(".apk")) {
+          _installApk(file.path);
+        } else if (isMap) {
+          _openMapInOsmAnd(file.path);
+        } else {
+          _showRoutingInstructions(file.path);
+        }
       } else {
-        _showRoutingInstructions(file.path);
+        throw Exception("Download failed with status: ${result.status}");
       }
 
     } catch (e) {
       _log("DL Error: $e");
-      setState(() {
-        _isDownloading = false;
-        _statusMessage = _t('status_dl_error').replaceFirst('{error}', e.toString());
-      });
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+          _statusMessage = _t('status_dl_error').replaceFirst('{error}', e.toString());
+        });
+      }
     }
   }
   
