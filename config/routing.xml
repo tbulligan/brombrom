@@ -13,7 +13,6 @@
 		<attribute name="smoothenPointsNoRoute" value = "5"/>
 
 
-		<parameter id="allow_private" name="Allow private access" description="Allow access to private areas" type="boolean"/>
 		<parameter id="avoid_toll" name="Avoid toll roads" description="Avoid toll roads" type="boolean"/>
 		<parameter id="avoid_unpaved" name="Avoid unpaved roads" description="Avoid unpaved roads" type="boolean"/>
 		<parameter id="avoid_low_emission_zone" name="Avoid low emission zones" description="Avoid low emission zones" type="boolean"/>
@@ -23,6 +22,7 @@
 		<parameter id="avoid_tunnels" name="Avoid tunnels" description="Avoid tunnels" type="boolean"/>
 		<parameter id="avoid_borders" name="Avoid border crossing" description="Avoid crossing a border into another country" type="boolean"/>
 		<parameter id="avoid_ice_roads_fords" name="Avoid ice roads, fords" description="Avoid ice roads and fords" type="boolean"/>
+		<parameter id="goods_restrictions" name="Goods restrictions" description="Respect goods restrictions" type="boolean"/>
 		<parameter id="avoid_4wd_only" name="Avoid 4WD roads" description="Avoid roads only suitable for 4WD only vehicles" type="boolean"/>
 		<parameter id="weight" name="Weight" description="Maximum vehicle weight to be permitted on the route" type="numeric" values="0,0.349,0.449,0.599,0.799,3.49" valueDescriptions="-,350kg,450kg,600kg,800kg,3.5t"/>
 		<parameter id="height" name="Height" description="Maximum vehicle height to be permitted on the route" type="numeric" values="0,1.49,1.99,2.49,2.99" valueDescriptions="-,1.5m,2m,2.5m,3m"/>
@@ -274,19 +274,34 @@
 
 			<select value="0.5" t="surface" v="gravel"/>
 			<select value="0.5" t="surface" v="unpaved"/>
+			
+			<!-- Comfort: Brommobiels prefer smooth asphalt over clunky bricks -->
+			<select value="1.1" t="surface" v="asphalt"/>
+			<select value="1.1" t="surface" v="concrete"/>
+			<select value="1.1" t="surface" v="paved"/>
+			<select value="0.8" t="surface" v="sett"/>
+			<select value="0.8" t="surface" v="cobblestone"/>
+			<select value="0.7" t="surface" v="unhewn_cobblestone"/>
+			
+			<!-- Low Comfort: Avoid bad smoothness -->
+			<select value="0.9" t="smoothness" v="intermediate"/>
+			<select value="0.7" t="smoothness" v="bad"/>
+			<select value="0.4" t="smoothness" v="very_bad"/>
+			<select value="0.2" t="smoothness" v="horrible"/> 
+
 			<if param="prefer_unpaved">
 				<select value="1.2" t="surface" v="gravel"/>
 				<select value="1.2" t="surface" v="unpaved"/>
 				<select value="1.2" t="highway" v="track"/>
 			</if>
 
-			<!-- Preference: Tertiary/Residential > Secondary > Primary -->
-			<!-- This pushes routing towards safer, slower roads -->
-			<select value="0.8" t="highway" v="primary"/>
-			<select value="0.8" t="highway" v="primary_link"/>
-			<select value="0.9" t="highway" v="secondary"/>
-			<select value="0.9" t="highway" v="secondary_link"/>
-			
+			<!-- Preference: Balanced network usage -->
+			<!-- We prefer 50km/h flow (Primary/Secondary) but penalize high-speed deltas via maxspeed tags above -->
+			<select value="1.0" t="highway" v="primary"/>
+			<select value="1.0" t="highway" v="primary_link"/>
+
+			<select value="1.0" t="highway" v="secondary"/>
+			<select value="1.0" t="highway" v="secondary_link"/>			
 			<select value="1.0" t="highway" v="tertiary"/>
 			<select value="1.0" t="highway" v="tertiary_link"/>
 			<select value="1.0" t="highway" v="unclassified"/>
@@ -295,7 +310,7 @@
 			
 			<select value="0.5" t="highway" v="track"/>
 			<select value="0.6" t="highway" v="service"/>
-			<select value="0.6" t="highway" v="living_street"/>
+			<select value="0.4" t="highway" v="living_street"/>
 			<select value="0.5" t="route" v="ferry"/>
 			<select value="0.5" t="route" v="shuttle_train"/>
 			<select value="0.7"/>
@@ -308,7 +323,10 @@
 			<select value="30" t="barrier" v="swing_gate"/>
 			<select value="180" t="barrier" v="toll_booth"/>
 			<select value="25" t="barrier"/>
-			<select value="10" t="traffic_calming"/>
+			
+			<!-- Brommobiels hate speed bumps (drempels) -->
+			<select value="20" t="traffic_calming"/>
+			
 			<select value="20" t="highway" v="traffic_signals"/>
 			<select value="15" t="highway" v="stop"/>
 			<select value="10" t="highway" v="give_way"/>
