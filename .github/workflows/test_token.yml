@@ -1,6 +1,8 @@
 name: Test Release Token
 
 on:
+  push:
+    branches: [ develop ]
   workflow_dispatch:
 
 jobs:
