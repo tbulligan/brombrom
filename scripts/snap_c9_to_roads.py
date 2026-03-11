@@ -270,10 +270,11 @@ def main():
 
     # Save Debug Line Layer (Visual Debugging)
     if os.environ.get("DEBUG") == "true":
-        debug_links = []
         valid_snaps = c9_gdf.dropna(subset=['road_index', 'snap_point'])
-        for _, row in valid_snaps.iterrows():
-            debug_links.append(LineString([row.geometry, row['snap_point']]))
+        debug_links = [
+            LineString([g, s])
+            for g, s in zip(valid_snaps.geometry, valid_snaps.snap_point)
+        ]
         
         if debug_links:
             debug_gdf = gpd.GeoDataFrame(geometry=debug_links, crs=c9_gdf.crs)
