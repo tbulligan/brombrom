@@ -270,10 +270,11 @@ def main():
 
     # Save Debug Line Layer (Visual Debugging)
     if os.environ.get("DEBUG") == "true":
-        debug_links = []
         valid_snaps = c9_gdf.dropna(subset=['road_index', 'snap_point'])
-        for _, row in valid_snaps.iterrows():
-            debug_links.append(LineString([row.geometry, row['snap_point']]))
+        debug_links = [
+            LineString([g, s])
+            for g, s in zip(valid_snaps.geometry, valid_snaps.snap_point)
+        ]
         
         if debug_links:
             debug_gdf = gpd.GeoDataFrame(geometry=debug_links, crs=c9_gdf.crs)
@@ -283,12 +284,13 @@ def main():
         print("Skipping debug_snaps.gpkg (DEBUG != true)")
 
     # Exemption filter
-    exempt = c9_gdf[c9_gdf.apply(has_microcar_exemption, axis=1)]
+    exemption_mask = c9_gdf.apply(has_microcar_exemption, axis=1)
+    exempt = c9_gdf[exemption_mask]
     print(f"Exemptions: {len(exempt)}")
     if len(exempt) > 0:
         exempt.to_file("c9_exemptions.gpkg", driver="GPKG", overwrite=True)
 
-    c9_gdf = c9_gdf[~c9_gdf.apply(has_microcar_exemption, axis=1)]
+    c9_gdf = c9_gdf[~exemption_mask]
     print(f"-> {len(c9_gdf)} C9s for tagging")
 
     # Output forbidden roads
