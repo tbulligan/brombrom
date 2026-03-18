@@ -16,6 +16,18 @@ FALLBACK_TOL = config.FALLBACK_TOL
 
 import re
 
+# 1. Positive Exemption Context (Must have one)
+# Covers: 'uitgezonderd', 'm.u.v.', 'toegestaan', 'vrijgesteld', etc.
+POS_EXEMPTION_PATTERN = re.compile(r'uitgezonderd|m\.u\.v\.|toegestaan|vrijgesteld|behalve|uitz|uitgez|muv')
+
+# 2. Vehicle Keywords (Must have one)
+# Covers: 'brommobiel', 'brommo', 'ob65' (official code), '45km', and common typos like 'brommoblelen'
+VEHICLE_KEYWORDS_PATTERN = re.compile(r'bromm[oa][a-z]*|ob65|45\s?km')
+
+# 3. Negative Guards (Must NOT have)
+# Covers: 'geen', 'verboden', 'ook voor' (prohibition reinforcement)
+NEGATIVE_GUARDS_PATTERN = re.compile(r'geen|verboden|ook voor')
+
 def has_microcar_exemption(row):
     """
     Check textSigns for 'brommobielen' exemptions using robust semantic logic.
@@ -31,22 +43,10 @@ def has_microcar_exemption(row):
             texts = str(texts)
         texts = texts.lower()
         
-        # 1. Positive Exemption Context (Must have one)
-        # Covers: 'uitgezonderd', 'm.u.v.', 'toegestaan', 'vrijgesteld', etc.
-        pos_pattern = r'uitgezonderd|m\.u\.v\.|toegestaan|vrijgesteld|behalve|uitz|uitgez|muv'
-        
-        # 2. Vehicle Keywords (Must have one)
-        # Covers: 'brommobiel', 'brommo', 'ob65' (official code), '45km', and common typos like 'brommoblelen'
-        veh_pattern = r'bromm[oa][a-z]*|ob65|45\s?km'
-        
-        # 3. Negative Guards (Must NOT have)
-        # Covers: 'geen', 'verboden', 'ook voor' (prohibition reinforcement)
-        neg_pattern = r'geen|verboden|ook voor'
-        
         # Check logic: (Positive AND Vehicle) AND NOT Negative
-        has_pos = re.search(pos_pattern, texts) is not None
-        has_veh = re.search(veh_pattern, texts) is not None
-        has_neg = re.search(neg_pattern, texts) is not None
+        has_pos = POS_EXEMPTION_PATTERN.search(texts) is not None
+        has_veh = VEHICLE_KEYWORDS_PATTERN.search(texts) is not None
+        has_neg = NEGATIVE_GUARDS_PATTERN.search(texts) is not None
         
         # Special case: 'ob65' is an official sign code for exemption, treat as safe if present
         if 'ob65' in texts:
