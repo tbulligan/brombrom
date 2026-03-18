@@ -413,10 +413,11 @@ class _InstallerScreenState extends State<InstallerScreen> {
     // Open using View Intent with FileProvider URI
     // Path: /storage/emulated/0/Download/filename.obf
     // XML: <external-path name="external_files" path="." />
-    // URI: content://com.brombrom.app.fileprovider/external_files/Download/filename.obf
     
+    final packageInfo = await PackageInfo.fromPlatform();
+    final String appId = packageInfo.packageName;
     final fileName = path.split('/').last;
-    final contentUri = "content://com.brombrom.app.fileprovider/external_files/Download/$fileName";
+    final contentUri = "content://$appId.fileprovider/external_files/Download/$fileName";
     
     _log("Opening Intent: $contentUri");
 
@@ -439,8 +440,10 @@ class _InstallerScreenState extends State<InstallerScreen> {
   
   Future<void> _installApk(String path) async {
     // Trigger APK install
+    final packageInfo = await PackageInfo.fromPlatform();
+    final String appId = packageInfo.packageName;
     final fileName = path.split('/').last;
-    final contentUri = "content://com.brombrom.app.fileprovider/external_files/Download/$fileName";
+    final contentUri = "content://$appId.fileprovider/external_files/Download/$fileName";
     
     _log("Installing APK: $contentUri");
     
