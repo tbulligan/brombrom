@@ -92,17 +92,24 @@ def build():
                     jvm_args=["-Xmx4G", "-DavoidMapPolling=true"])
 
         # Prepare nodetiles with all extensions just in case
+        nodetiles_dir = Path("nodetiles")
+        existing_nodes = set(os.listdir(nodetiles_dir))
         processed_stems = set()
-        for f in Path("nodetiles").glob("*.*tl*"):
-            base = f.stem
+        
+        for name in list(existing_nodes):
+            if "tl" not in name:
+                continue
+            base = name.split('.')[0]
             if base in processed_stems:
                 continue
             processed_stems.add(base)
 
+            src = nodetiles_dir / name
             for ext in [".ntl", ".tls", ".tlf"]:
-                target = f.parent / (base + ext)
-                if not target.exists():
-                    shutil.copy(str(f), str(target))
+                target_name = base + ext
+                if target_name not in existing_nodes:
+                    shutil.copyfile(str(src), str(nodetiles_dir / target_name))
+                    existing_nodes.add(target_name)
 
         # 2. NodeFilter
         if not os.path.exists("ftiles"):
@@ -112,17 +119,24 @@ def build():
                     jvm_args=["-Xmx4G", "-Ddeletetmpfiles=false", "-DuseDenseMaps=true"])
 
         # Prepare ftiles with all extensions
+        ftiles_dir = Path("ftiles")
+        existing_ftiles = set(os.listdir(ftiles_dir))
         processed_stems = set()
-        for f in Path("ftiles").glob("*.*tl*"):
-            base = f.stem
+        
+        for name in list(existing_ftiles):
+            if "tl" not in name:
+                continue
+            base = name.split('.')[0]
             if base in processed_stems:
                 continue
             processed_stems.add(base)
 
+            src = ftiles_dir / name
             for ext in [".ntl", ".tls", ".tlf"]:
-                target = f.parent / (base + ext)
-                if not target.exists():
-                    shutil.copy(str(f), str(target))
+                target_name = base + ext
+                if target_name not in existing_ftiles:
+                    shutil.copyfile(str(src), str(ftiles_dir / target_name))
+                    existing_ftiles.add(target_name)
 
         # 3. RelationMerger
         if not os.path.exists("ways2.dat"):
