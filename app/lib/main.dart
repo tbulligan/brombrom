@@ -68,6 +68,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
   bool _apkUpdateAvailable = false;
   bool _showLogs = false;
   String _locale = 'nl';
+  
+  // CACHED URLs
+  final Map<String, String> _downloadUrls = {};
 
   final Map<String, Map<String, String>> _translations = {
     'nl': {
@@ -247,6 +250,10 @@ class _InstallerScreenState extends State<InstallerScreen> {
         final String name = asset['name'];
         final DateTime updatedAt = DateTime.parse(asset['updated_at']);
         
+        if (asset['browser_download_url'] != null) {
+          _downloadUrls[name] = asset['browser_download_url'];
+        }
+        
         // Track the overall latest date for display
         if (updatedAt.isAfter(latestDate)) {
           latestDate = updatedAt;
@@ -313,17 +320,10 @@ class _InstallerScreenState extends State<InstallerScreen> {
     });
 
     try {
-      // 1. Get URL (same as before)
-      final response = await http.get(Uri.parse(RELEASE_API));
-      if (response.statusCode != 200) throw Exception("API Error ${response.statusCode}");
-      
-      final data = jsonDecode(response.body);
-      String? dlUrl;
-      final List assets = data['assets'] ?? [];
-      for (var asset in assets) {
-        if (asset['name'] == fileName) dlUrl = asset['browser_download_url'];
+      final String? dlUrl = _downloadUrls[fileName];
+      if (dlUrl == null) {
+         throw Exception("File '$fileName' download URL not found. Please refresh.");
       }
-      if (dlUrl == null) throw Exception("File '$fileName' not found in release");
 
       _log("Starting background download: $fileName");
 
