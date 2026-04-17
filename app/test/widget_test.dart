@@ -14,10 +14,10 @@ void main() {
   testWidgets('App loads smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const BromBromApp());
+    await tester.pumpAndSettle();
 
-    // Verify that the app shows the permission request screen initially.
-    // We use Keys to remain independent of the current language/translation.
-    expect(find.byKey(const Key('onboarding_title')), findsOneWidget);
-    expect(find.byKey(const Key('allow_access_button')), findsOneWidget);
+    // Verify that the app bypasses permissions and goes straight into the dashboard
+    // by finding the main AppBar title.
+    expect(find.text('BromBrom Manager'), findsOneWidget);
   });
 }
