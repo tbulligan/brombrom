@@ -3,8 +3,6 @@ import os
 import zipfile
 from pathlib import Path
 
-import json
-
 def create_osmand_deploy_package():
     import shutil
     dist_dir = Path("dist")
@@ -14,79 +12,39 @@ def create_osmand_deploy_package():
         shutil.rmtree(dist_dir)
     dist_dir.mkdir(exist_ok=True)
     
+    # Files to be staged for release
+    files_to_copy = []
+
+    # 1. BRouter Profile (if debug)
     is_debug = os.environ.get("DEBUG") == "true"
-    
-    # Paths to source files
-    routing_src = Path("config/routing.xml")
-    omc_dir = Path("OsmAndMapCreator")
-    map_src = omc_dir / "NL_BromBrom_tagged.obf"
-    
-    # 1. We will create the OSF zip archive directly
-    osf_path = dist_dir / "BromBrom.osf"
-    
-    # Define the OsmAnd items.json manifest
-    items_manifest = {
-        "version": 1,
-        "items": [
-            {
-                "type": "PLUGIN",
-                "pluginId": "com.brombrom.custom",
-                "name": { "": "BromBrom Microcar Data" },
-                "description": { "": "Map restrictions and routing configuration for L6e." }
-            },
-            {
-                "type": "PROFILE",
-                "pluginId": "com.brombrom.custom",
-                "profile": "brombrom",
-                "baseProfile": "car",
-                "name": { "": "BromBrom" },
-                "color": "orange",
-                "routing_profile": "routing.xml"
-            }
-        ]
-    }
-    
-    print(f"Building {osf_path} package...")
-    
-    with zipfile.ZipFile(osf_path, 'w', zipfile.ZIP_DEFLATED) as osf_zip:
-        # Add Routing
-        if routing_src.exists():
-            osf_zip.write(routing_src, "routing.xml")
-            items_manifest["items"].append({
-                "type": "FILE",
-                "pluginId": "com.brombrom.custom",
-                "subtype": "routing_config",
-                "file": "routing.xml"
-            })
-            print(f"  Added routing.xml")
-        else:
-            print("  Warning: routing.xml not found")
-
-        # Add Map Data - No JSON entry required, OsmAnd auto-detects .obf in the root of .osf!
-        if map_src.exists():
-            osf_zip.write(map_src, "NL_BromBrom_tagged.obf")
-            print(f"  Added NL_BromBrom_tagged.obf")
-        else:
-             print("  Warning: Map .obf not found")
-             
-        # Optional Debug contents
-        if is_debug:
-            brf_src = Path("config/brommobiel.brf")
-            if brf_src.exists():
-                osf_zip.write(brf_src, "brommobiel.brf")
-                items_manifest["items"].append({
-                    "type": "FILE",
-                    "pluginId": "com.brombrom.custom",
-                    "subtype": "ROUTING",
-                    "path": "brommobiel.brf"
-                })
-                print(f"  Added Debug config/brommobiel.brf")
-
-        # Write the manifest into the zip
-        osf_zip.writestr("items.json", json.dumps(items_manifest, indent=2))
-        print("  Added items.json manifest")
+    if is_debug:
+        if Path("config/brommobiel.brf").exists():
+            files_to_copy.append(("config/brommobiel.brf", "brommobiel.brf"))
         
-    print("✓ Deployment package ready: dist/BromBrom.osf")
+        # 2. BRouter Segments (.rd5)
+        segments_dir = Path("segments4")
+        for rd5 in segments_dir.glob("*.rd5"):
+            files_to_copy.append((str(rd5), rd5.name))
+    
+    # 2. OsmAnd Routing Config
+    if Path("config/routing.xml").exists():
+        files_to_copy.append(("config/routing.xml", "routing.xml"))
+
+    # 3. OsmAnd Map (.obf)
+    omc_dir = Path("OsmAndMapCreator")
+    target_obf = omc_dir / "NL_BromBrom_tagged.obf"
+    if target_obf.exists():
+        files_to_copy.append((str(target_obf), "NL_BromBrom_tagged.obf"))
+    
+    print(f"Staging files in {dist_dir}...")
+    for src, dest_name in files_to_copy:
+        if os.path.exists(src):
+            print(f"  Copying {src} -> {dist_dir}/{dest_name}")
+            shutil.copy2(src, dist_dir / dest_name)
+        else:
+            print(f"Warning: {src} missing, skipping")
+
+    print("✓ Deployment files ready in dist/")
 
 if __name__ == "__main__":
     create_osmand_deploy_package()
