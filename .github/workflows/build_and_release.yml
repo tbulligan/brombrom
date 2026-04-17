@@ -85,20 +85,23 @@ jobs:
           gh release edit latest --title "Latest BromBrom OsmAnd Build" --notes "$NOTES" || \
           gh release create latest --title "Latest BromBrom OsmAnd Build" --notes "$NOTES"
 
-          # 4. Conditional routing.xml update
-          # Download current routing.xml to compare
+          # 4. Upload raw files for legacy app backwards compatibility
+          # We upload directly from source since dist/ now contains the .osf package
           gh release download latest -p "routing.xml" -O existing_routing.xml --clobber 2>/dev/null || touch existing_routing.xml
           
-          if cmp -s existing_routing.xml dist/routing.xml; then
-            echo "routing.xml is unchanged, uploading map only."
+          if cmp -s existing_routing.xml config/routing.xml; then
+            echo "routing.xml is unchanged, uploading map and OSF only."
             gh release upload latest \
-              dist/NL_BromBrom_tagged.obf \
+              config/routing.xml \
+              OsmAndMapCreator/NL_BromBrom_tagged.obf \
+              dist/BromBrom.osf \
               --clobber
           else
-            echo "routing.xml changed, uploading both."
+            echo "routing.xml changed, uploading all artifacts."
             gh release upload latest \
-              dist/routing.xml \
-              dist/NL_BromBrom_tagged.obf \
+              config/routing.xml \
+              OsmAndMapCreator/NL_BromBrom_tagged.obf \
+              dist/BromBrom.osf \
               --clobber
           fi
         env:
