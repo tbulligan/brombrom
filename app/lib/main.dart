@@ -239,40 +239,13 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       setState(() {
         _osmandInstalled = freeResolved || proResolved;
       });
-      
-      if (!_osmandInstalled && mounted) {
-        _showMissingOsmAndDialog();
-      }
     } catch(e) {
       _log("OsmAnd Check Error: $e");
     }
   }
 
   void _showMissingOsmAndDialog() {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(_t('missing_osmand_title'), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-          content: Text(_t('missing_osmand_desc')),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(backgroundColor: Colors.blue[800], foregroundColor: Colors.white),
-              child: Text(_t('btn_get_osmand')),
-              onPressed: () {
-                Navigator.of(context).pop();
-                AndroidIntent(
-                  action: 'action_view',
-                  data: 'market://details?id=net.osmand',
-                  flags: <int>[0x10000000], // FLAG_ACTIVITY_NEW_TASK
-                ).launch();
-              },
-            ),
-          ],
-        );
-      },
-    );
+    // Deprecated in favor of the inline UI logic
   }
 
   Future<void> _checkVersions() async {
@@ -579,6 +552,53 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                 ),
                 const SizedBox(height: 32),
                 
+                if (!_osmandInstalled) ...[
+                  Card(
+                    color: Colors.red[50],
+                    shape: RoundedRectangleBorder(
+                      side: const BorderSide(color: Colors.red, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 48),
+                          const SizedBox(height: 8),
+                          Text(
+                            _t('missing_osmand_title'),
+                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _t('missing_osmand_desc'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red[700],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)
+                            ),
+                            icon: const Icon(Icons.download),
+                            label: Text(_t('btn_get_osmand'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                            onPressed: () {
+                              AndroidIntent(
+                                action: 'action_view',
+                                data: 'market://details?id=net.osmand',
+                                flags: <int>[0x10000000],
+                              ).launch();
+                            },
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+
                 if (_isDownloading) ...[
                    LinearProgressIndicator(value: _progress),
                    Padding(
@@ -587,7 +607,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                    )
                 ],
     
-                if (!_isDownloading) ...[
+                if (!_isDownloading && _osmandInstalled) ...[
                     // OSF BUNDLE UPDATE
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -596,13 +616,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         foregroundColor: Colors.white,
                         elevation: _osfUpdateAvailable ? 8 : 2,
                       ),
-                      onPressed: () {
-                        if (!_osmandInstalled) {
-                          _showMissingOsmAndDialog();
-                        } else {
-                          _downloadFile(OSF_FILENAME);
-                        }
-                      },
+                      onPressed: () => _downloadFile(OSF_FILENAME),
                       child: Column(
                         children: [
                           Row(
