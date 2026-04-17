@@ -33,6 +33,15 @@ def create_osmand_deploy_package():
                 "pluginId": "com.brombrom.custom",
                 "name": { "": "BromBrom Microcar Data" },
                 "description": { "": "Map restrictions and routing configuration for L6e." }
+            },
+            {
+                "type": "PROFILE",
+                "pluginId": "com.brombrom.custom",
+                "profile": "brombrom",
+                "baseProfile": "car",
+                "name": { "": "BromBrom" },
+                "color": "orange",
+                "routing_profile": "routing.xml"
             }
         ]
     }
