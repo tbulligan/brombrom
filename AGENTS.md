@@ -39,4 +39,4 @@ BromBrom is a **multi-component system**:
 
 ## 🧪 Testing & Validation
 *   **Graph Drills**: Use `scripts/validate_results.py` to verify map sanity.
-*   **App Testing**: Push app changes to `feature/manager-app`. Build results can be downloaded as artifacts from GitHub Actions before merging to `main`.
+*   **App Testing**: Push app changes to `develop`. Build results can be downloaded as APK artifacts from GitHub Actions before merging to `main`.
