@@ -430,6 +430,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
                 const SizedBox(height: 24),
                 Text(
                   _t('access_required'),
+                  key: const Key('onboarding_title'),
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
@@ -439,6 +440,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(
+                  key: const Key('allow_access_button'),
                   onPressed: _requestPermission,
                   child: Text(_t('allow_access')),
                 )
