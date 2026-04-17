@@ -48,7 +48,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   String? _targetDir;
   
   // STATE
-  bool _osmandInstalled = true;
   String _statusMessage = 'Checking configuration...';
   bool _isDownloading = false;
   double _progress = 0.0;
@@ -100,9 +99,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'osf_dialog_step2': '2. Scroll naar beneden naar "BromBrom"',
       'osf_dialog_step3': '3. Zet de schakelaar op INGESCHAKELD',
       'osf_dialog_btn': 'BEGREPEN, OPEN OSMAND',
-      'missing_osmand_title': 'OsmAnd Niet Gevonden!',
-      'missing_osmand_desc': 'Je hebt de OsmAnd navigatie-app nog niet op je telefoon staan. De BromBrom Manager heeft deze nodig om de kaarten in te laden.\n\nKlik hieronder om OsmAnd via de Play Store te installeren. KOM DAARNA DEZE APP OPNIEUW OPENEN om de BromBrom navigatie definitief te installeren!',
-      'btn_get_osmand': 'OSMAND DOWNLOADEN',
+      'btn_get_osmand': 'Download OsmAnd App',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
       'show_logs': 'Logboeken tonen',
@@ -139,9 +136,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'osf_dialog_step2': '2. Scroll down to "BromBrom"',
       'osf_dialog_step3': '3. Set its switch to ENABLED',
       'osf_dialog_btn': 'UNDERSTOOD, OPEN OSMAND',
-      'missing_osmand_title': 'OsmAnd Not Found!',
-      'missing_osmand_desc': 'You do not have the OsmAnd navigation app installed yet. BromBrom requires it to load the custom map data.\n\nClick below to install OsmAnd from the Play Store. ONCE INSTALLED, RETURN TO THIS APP to finalize your BromBrom installation!',
-      'btn_get_osmand': 'GET OSMAND',
+      'btn_get_osmand': 'Download OsmAnd App',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
       'show_logs': 'Show Debug Logs',
@@ -195,7 +190,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     WidgetsBinding.instance.addObserver(this);
     _loadLocale().then((_) async {
       await _initTargetDir();
-      await _checkOsmAndInstalled();
       _checkVersions();
     });
   }
@@ -220,32 +214,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      if (!_osmandInstalled) {
-        _log("App resumed. Re-checking OsmAnd...");
-        _checkOsmAndInstalled();
-      }
+      _checkVersions();
     }
-  }
-
-  Future<void> _checkOsmAndInstalled() async {
-    if (!Platform.isAndroid) return;
-    try {
-      final intentFree = AndroidIntent(action: 'action_main', package: 'net.osmand');
-      final intentPro = AndroidIntent(action: 'action_main', package: 'net.osmand.plus');
-      
-      bool freeResolved = await intentFree.canResolveActivity() ?? false;
-      bool proResolved = await intentPro.canResolveActivity() ?? false;
-      
-      setState(() {
-        _osmandInstalled = freeResolved || proResolved;
-      });
-    } catch(e) {
-      _log("OsmAnd Check Error: $e");
-    }
-  }
-
-  void _showMissingOsmAndDialog() {
-    // Deprecated in favor of the inline UI logic
   }
 
   Future<void> _checkVersions() async {
@@ -552,129 +522,115 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                 ),
                 const SizedBox(height: 32),
                 
-                if (!_osmandInstalled) ...[
-                  Card(
-                    color: Colors.red[50],
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(color: Colors.red, width: 2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 48),
-                          const SizedBox(height: 8),
-                          Text(
-                            _t('missing_osmand_title'),
-                            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 18),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            _t('missing_osmand_desc'),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red[700],
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)
-                            ),
-                            icon: const Icon(Icons.download),
-                            label: Text(_t('btn_get_osmand'), style: const TextStyle(fontWeight: FontWeight.bold)),
-                            onPressed: () {
-                              AndroidIntent(
-                                action: 'action_view',
-                                data: 'market://details?id=net.osmand',
-                                flags: <int>[0x10000000],
-                              ).launch();
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          TextButton(
-                            onPressed: () {
-                              setState(() => _osmandInstalled = true);
-                            },
-                            child: const Text("I already have it (Bypass)", style: TextStyle(color: Colors.red, decoration: TextDecoration.underline)),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                ],
-
-                if (_isDownloading) ...[
-                   LinearProgressIndicator(value: _progress),
-                   Padding(
-                     padding: const EdgeInsets.only(top: 8.0),
-                     child: Text("${(_progress * 100).toStringAsFixed(1)}%", textAlign: TextAlign.center),
-                   )
-                ],
-    
-                if (!_isDownloading && _osmandInstalled) ...[
+                if (!_isDownloading) ...[
                     // OSF BUNDLE UPDATE
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        backgroundColor: _osfUpdateAvailable ? Colors.green[700] : Colors.blue[800],
-                        foregroundColor: Colors.white,
-                        elevation: _osfUpdateAvailable ? 8 : 2,
-                      ),
-                      onPressed: () => _downloadFile(OSF_FILENAME),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(_osfUpdateAvailable ? Icons.system_update_alt : Icons.map, size: 28),
-                              const SizedBox(width: 12),
-                              Flexible(
-                                child: Text(
-                                  _osfUpdateAvailable ? _t('btn_osf_update') : _t('btn_osf_download'),
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                  textAlign: TextAlign.center,
+                    if (_osfUpdateAvailable)
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          backgroundColor: Colors.orange[800],
+                          foregroundColor: Colors.white,
+                          elevation: 8,
+                        ),
+                        onPressed: () => _downloadFile(OSF_FILENAME),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.system_update_alt, size: 28),
+                                const SizedBox(width: 12),
+                                Flexible(
+                                  child: Text(
+                                    _t('btn_osf_update'),
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          if (_localOsfDate != null) ...[
-                            const SizedBox(height: 8),
-                            Text("${_t('on_disk')}: ${(_localOsfDate!.isBefore(_remoteOsfDate ?? _latestReleaseDate ?? DateTime(0))) ? _t('version_old') : _t('version_current')}", 
-                               style: const TextStyle(fontSize: 12, color: Colors.white70)),
-                          ]
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          side: BorderSide(color: Colors.orange[800]!, width: 2),
+                          backgroundColor: Colors.orange[50],
+                          foregroundColor: Colors.orange[800],
+                        ),
+                        onPressed: () => _downloadFile(OSF_FILENAME),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.map, size: 28),
+                                const SizedBox(width: 12),
+                                Flexible(
+                                  child: Text(
+                                    _t('btn_osf_download'),
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_localOsfDate != null) ...[
+                              const SizedBox(height: 8),
+                              Text("${_t('on_disk')}: ${_t('version_current')}", 
+                                 style: const TextStyle(fontSize: 12)),
+                            ]
+                          ],
+                        ),
                       ),
-                    ),
 
                     const SizedBox(height: 24),
 
                     // APP UPDATE
-                    ElevatedButton(
-                      onPressed: () => _downloadFile(APK_FILENAME),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: _apkUpdateAvailable ? Colors.orange[800] : Colors.grey[300],
-                        foregroundColor: _apkUpdateAvailable ? Colors.white : Colors.black87,
+                    if (_apkUpdateAvailable)
+                      ElevatedButton(
+                        onPressed: () => _downloadFile(APK_FILENAME),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Colors.orange[800],
+                          foregroundColor: Colors.white,
+                          elevation: 8,
+                        ),
+                        child: Column(
+                          children: [
+                            Text(_t('btn_apk_update')),
+                            Text("${_t('installed_version')}: ${_localAppVersion ?? 'Unknown'}", style: const TextStyle(fontSize: 10, color: Colors.white70)),
+                            if (_localApkDate != null)
+                              Text("${_t('in_downloads')}: ${(_localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate ?? DateTime(0))) ? _t('version_old') : _t('version_current')}", 
+                                style: const TextStyle(fontSize: 10, color: Colors.white70)),
+                          ],
+                        ),
+                      )
+                    else
+                      OutlinedButton(
+                        onPressed: () => _downloadFile(APK_FILENAME),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side: BorderSide(color: Colors.orange[800]!, width: 2),
+                          backgroundColor: Colors.orange[50],
+                          foregroundColor: Colors.orange[800],
+                        ),
+                        child: Column(
+                          children: [
+                            Text(_t('btn_apk_download')),
+                            Text("${_t('installed_version')}: ${_localAppVersion ?? 'Unknown'}", style: TextStyle(fontSize: 10, color: Colors.orange[800])),
+                            if (_localApkDate != null)
+                              Text("${_t('in_downloads')}: ${_t('version_current')}", 
+                                style: TextStyle(fontSize: 10, color: Colors.orange[800])),
+                          ],
+                        ),
                       ),
-                      child: Column(
-                        children: [
-                          Text(_apkUpdateAvailable ? _t('btn_apk_update') : _t('btn_apk_download')),
-                          Text("${_t('installed_version')}: ${_localAppVersion ?? 'Unknown'}", style: const TextStyle(fontSize: 10, color: Colors.blueGrey)),
-                          if (_localApkDate != null)
-                            Text("${_t('in_downloads')}: ${(_localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate ?? DateTime(0))) ? _t('version_old') : _t('version_current')}", 
-                              style: TextStyle(fontSize: 10, color: _apkUpdateAvailable ? Colors.white70 : Colors.black54)),
-                        ],
-                      ),
-                    ),
-                ],
-                
                 const SizedBox(height: 24),
-                // Support Project
+                // Support Project & OsmAnd Link
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     TextButton.icon(
                       onPressed: _launchCoffeeUrl,
@@ -683,6 +639,17 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                           _t('buy_coffee'), 
                           style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
                       ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () {
+                        AndroidIntent(
+                          action: 'action_view',
+                          data: 'market://details?id=net.osmand',
+                          flags: <int>[0x10000000],
+                        ).launch();
+                      },
+                      icon: Icon(Icons.get_app, size: 20, color: Colors.blueGrey[600]),
+                      label: Text(_t('btn_get_osmand'), style: TextStyle(color: Colors.blueGrey[600], fontSize: 12)),
                     ),
                   ],
                 ),
