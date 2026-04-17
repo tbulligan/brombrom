@@ -93,7 +93,13 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'btn_osf_update': 'BromBrom Navigatie INSTALLEREN / BIJWERKEN',
       'btn_osf_download': 'BromBrom Navigatie OPNIEUW DOWNLOADEN',
       'on_disk': 'In Downloads',
-      'osf_tip': 'OsmAnd opent nu automatisch. Tik op "Opslaan" of "Toepassen" in OsmAnd.\n\n⚠️ NIEUWE GEBRUIKERS:\nNa de import moet je het profiel zichtbaar maken in OsmAnd:\n1. Open het OsmAnd hoofdmenu ☰\n2. Ga naar "Instellingen" -> "App-profielen"\n3. Zoek "BromBrom" onderaan en zet de schakelaar AAN',
+      'osf_dialog_title': 'Activering Vereist',
+      'osf_dialog_p1': 'OsmAnd zal nu openen. Tik op "Toepassen" of "Alles vervangen" en wacht tot de import voltooid is.',
+      'osf_dialog_p2': '⚠️ Bij het "Import voltooid" scherm:',
+      'osf_dialog_step1': '1. Tik direct op "Instellingen"',
+      'osf_dialog_step2': '2. Scroll naar beneden naar "BromBrom"',
+      'osf_dialog_step3': '3. Zet de schakelaar op INGESCHAKELD',
+      'osf_dialog_btn': 'BEGREPEN, OPEN OSMAND',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
       'show_logs': 'Logboeken tonen',
@@ -123,7 +129,13 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'btn_osf_update': 'INSTALL / UPDATE BromBrom Navigation',
       'btn_osf_download': 'RE-DOWNLOAD BromBrom Navigation',
       'on_disk': 'In Downloads',
-      'osf_tip': 'OsmAnd will now open automatically. Tap "Save" or "Apply" inside OsmAnd.\n\n⚠️ FIRST TIME USERS:\nAfter the import completes, you must enable the profile in OsmAnd:\n1. Open the OsmAnd main menu ☰\n2. Go to "Settings" -> "App profiles"\n3. Find "BromBrom" at the bottom and toggle it ON',
+      'osf_dialog_title': 'Activation Required',
+      'osf_dialog_p1': 'OsmAnd will now open. Tap "Apply" or "Replace all" and wait for the import to finish.',
+      'osf_dialog_p2': '⚠️ On the "Import complete" screen:',
+      'osf_dialog_step1': '1. Tap "Settings"',
+      'osf_dialog_step2': '2. Scroll down to "BromBrom"',
+      'osf_dialog_step3': '3. Set its switch to ENABLED',
+      'osf_dialog_btn': 'UNDERSTOOD, OPEN OSMAND',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
       'show_logs': 'Show Debug Logs',
@@ -318,7 +330,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
         if (fileName.endsWith(".apk")) {
           _installApk(file.path);
         } else if (fileName.endsWith(".osf")) {
-          _openOsfInOsmAnd(file.path);
+          _showOsfInstructionsDialog(file.path);
         }
       } else {
         throw Exception("Download failed with status: ${result.status}");
@@ -333,6 +345,47 @@ class _InstallerScreenState extends State<InstallerScreen> {
         });
       }
     }
+  }
+
+  Future<void> _showOsfInstructionsDialog(String filePath) async {
+    if (!mounted) return;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(_t('osf_dialog_title'), style: const TextStyle(fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(_t('osf_dialog_p1')),
+                const SizedBox(height: 16),
+                Text(_t('osf_dialog_p2'), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
+                const SizedBox(height: 8),
+                Text(_t('osf_dialog_step1'), style: const TextStyle(fontSize: 15)),
+                Text(_t('osf_dialog_step2'), style: const TextStyle(fontSize: 15)),
+                Text(_t('osf_dialog_step3'), style: const TextStyle(fontSize: 15)),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.blue[800],
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _openOsfInOsmAnd(filePath);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
   
   void _scanFile(String path) {
@@ -540,14 +593,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
                       ),
                     ),
 
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12.0, bottom: 24.0),
-                      child: Text(
-                        _t('osf_tip'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.blueGrey, fontStyle: FontStyle.italic, fontSize: 13),
-                      ),
-                    ),
+                    const SizedBox(height: 24),
 
                     // APP UPDATE
                     ElevatedButton(
