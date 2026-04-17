@@ -5,9 +5,9 @@ const translations = {
   nl: {
     hero_title: "Navigeer met <br/> Vertrouwen.",
     hero_desc: "Het enige offline OsmAnd navigatiepakket specifiek ontworpen voor <strong>Brommobielen</strong> in Nederland. Vermijd snelwegen, respecteer C9 borden en rijd veilig.",
-    btn_download: "Download BromBrom Manager",
+    btn_download_android: "Download BromBrom Manager (Android)",
+    btn_download_ios: "Download BromBrom.osf (iOS)",
     badge_label: "Nu Beschikbaar",
-    btn_how: "Hoe het werkt",
     feat_1_title: "C9 Handhaving",
     feat_1_desc: "Vermijdt automatisch wegen gemarkeerd met het C9 verkeersbord (gesloten voor langzaam motorverkeer), zodat u legaal en veilig blijft.",
     feat_2_title: "Snelwegen Verbod",
@@ -33,8 +33,8 @@ const translations = {
   en: {
     hero_title: "Navigate <br/> with Confidence.",
     hero_desc: "The only offline OsmAnd navigation package designed specifically for <strong>L6e microcars (Brommobielen)</strong> in the Netherlands. Avoid highways, respect C9 signs, and drive safely.",
-    btn_download: "Download BromBrom Manager",
-    btn_how: "How it Works",
+    btn_download_android: "Download BromBrom Manager (Android)",
+    btn_download_ios: "Download BromBrom.osf (iOS)",
     feat_1_title: "C9 Enforcement",
     feat_1_desc: "Automatically avoids roads marked with the C9 traffic sign (closed to slow motor vehicles), keeping you legal and safe.",
     feat_2_title: "No Motorways",
