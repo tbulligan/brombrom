@@ -23,7 +23,7 @@ class BromBromApp extends StatelessWidget {
     return MaterialApp(
       title: 'BromBrom Installer',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
       home: const InstallerScreen(),
@@ -479,7 +479,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     return Scaffold(
       appBar: AppBar(
           title: Text(_t('app_name')), 
-          backgroundColor: Colors.blue[800], 
+          backgroundColor: Colors.orange[800], 
           foregroundColor: Colors.white,
           actions: [
             _buildLanguageSwitcher(),
