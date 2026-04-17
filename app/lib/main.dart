@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background_downloader/background_downloader.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const BromBromApp());
@@ -44,13 +44,12 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   static const String OSF_FILENAME = "BromBrom.osf";
   static const String APK_FILENAME = "BromBrom.apk";
   
-  // PATHS (Public Downloads)
-  final String _targetDir = "/storage/emulated/0/Download";
+  // PATHS (App Specific, No permissions needed)
+  String? _targetDir;
   
   // STATE
-  bool _hasPermission = false;
   bool _osmandInstalled = true;
-  String _statusMessage = 'Checking permissions...';
+  String _statusMessage = 'Checking configuration...';
   bool _isDownloading = false;
   double _progress = 0.0;
   
@@ -194,7 +193,22 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _loadLocale().then((_) => _checkPermissions());
+    _loadLocale().then((_) async {
+      await _initTargetDir();
+      await _checkOsmAndInstalled();
+      _checkVersions();
+    });
+  }
+
+  Future<void> _initTargetDir() async {
+    if (!Platform.isAndroid) return;
+    try {
+      final dir = await getExternalStorageDirectory();
+      _targetDir = dir?.path;
+    } catch(e) {
+      _log("Failed to get external storage dir: $e");
+      _targetDir = "/storage/emulated/0/Download";
+    }
   }
 
   @override
@@ -211,25 +225,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
         _checkOsmAndInstalled();
       }
     }
-  }
-
-  Future<void> _checkPermissions() async {
-    var status = await Permission.manageExternalStorage.status;
-    if (!status.isGranted) {
-      setState(() {
-         _hasPermission = false;
-         _statusMessage = _t('access_desc');
-      });
-    } else {
-      setState(() => _hasPermission = true);
-      await _checkOsmAndInstalled();
-      _checkVersions();
-    }
-  }
-
-  Future<void> _requestPermission() async {
-    await Permission.manageExternalStorage.request();
-    _checkPermissions();
   }
 
   Future<void> _checkOsmAndInstalled() async {
@@ -475,7 +470,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   Future<void> _openOsfInOsmAnd(String path) async {
     final fileName = path.split('/').last;
-    final contentUri = "content://com.brombrom.app.fileprovider/external_files/Download/$fileName";
+    final contentUri = "content://com.brombrom.app.fileprovider/map_imports_ext/$fileName";
     
     _log("Opening OSF Intent: $contentUri");
 
@@ -498,7 +493,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   
   Future<void> _installApk(String path) async {
     final fileName = path.split('/').last;
-    final contentUri = "content://com.brombrom.app.fileprovider/external_files/Download/$fileName";
+    final contentUri = "content://com.brombrom.app.fileprovider/map_imports_ext/$fileName";
     
     _log("Installing APK: $contentUri");
     
@@ -538,45 +533,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   @override
   Widget build(BuildContext context) {
-    if (!_hasPermission) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(_t('app_name')),
-          backgroundColor: Colors.blue[800],
-          foregroundColor: Colors.white,
-          actions: [_buildLanguageSwitcher()],
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.folder_shared, size: 64, color: Colors.blue[800]),
-                const SizedBox(height: 24),
-                Text(
-                  _t('access_required'),
-                  key: const Key('onboarding_title'),
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _t('access_desc'),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  key: const Key('allow_access_button'),
-                  onPressed: _requestPermission,
-                  child: Text(_t('allow_access')),
-                )
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
           title: Text(_t('app_name')), 
