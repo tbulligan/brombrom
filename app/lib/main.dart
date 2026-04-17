@@ -38,7 +38,7 @@ class InstallerScreen extends StatefulWidget {
   State<InstallerScreen> createState() => _InstallerScreenState();
 }
 
-class _InstallerScreenState extends State<InstallerScreen> {
+class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingObserver {
   // CONFIG
   static const String RELEASE_API = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
   static const String OSF_FILENAME = "BromBrom.osf";
@@ -102,7 +102,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'osf_dialog_step3': '3. Zet de schakelaar op INGESCHAKELD',
       'osf_dialog_btn': 'BEGREPEN, OPEN OSMAND',
       'missing_osmand_title': 'OsmAnd Niet Gevonden!',
-      'missing_osmand_desc': 'Je hebt de OsmAnd navigatie-app nog niet op je telefoon staan. De BromBrom Manager heeft deze nodig om de kaarten in te laden. Wil je OsmAnd nu downloaden via de Google Play Store?',
+      'missing_osmand_desc': 'Je hebt de OsmAnd navigatie-app nog niet op je telefoon staan. De BromBrom Manager heeft deze nodig om de kaarten in te laden.\n\nKlik hieronder om OsmAnd via de Play Store te installeren. KOM DAARNA DEZE APP OPNIEUW OPENEN om de BromBrom navigatie definitief te installeren!',
       'btn_get_osmand': 'OSMAND DOWNLOADEN',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
@@ -141,7 +141,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'osf_dialog_step3': '3. Set its switch to ENABLED',
       'osf_dialog_btn': 'UNDERSTOOD, OPEN OSMAND',
       'missing_osmand_title': 'OsmAnd Not Found!',
-      'missing_osmand_desc': 'You do not have the OsmAnd navigation app installed yet. BromBrom requires it to load the custom map data. Would you like to install OsmAnd from the Play Store now?',
+      'missing_osmand_desc': 'You do not have the OsmAnd navigation app installed yet. BromBrom requires it to load the custom map data.\n\nClick below to install OsmAnd from the Play Store. ONCE INSTALLED, RETURN TO THIS APP to finalize your BromBrom installation!',
       'btn_get_osmand': 'GET OSMAND',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
@@ -193,7 +193,24 @@ class _InstallerScreenState extends State<InstallerScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadLocale().then((_) => _checkPermissions());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (!_osmandInstalled) {
+        _log("App resumed. Re-checking OsmAnd...");
+        _checkOsmAndInstalled();
+      }
+    }
   }
 
   Future<void> _checkPermissions() async {
