@@ -7,7 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background_downloader/background_downloader.dart';
 
@@ -41,7 +40,8 @@ class InstallerScreen extends StatefulWidget {
 class _InstallerScreenState extends State<InstallerScreen> {
   // CONFIG
   static const String RELEASE_API = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
-  static const String OSF_FILENAME = "BromBrom.osf";
+  static const String MAP_FILENAME = "NL_BromBrom_tagged.obf";
+  static const String XML_FILENAME = "routing.xml";
   static const String APK_FILENAME = "BromBrom.apk";
   
   // PATHS (Public Downloads)
@@ -55,12 +55,15 @@ class _InstallerScreenState extends State<InstallerScreen> {
   
   // VERSION INFO
   DateTime? _latestReleaseDate;
-  DateTime? _remoteOsfDate;
+  DateTime? _remoteMapDate;
+  DateTime? _remoteXmlDate;
   DateTime? _remoteApkDate;
-  DateTime? _localOsfDate;
+  DateTime? _localMapDate;
+  DateTime? _localXmlDate;
   DateTime? _localApkDate;
   String? _localAppVersion;
-  bool _osfUpdateAvailable = false;
+  bool _mapUpdateAvailable = false;
+  bool _xmlUpdateAvailable = false;
   bool _apkUpdateAvailable = false;
   bool _showLogs = false;
   String _locale = 'nl';
@@ -77,27 +80,26 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'status_permissions': 'Permissies controleren...',
       'status_checking': 'GitHub & lokale bestanden controleren...',
       'status_updates': 'Updates beschikbaar!',
-      'status_uptodate_brief': 'Alles is up-to-date.',
-      'status_uptodate_full': 'Jouw navigatie is helemaal up-to-date',
+      'status_uptodate_brief': 'Jouw systeem is up-to-date.',
       'status_error': 'Verbindings-/API-fout',
-      'status_dl': 'Bezig met downloaden van {file}...',
-      'status_dl_done': 'Download voltooid!',
-      'status_dl_error': 'Fout: {error}',
-      'latest_release': 'Laatste release',
+      'status_dl': 'Bezig met downloaden...',
+      'status_dl_done': 'Klaar, openen in OsmAnd!',
+      'status_dl_error': 'Fout bij downloaden',
+      'latest_release': 'Laatste Cloud Update',
       'btn_apk_update': 'BromBrom App BIJWERKEN',
       'btn_apk_download': 'App OPNIEUW DOWNLOADEN',
       'installed_version': 'Geïnstalleerd',
-      'in_downloads': 'In Downloads',
       'version_old': 'Oude versie',
-      'version_current': 'Huidige',
-      'btn_osf_update': 'BromBrom Navigatie INSTALLEREN / BIJWERKEN',
-      'btn_osf_download': 'BromBrom Navigatie OPNIEUW DOWNLOADEN',
-      'on_disk': 'In Downloads',
-      'osf_tip': 'OsmAnd opent nu automatisch. Tik op "Opslaan" of "Toepassen" in OsmAnd.',
+      'version_current': 'Huidig',
+      'btn_map_update': 'Stap 1: KAART Importeren',
+      'btn_map_download': 'Stap 1: KAART Opnieuw Importeren',
+      'btn_xml_update': 'Stap 2: REGELS Importeren',
+      'btn_xml_download': 'Stap 2: REGELS Opnieuw Importeren',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
       'show_logs': 'Logboeken tonen',
       'hide_logs': 'Logboeken verbergen',
+      'osmand_tip': 'Zodra je importeert, opent OsmAnd de bestanden direct.'
     },
     'en': {
       'app_name': 'BromBrom Manager',
@@ -105,29 +107,28 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'access_desc': 'To download files to your Downloads folder and check versions, we need \'All Files Access\'.',
       'allow_access': 'ALLOW ACCESS',
       'status_permissions': 'Checking permissions...',
-      'status_checking': 'Checking GitHub & Local files...',
+      'status_checking': 'Checking APIs...',
       'status_updates': 'Updates Available!',
-      'status_uptodate_brief': 'Everything is up to date.',
-      'status_uptodate_full': 'Your navigation is completely up to date',
-      'status_error': 'Connection/API Error',
-      'status_dl': 'Downloading {file}...',
-      'status_dl_done': 'Download Complete!',
-      'status_dl_error': 'Error: {error}',
-      'latest_release': 'Latest Release',
+      'status_uptodate_brief': 'Your system is completely up to date.',
+      'status_error': 'Connection Error',
+      'status_dl': 'Downloading...',
+      'status_dl_done': 'Done. Opening in OsmAnd...',
+      'status_dl_error': 'Error during download',
+      'latest_release': 'Latest Cloud Update',
       'btn_apk_update': 'UPDATE BromBrom App',
       'btn_apk_download': 'RE-DOWNLOAD App',
       'installed_version': 'Installed',
-      'in_downloads': 'In Downloads',
       'version_old': 'Old Version',
       'version_current': 'Current',
-      'btn_osf_update': 'INSTALL / UPDATE BromBrom Navigation',
-      'btn_osf_download': 'RE-DOWNLOAD BromBrom Navigation',
-      'on_disk': 'In Downloads',
-      'osf_tip': 'OsmAnd will now open automatically. Tap "Save" or "Apply" inside OsmAnd.',
+      'btn_map_update': 'Step 1: Import MAP',
+      'btn_map_download': 'Step 1: Re-import MAP',
+      'btn_xml_update': 'Step 2: Import ROUTING RULES',
+      'btn_xml_download': 'Step 2: Re-import ROUTING RULES',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
       'show_logs': 'Show Debug Logs',
       'hide_logs': 'Hide Debug Logs',
+      'osmand_tip': 'When you press import, OsmAnd will open the file automatically.'
     }
   };
 
@@ -155,6 +156,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
   Widget _buildLanguageSwitcher() {
     final bool isNL = _locale == 'nl';
     return TextButton(
+      key: const Key('language_switcher'),
       onPressed: () => _saveLocale(isNL ? 'en' : 'nl'),
       child: Text(
         isNL ? "🇬🇧" : "🇳🇱",
@@ -205,7 +207,8 @@ class _InstallerScreenState extends State<InstallerScreen> {
       final data = jsonDecode(response.body);
       
       DateTime latestDate = DateTime.parse(data['published_at']);
-      DateTime? remoteOsfDate;
+      DateTime? remoteMapDate;
+      DateTime? remoteXmlDate;
       DateTime? remoteApkDate;
 
       final List assets = data['assets'] ?? [];
@@ -221,20 +224,26 @@ class _InstallerScreenState extends State<InstallerScreen> {
           latestDate = updatedAt;
         }
 
-        if (name == OSF_FILENAME) {
-          remoteOsfDate = updatedAt;
+        if (name == MAP_FILENAME) {
+          remoteMapDate = updatedAt;
+        } else if (name == XML_FILENAME) {
+          remoteXmlDate = updatedAt;
         } else if (name == APK_FILENAME) {
           remoteApkDate = updatedAt;
         }
       }
       
       _latestReleaseDate = latestDate;
-      _remoteOsfDate = remoteOsfDate;
+      _remoteMapDate = remoteMapDate;
+      _remoteXmlDate = remoteXmlDate;
       _remoteApkDate = remoteApkDate;
-      _log("Latest Release: $_latestReleaseDate");
+      
+      // Local version check
+      final File mapFile = File('$_targetDir/$MAP_FILENAME');
+      _localMapDate = await mapFile.exists() ? await mapFile.lastModified() : null;
 
-      final File osfFile = File('$_targetDir/$OSF_FILENAME');
-      _localOsfDate = await osfFile.exists() ? await osfFile.lastModified() : null;
+      final File xmlFile = File('$_targetDir/$XML_FILENAME');
+      _localXmlDate = await xmlFile.exists() ? await xmlFile.lastModified() : null;
 
       final File apkFile = File('$_targetDir/$APK_FILENAME');
       _localApkDate = await apkFile.exists() ? await apkFile.lastModified() : null;
@@ -242,14 +251,12 @@ class _InstallerScreenState extends State<InstallerScreen> {
       final packageInfo = await PackageInfo.fromPlatform();
       _localAppVersion = "${packageInfo.version}+${packageInfo.buildNumber}";
       
-      _osfUpdateAvailable = _localOsfDate == null || 
-          _localOsfDate!.isBefore(_remoteOsfDate ?? _latestReleaseDate!);
-
-      _apkUpdateAvailable = _localApkDate == null || 
-          _localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate!);
+      _mapUpdateAvailable = _localMapDate == null || _localMapDate!.isBefore(_remoteMapDate ?? _latestReleaseDate!);
+      _xmlUpdateAvailable = _localXmlDate == null || _localXmlDate!.isBefore(_remoteXmlDate ?? _latestReleaseDate!);
+      _apkUpdateAvailable = _localApkDate == null || _localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate!);
 
       setState(() {
-        _statusMessage = (_osfUpdateAvailable || _apkUpdateAvailable) 
+        _statusMessage = (_mapUpdateAvailable || _xmlUpdateAvailable || _apkUpdateAvailable) 
             ? _t('status_updates') 
             : _t('status_uptodate_brief');
       });
@@ -260,20 +267,18 @@ class _InstallerScreenState extends State<InstallerScreen> {
     }
   }
 
-  Future<void> _downloadFile(String fileName) async {
+  Future<void> _downloadAndLaunchFile(String fileName, String mimeType) async {
     setState(() {
       _isDownloading = true;
-      _statusMessage = _t('status_dl').replaceFirst('{file}', fileName);
+      _statusMessage = _t('status_dl');
       _progress = 0.0;
     });
 
     try {
       final String? dlUrl = _downloadUrls[fileName];
       if (dlUrl == null) {
-         throw Exception("File '$fileName' download URL not found. Details: Make sure the release has the file attached.");
+         throw Exception("File '$fileName' download URL not found. API Mismatch.");
       }
-
-      _log("Starting background download: $fileName");
 
       final task = DownloadTask(
         url: dlUrl,
@@ -290,9 +295,6 @@ class _InstallerScreenState extends State<InstallerScreen> {
             setState(() => _progress = progress);
           }
         },
-        onStatus: (status) {
-          _log("Download status: $status");
-        },
       );
 
       if (result.status == TaskStatus.complete) {
@@ -305,7 +307,6 @@ class _InstallerScreenState extends State<InstallerScreen> {
         await downloadedFile.delete();
 
         _log("Saved to public storage: ${file.path}");
-        _scanFile(file.path);
         
         await _checkVersions();
 
@@ -315,11 +316,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
           _statusMessage = _t('status_dl_done');
         });
 
-        if (fileName.endsWith(".apk")) {
-          _installApk(file.path);
-        } else if (fileName.endsWith(".osf")) {
-          _openOsfInOsmAnd(file.path);
-        }
+        // Fire native OsmAnd import Intent!
+        _fireImportIntent(file.path, mimeType);
+        
       } else {
         throw Exception("Download failed with status: ${result.status}");
       }
@@ -329,35 +328,23 @@ class _InstallerScreenState extends State<InstallerScreen> {
       if (mounted) {
         setState(() {
           _isDownloading = false;
-          _statusMessage = _t('status_dl_error').replaceFirst('{error}', e.toString());
+          _statusMessage = _t('status_dl_error');
         });
       }
     }
   }
-  
-  void _scanFile(String path) {
-    try {
-      final AndroidIntent intent = AndroidIntent(
-        action: 'android.intent.action.MEDIA_SCANNER_SCAN_FILE',
-        data: Uri.parse("file://$path").toString(),
-      );
-      intent.launch();
-    } catch (e) {
-      _log("Scan Error: $e");
-    }
-  }
 
-  Future<void> _openOsfInOsmAnd(String path) async {
+  Future<void> _fireImportIntent(String path, String mimeType) async {
     final fileName = path.split('/').last;
     final contentUri = "content://com.brombrom.app.fileprovider/external_files/Download/$fileName";
     
-    _log("Opening OSF Intent: $contentUri");
+    _log("Firing Intent: $contentUri ($mimeType)");
 
     try {
       final AndroidIntent intent = AndroidIntent(
         action: 'action_view',
         data: contentUri,
-        type: '*/*',
+        type: mimeType,
         flags: <int>[
           0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
           0x10000000, // FLAG_ACTIVITY_NEW_TASK
@@ -365,36 +352,8 @@ class _InstallerScreenState extends State<InstallerScreen> {
       );
       await intent.launch();
     } catch (e) {
-      _log("Launch Error: $e. Using Share Sheet.");
-      _shareFile(path);
+      _log("Launch Error: $e");
     }
-  }
-  
-  Future<void> _installApk(String path) async {
-    final fileName = path.split('/').last;
-    final contentUri = "content://com.brombrom.app.fileprovider/external_files/Download/$fileName";
-    
-    _log("Installing APK: $contentUri");
-    
-    try {
-       final AndroidIntent intent = AndroidIntent(
-        action: 'action_view',
-        data: contentUri,
-        type: 'application/vnd.android.package-archive',
-        flags: <int>[
-          0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
-          0x10000000, // FLAG_ACTIVITY_NEW_TASK
-        ],
-      );
-      await intent.launch();
-    } catch (e) {
-      _log("Install Error: $e");
-    }
-  }
-  
-  Future<void> _shareFile(String path) async {
-    final xFile = XFile(path);
-    await Share.shareXFiles([xFile]);
   }
 
   void _launchCoffeeUrl() async {
@@ -476,13 +435,13 @@ class _InstallerScreenState extends State<InstallerScreen> {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        if (!_osfUpdateAvailable && !_apkUpdateAvailable)
+                        if (!_mapUpdateAvailable && !_xmlUpdateAvailable && !_apkUpdateAvailable)
                            Row(
                              mainAxisAlignment: MainAxisAlignment.center,
                              children: [
                                const Icon(Icons.check_circle, color: Colors.green),
                                const SizedBox(width: 8),
-                               Expanded(child: Text(_t('status_uptodate_full'), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green))),
+                               Expanded(child: Text(_t('status_uptodate_brief'), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green))),
                              ],
                            )
                         else 
@@ -490,7 +449,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
     
                         const SizedBox(height: 8),
                         if (_latestReleaseDate != null)
-                          Text("${_t('latest_release')}: ${DateFormat('yyyy-MM-dd HH:mm').format(_latestReleaseDate!)}"),
+                          Text("${_t('latest_release')}: ${DateFormat('yyyy-MM-dd').format(_latestReleaseDate!)}"),
                       ],
                     ),
                   ),
@@ -506,71 +465,87 @@ class _InstallerScreenState extends State<InstallerScreen> {
                 ],
     
                 if (!_isDownloading) ...[
-                    // OSF BUNDLE UPDATE
+                    // STEP 1: IMPORT MAP
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 24),
-                        backgroundColor: _osfUpdateAvailable ? Colors.green[700] : Colors.blue[800],
+                        backgroundColor: _mapUpdateAvailable ? Colors.green[700] : Colors.blueGrey,
                         foregroundColor: Colors.white,
-                        elevation: _osfUpdateAvailable ? 8 : 2,
+                        elevation: _mapUpdateAvailable ? 8 : 2,
                       ),
-                      onPressed: () => _downloadFile(OSF_FILENAME),
-                      child: Column(
+                      onPressed: () => _downloadAndLaunchFile(MAP_FILENAME, 'application/octet-stream'),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(_osfUpdateAvailable ? Icons.system_update_alt : Icons.map, size: 28),
-                              const SizedBox(width: 12),
-                              Flexible(
-                                child: Text(
-                                  _osfUpdateAvailable ? _t('btn_osf_update') : _t('btn_osf_download'),
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
+                          Icon(_mapUpdateAvailable ? Icons.download : Icons.map, size: 24),
+                          const SizedBox(width: 12),
+                          Flexible(
+                            child: Text(
+                              _mapUpdateAvailable ? _t('btn_map_update') : _t('btn_map_download'),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
-                          if (_localOsfDate != null) ...[
-                            const SizedBox(height: 8),
-                            Text("${_t('on_disk')}: ${(_localOsfDate!.isBefore(_remoteOsfDate ?? _latestReleaseDate ?? DateTime(0))) ? _t('version_old') : _t('version_current')}", 
-                               style: const TextStyle(fontSize: 12, color: Colors.white70)),
-                          ]
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // STEP 2: IMPORT ROUTING XML
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        backgroundColor: _xmlUpdateAvailable ? Colors.orange[800] : Colors.blueGrey,
+                        foregroundColor: Colors.white,
+                        elevation: _xmlUpdateAvailable ? 8 : 2,
+                      ),
+                      onPressed: () => _downloadAndLaunchFile(XML_FILENAME, 'application/xml'),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(_xmlUpdateAvailable ? Icons.system_update_alt : Icons.rule, size: 24),
+                          const SizedBox(width: 12),
+                          Flexible(
+                            child: Text(
+                              _xmlUpdateAvailable ? _t('btn_xml_update') : _t('btn_xml_download'),
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         ],
                       ),
                     ),
 
                     Padding(
-                      padding: const EdgeInsets.only(top: 12.0, bottom: 24.0),
+                      padding: const EdgeInsets.only(top: 16.0, bottom: 24.0),
                       child: Text(
-                        _t('osf_tip'),
+                        _t('osmand_tip'),
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: Colors.blueGrey, fontStyle: FontStyle.italic, fontSize: 13),
                       ),
                     ),
 
+                    const Divider(),
+                    const SizedBox(height: 16),
+
                     // APP UPDATE
                     ElevatedButton(
-                      onPressed: () => _downloadFile(APK_FILENAME),
+                      onPressed: () => _downloadAndLaunchFile(APK_FILENAME, 'application/vnd.android.package-archive'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: _apkUpdateAvailable ? Colors.orange[800] : Colors.grey[300],
+                        backgroundColor: _apkUpdateAvailable ? Colors.blue[900] : Colors.grey[200],
                         foregroundColor: _apkUpdateAvailable ? Colors.white : Colors.black87,
                       ),
                       child: Column(
                         children: [
                           Text(_apkUpdateAvailable ? _t('btn_apk_update') : _t('btn_apk_download')),
                           Text("${_t('installed_version')}: ${_localAppVersion ?? 'Unknown'}", style: const TextStyle(fontSize: 10, color: Colors.blueGrey)),
-                          if (_localApkDate != null)
-                            Text("${_t('in_downloads')}: ${(_localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate ?? DateTime(0))) ? _t('version_old') : _t('version_current')}", 
-                              style: TextStyle(fontSize: 10, color: _apkUpdateAvailable ? Colors.white70 : Colors.black54)),
                         ],
                       ),
                     ),
                 ],
                 
                 const SizedBox(height: 24),
-                // Support Project
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
