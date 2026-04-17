@@ -535,19 +535,10 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         onPressed: () => _downloadFile(OSF_FILENAME),
                         child: Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.system_update_alt, size: 28),
-                                const SizedBox(width: 12),
-                                Flexible(
-                                  child: Text(
-                                    _t('btn_osf_update'),
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              _t('btn_osf_update'),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
@@ -563,19 +554,10 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         onPressed: () => _downloadFile(OSF_FILENAME),
                         child: Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.map, size: 28),
-                                const SizedBox(width: 12),
-                                Flexible(
-                                  child: Text(
-                                    _t('btn_osf_download'),
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              _t('btn_osf_download'),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
                             ),
                             if (_localOsfDate != null) ...[
                               const SizedBox(height: 8),
