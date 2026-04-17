@@ -230,8 +230,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   Future<void> _checkOsmAndInstalled() async {
     if (!Platform.isAndroid) return;
     try {
-      final intentFree = AndroidIntent(action: 'android.intent.action.MAIN', package: 'net.osmand');
-      final intentPro = AndroidIntent(action: 'android.intent.action.MAIN', package: 'net.osmand.plus');
+      final intentFree = AndroidIntent(action: 'action_main', package: 'net.osmand');
+      final intentPro = AndroidIntent(action: 'action_main', package: 'net.osmand.plus');
       
       bool freeResolved = await intentFree.canResolveActivity() ?? false;
       bool proResolved = await intentPro.canResolveActivity() ?? false;
@@ -591,6 +591,13 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                                 flags: <int>[0x10000000],
                               ).launch();
                             },
+                          ),
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: () {
+                              setState(() => _osmandInstalled = true);
+                            },
+                            child: const Text("I already have it (Bypass)", style: TextStyle(color: Colors.red, decoration: TextDecoration.underline)),
                           )
                         ],
                       ),
