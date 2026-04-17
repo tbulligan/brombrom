@@ -630,17 +630,9 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                 ],
                 const SizedBox(height: 24),
                 // Support Project & OsmAnd Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TextButton.icon(
-                      onPressed: _launchCoffeeUrl,
-                      icon: const Icon(Icons.coffee, color: Colors.brown, size: 20),
-                      label: Text(
-                          _t('buy_coffee'), 
-                          style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
-                      ),
-                    ),
                     TextButton.icon(
                       onPressed: () {
                         AndroidIntent(
@@ -650,7 +642,16 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         ).launch();
                       },
                       icon: Icon(Icons.get_app, size: 20, color: Colors.blueGrey[600]),
-                      label: Text(_t('btn_get_osmand'), style: TextStyle(color: Colors.blueGrey[600], fontSize: 12)),
+                      label: Text(_t('btn_get_osmand'), style: TextStyle(color: Colors.blueGrey[600], fontSize: 13, decoration: TextDecoration.underline)),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: _launchCoffeeUrl,
+                      icon: const Icon(Icons.coffee, color: Colors.brown, size: 20),
+                      label: Text(
+                          _t('buy_coffee'), 
+                          style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
+                      ),
                     ),
                   ],
                 ),
