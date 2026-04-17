@@ -13,30 +13,30 @@ This file dictates how AI agents should interact with the BromBrom repository.
 ## 🏗️ Project Architecture
 BromBrom is a **multi-component system**:
 
-### 1. Map Generation Pipeline
+### 1. Map Generation Pipeline (.osf Compilation)
 *   **Python ETL**: `scripts/snap_c9_to_roads.py` is the algorithmic core. It decides which roads are "unsafe" based on spatial proximity to C9 signs.
-*   **Java/OsmAnd Compilation**: Ingests tagged data and uses `config/routing.xml` to bake routing penalties into the final `.obf` map.
+*   **Java/OsmAnd Compilation**: Ingests tagged data and creates an `.obf` map.
+*   **OSF Packager**: `scripts/generate_osmand_deploy.py` statically bundles the `.obf`, `routing.xml`, and a reverse-engineered **Smart Profile (.json)** into a pristine `BromBrom.osf` package.
 
 ### 2. BromBrom Manager (Installer App)
 *   **Flutter Android App**: Located in `app/`. 
-*   **Function**: Checks GitHub for the latest release, downloads the `.obf` file, and triggers an import intent in OsmAnd via a secure `FileProvider`.
+*   **Function**: Checks GitHub for the latest release, downloads `BromBrom.osf`, verifies OsmAnd installation, and securely proxies the OSF to OsmAnd via `FileProvider` intent.
 
 ## 📂 Key Files & Context
-*   `app/lib/main.dart`: Core logic for the Android installer (Bilingual NL/EN).
-*   `.github/workflows/build_and_release.yml`: The automation engine. Handles Zero-Downtime map updates and APK builds.
-*   `config/routing.xml`: Defines the OsmAnd routing behavior. **Do not refactor blindly.**
+*   `app/lib/main.dart`: Core logic for the Android installer and AppLifecycle state machine.
+*   `.github/workflows/build_and_release.yml`: The automation engine. Uploads the final OSF.
+*   `scripts/generate_osmand_deploy.py`: Master compiler for `.osf`. The `profile_brombrom.json` contained here is hardcoded from a pristine native OsmAnd export.
 *   `scripts/snap_c9_to_roads.py`: Algorithmic core affecting user safety.
 
 ## 🚀 Release Strategy
 *   **Schedule**: Automated builds trigger on the **2nd of every month**.
 *   **Zero-Downtime**: We use `gh release upload --clobber` to overwrite artifacts in-place on the `latest` tag. This prevents 404 errors for users during the update window.
-*   **Tagging**: The git tag `latest` is force-moved to the most recent map build on every successful CI run.
 
 ## ⚠️ Known Complexities
 *   **NDK Versioning**: Flutter plugins in this project require **Android NDK 27.0.12077973**. Do not downgrade in `app/android/app/build.gradle.kts`.
+*   **OsmAnd State Limitations**: OsmAnd hides freshly imported `.osf` profiles by default. The Manager app mitigates this via explicit onboarding dialogs. Do not attempt to force "visible" states via `.osf` metadata.
 *   **Memory Usage**: OBF generation (Java) requires **6GB+ RAM**.
-*   **OsmAnd FileProvider**: The app shares files with OsmAnd via `content://` URIs. Manifest changes to `<provider>` must remain inside the `<application>` block.
 
 ## 🧪 Testing & Validation
-*   **Graph Drills**: Use `scripts/validate_results.py` to verify map sanity.
-*   **App Testing**: Push app changes to `feature/manager-app`. Build results can be downloaded as artifacts from GitHub Actions before merging to `main`.
+*   **Graph Drills**: Use `scripts/validate_results.py` to verify map sanity and OSF artifact existence.
+*   **App Testing**: Push app changes to `develop`. Build results can be downloaded as APK artifacts from GitHub Actions before merging to `main`.

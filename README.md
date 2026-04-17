@@ -31,17 +31,23 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
 > [!IMPORTANT]
 > **Prerequisite**: You must have **OsmAnd** installed on your device first. Download it from the [Google Play Store](https://play.google.com/store/apps/details?id=net.osmand) or [iOS App Store](https://apps.apple.com/app/osmand-maps-navigation/id934850257).
 
-### ✅ Option A: BromBrom Manager (Recommended)
-The easiest way to install and update BromBrom on Android.
+### ✅ Option A: BromBrom Manager (Android Recommended)
+The fastest way to install and keep your navigation updated automatically.
 
 1.  **Download** the **BromBrom Manager App** (`BromBrom.apk`) from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
-2.  **Install** and **Open** the app.
-    *   Grant the "All Files Access" permission when prompted.
-3.  **Update Map**: Tap the orange **"UPDATE MAP"** button.
-4.  **Update Routing**: Tap **"UPDATE BromBrom Routing"**.
+2.  **Install** and **Open** the app. Grant the "All Files Access" permission if prompted.
+3.  **Install/Update**: Tap the blue **"INSTALL / UPDATE BromBrom Navigation"** button. The app will securely download and configure your map, routing rules, and the complete BromBrom profile into OsmAnd in one swift motion!
 
-### 🛠️ Option B: Manual Installation (Advanced / iOS)
-See the [Manual Install Guide](docs/manual_install.md) for step-by-step instructions for iOS and advanced users.
+### 🍏 Option B: Direct Import (iOS & Advanced Android Users)
+Because the entire BromBrom profile is now securely packaged into a Smart Folder (`.osf`), manual installation is incredibly easy across all operating systems.
+
+1. Go to the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)** on your phone.
+2. Download the **`BromBrom.osf`** package file.
+3. Tap on the downloaded file. Your OS will prompt you to open it with **OsmAnd**.
+4. In OsmAnd's import screen, tap **Apply** (or **Replace all** if updating).
+5. Open OsmAnd's main menu ☰ -> "Settings" -> "App profiles" -> Ensure **BromBrom** is toggled ON.
+
+See the [Manual Install Guide](docs/manual_install.md) for deeper troubleshooting.
 
 ---
 

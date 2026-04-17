@@ -3,36 +3,37 @@
 > [!IMPORTANT]
 > **Prerequisite**: Ensure **OsmAnd** is installed before proceeding.
 
-## 🆕 First-Time Installation
-1.  **Download** the following from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**:
-    *   `routing.xml`
-    *   `NL_BromBrom_tagged.obf`
-2.  **Transfer** them to your phone. 
-3.  **Create Profile**:
-    *   In OsmAnd: **Settings** -> **App Profiles** -> **New Profile**.
-    *   Base it on **Driving**. Name it **BromBrom**. Tap **Apply**.
-4.  **Import Routing**:
-    *   Select your new **BromBrom** profile.
-    *   Go to **Navigation Settings** -> **Navigation Type**.
-    *   Tap **Import routing file** and select the `routing.xml` you transferred.
-5.  **Install Map**:
-    *   Locate `NL_BromBrom_tagged.obf` in your file manager and choose **"Open with OsmAnd"**.
+Because the entire BromBrom profile is now securely packaged into a Smart Folder (`.osf`), manual installation is incredibly easy across all operating systems.
 
-## 🔄 Monthly Update (Manual)
-1.  **Download** the new `NL_BromBrom_tagged.obf`.
-2.  **Delete Old Map**: In OsmAnd: **Settings** -> **Maps & Resources** -> **Local** -> **Standard maps** -> Delete `NL_BromBrom_tagged`.
-3.  **Install New Map**: Open the new `.obf` with OsmAnd.
+## 🍏 iOS Devices (iPhone / iPad)
 
-## 🍎 iOS Support (Manual Transfer)
+The iOS version of OsmAnd natively supports OsmAnd Smart Folders (`.osf`).
 
-> [!NOTE]
-> iOS support is Experimental. The iOS version of OsmAnd lacks the "Import routing file" button.
+1. Open Safari on your iPhone and go to the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
+2. Under "Assets", tap and download **`BromBrom.osf`**.
+3. Once downloaded, tap the file. Safari will prompt you to open it with **OsmAnd**.
+4. OsmAnd will open the import screen. Tap **Apply**.
+5. Once imported, you must manually enable the BromBrom profile:
+   * Open the OsmAnd main menu ☰
+   * Go to **"Settings"** -> **"App profiles"**
+   * Scroll to the bottom, find **"BromBrom"**, and tap it to toggle it **ON**.
 
-1.  **Transfer** files to your iPhone (AirDrop or iCloud).
-2.  **Install Map**: Tap `NL_BromBrom_tagged.obf` -> Share -> **OsmAnd**.
-3.  **Install Routing**:
-    *   Open the iOS **Files** app.
-    *   **Move** `routing.xml` to: `On My iPhone` -> `OsmAnd` -> `AppData` -> `routing` (create the `routing` folder if it is missing).
-4.  **Configure Profile**:
-    *   **Settings** -> **App Profiles** -> **New Profile** (Base on **Driving**, name it **BromBrom**).
-    *   **Navigation Settings** -> **Navigation Type** -> Select **BromBrom**.
+You are now ready to route!
+
+## 🤖 Android Devices (Without Manager App)
+
+If you prefer not to use the BromBrom Manager APK, you can achieve the exact same result manually.
+
+1. Go to the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)** on your phone's browser.
+2. Download the **`BromBrom.osf`** package file.
+3. Open your phone's "Files" or "Downloads" app and tap on `BromBrom.osf`.
+4. Your OS will prompt you to open it with **OsmAnd**.
+5. OsmAnd will open the import screen. Tap **Apply** (or **Replace all** if updating).
+6. Once imported, you must manually enable the BromBrom profile:
+   * Open the OsmAnd main menu ☰
+   * Go to **"Settings"** -> **"App profiles"**
+   * Scroll to the bottom, find **"BromBrom"**, and tap it to toggle it **ON**.
+
+## 🔄 Monthly Updates
+
+To update next month, simply download the newest `BromBrom.osf` and tap it. When OsmAnd prompts you during the import, select **"Replace all"**. It will automatically overwrite the old map and routing rules with the fresh data.

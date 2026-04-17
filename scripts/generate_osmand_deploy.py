@@ -1,50 +1,128 @@
 #!/usr/bin/env python3
+import json
 import os
+import shutil
 import zipfile
 from pathlib import Path
 
 def create_osmand_deploy_package():
-    import shutil
+    print("Building dist/BromBrom.osf package...")
+    
+    # Paths
     dist_dir = Path("dist")
+    map_src = Path("OsmAndMapCreator/NL_BromBrom_tagged.obf")
+    routing_src = Path("config/routing.xml")
+    osf_path = dist_dir / "BromBrom.osf"
     
-    # Clean up and recreate dist folder
-    if dist_dir.exists():
-        shutil.rmtree(dist_dir)
-    dist_dir.mkdir(exist_ok=True)
+    dist_dir.mkdir(parents=True, exist_ok=True)
     
-    # Files to be staged for release
-    files_to_copy = []
+    if osf_path.exists():
+        osf_path.unlink()
 
-    # 1. BRouter Profile (if debug)
-    is_debug = os.environ.get("DEBUG") == "true"
-    if is_debug:
-        if Path("config/brommobiel.brf").exists():
-            files_to_copy.append(("config/brommobiel.brf", "brommobiel.brf"))
+    # Exact replication of OsmAnd's native PROFILE JSON
+    osmand_profile_json = {
+      "force_private_access_routing": "false",
+      "default_driving_region": "EUROPE_ASIA",
+      "fuel_tank_capacity": "17.5",
+      "default_speed": "12.5",
+      "min_speed": "1.9444445",
+      "max_speed": "12.5",
+      "derived_profile": "default",
+      "app_mode_version": "-1",
+      "map_empty_state_allowed": "false",
+      "view_angle_visibility": "RESTING",
+      "location_radius_visibility": "RESTING_NAVIGATION",
+      "interrupt_music": "false",
+      "fast_route_mode": "true",
+      "show_nearby_favorites": "false",
+      "show_nearby_poi": "false",
+      "rotate_map": "1",
+      "audio_stream": "3",
+      "selected_external_input_device": "keyboard",
+      "custom_external_input_devices": "",
+      "external_input_device_enabled": "true",
+      "last_known_map_rotation": "-0.0",
+      "last_known_map_elevation": "90.0",
+      "nrenderer_appMode": "car",
+      "osmand_theme": "2",
+      "nrenderer_baseAppMode": "car",
+      "nrenderer_contourLines": "13",
+      "OsmAnd (online tiles)_param_min": "0.0",
+      "OsmAnd (online tiles)_param_max": "0.0",
+      "OsmAnd (online tiles)_param_step": "0.0",
+      "nrenderer_depthContours": "true",
+      "show_next_turn_info": "false",
+      "simple_widget_sizeroute_info": "MEDIUM",
+      "route_info_widget_display_mode": "ARRIVAL_TIME",
+      "route_info_widget_display_priority": "DESTINATION_FIRST",
+      "prouting_allow_private": "false",
+      "prouting_weight": "0.5",
+      "prouting_height": "1.6",
+      "prouting_length": "3.0",
+      "prouting_width": "1.5",
+      "prouting_motor_type": "2.0"
+    }
+
+    # Exact replication of OsmAnd's native items.json manifest
+    items_manifest = {
+      "version": 3,
+      "items": [
+        {
+          "type": "FILE",
+          "file": "/routing/routing.xml",
+          "subtype": "routing_config"
+        },
+        {
+          "type": "FILE",
+          "file": "/NL_BromBrom_tagged.obf",
+          "subtype": "obf_map"
+        },
+        {
+          "type": "PROFILE",
+          "file": "profile_brombrom.json",
+          "appMode": {
+            "customIconColor": -45024,
+            "iconColor": "DEFAULT",
+            "iconName": "ic_action_car_dark",
+            "locIcon": "STATIC_CAR",
+            "navIcon": "MOVEMENT_DEFAULT",
+            "order": 13,
+            "parent": "car",
+            "routeService": "OSMAND",
+            "routingProfile": "routing.xml/BromBrom",
+            "stringKey": "brombrom",
+            "userProfileName": "BromBrom",
+            "version": -1
+          }
+        }
+      ]
+    }
+
+    with zipfile.ZipFile(osf_path, 'w', zipfile.ZIP_DEFLATED) as osf_zip:
         
-        # 2. BRouter Segments (.rd5)
-        segments_dir = Path("segments4")
-        for rd5 in segments_dir.glob("*.rd5"):
-            files_to_copy.append((str(rd5), rd5.name))
-    
-    # 2. OsmAnd Routing Config
-    if Path("config/routing.xml").exists():
-        files_to_copy.append(("config/routing.xml", "routing.xml"))
-
-    # 3. OsmAnd Map (.obf)
-    omc_dir = Path("OsmAndMapCreator")
-    target_obf = omc_dir / "NL_BromBrom_tagged.obf"
-    if target_obf.exists():
-        files_to_copy.append((str(target_obf), "NL_BromBrom_tagged.obf"))
-    
-    print(f"Staging files in {dist_dir}...")
-    for src, dest_name in files_to_copy:
-        if os.path.exists(src):
-            print(f"  Copying {src} -> {dist_dir}/{dest_name}")
-            shutil.copy2(src, dist_dir / dest_name)
+        # 1. Routing file inside '/routing'
+        if routing_src.exists():
+            osf_zip.write(routing_src, "routing/routing.xml")
+            print(f"  Added routing.xml")
         else:
-            print(f"Warning: {src} missing, skipping")
+            print("  Warning: routing.xml not found")
 
-    print("✓ Deployment files ready in dist/")
+        # 2. Map data at root
+        if map_src.exists():
+            osf_zip.write(map_src, "NL_BromBrom_tagged.obf")
+            print(f"  Added NL_BromBrom_tagged.obf")
+        else:
+             print("  Warning: Map .obf not found")
+
+        # 3. Profile JSON
+        osf_zip.writestr("profile_brombrom.json", json.dumps(osmand_profile_json, indent=2))
+        print("  Added profile_brombrom.json")
+
+        # 4. Items.json Manifest
+        osf_zip.writestr("items.json", json.dumps(items_manifest, indent=2))
+        print("  Added items.json manifest")
+
+    print(f"✓ Deployment package ready: {osf_path}")
 
 if __name__ == "__main__":
     create_osmand_deploy_package()
