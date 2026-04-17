@@ -9,16 +9,21 @@ MIN_EXPECTED_TAGGED_ROADS = 500  # Conservative minimum; actual is usually thous
 def validate_build():
     print("Running QA Validation...")
     
-    # 1. Validate OBF Artifact
-    obf_path = "dist/NL_BromBrom_tagged.obf"
-    xml_path = "dist/routing.xml"
+    # 1. Validate Artifacts
+    obf_path = "OsmAndMapCreator/NL_BromBrom_tagged.obf"
+    xml_path = "config/routing.xml"
+    osf_path = "dist/BromBrom.osf"
     
     if not os.path.exists(obf_path):
-        print("❌ CRITICAL: Map artifact (dist/NL_BromBrom_tagged.obf) does not exist!")
+        print(f"❌ CRITICAL: Map artifact ({obf_path}) does not exist!")
         sys.exit(1)
 
     if not os.path.exists(xml_path):
-        print("❌ CRITICAL: Routing artifact (dist/routing.xml) does not exist!")
+        print(f"❌ CRITICAL: Routing artifact ({xml_path}) does not exist!")
+        sys.exit(1)
+        
+    if not os.path.exists(osf_path):
+        print(f"❌ CRITICAL: Custom Package artifact ({osf_path}) does not exist!")
         sys.exit(1)
         
     size_mb = os.path.getsize(obf_path) / (1024 * 1024)
