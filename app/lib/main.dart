@@ -49,6 +49,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
   
   // STATE
   bool _hasPermission = false;
+  bool _osmandInstalled = true;
   String _statusMessage = 'Checking permissions...';
   bool _isDownloading = false;
   double _progress = 0.0;
@@ -100,6 +101,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'osf_dialog_step2': '2. Scroll naar beneden naar "BromBrom"',
       'osf_dialog_step3': '3. Zet de schakelaar op INGESCHAKELD',
       'osf_dialog_btn': 'BEGREPEN, OPEN OSMAND',
+      'missing_osmand_title': 'OsmAnd Niet Gevonden!',
+      'missing_osmand_desc': 'Je hebt de OsmAnd navigatie-app nog niet op je telefoon staan. De BromBrom Manager heeft deze nodig om de kaarten in te laden. Wil je OsmAnd nu downloaden via de Google Play Store?',
+      'btn_get_osmand': 'OSMAND DOWNLOADEN',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
       'show_logs': 'Logboeken tonen',
@@ -136,6 +140,9 @@ class _InstallerScreenState extends State<InstallerScreen> {
       'osf_dialog_step2': '2. Scroll down to "BromBrom"',
       'osf_dialog_step3': '3. Set its switch to ENABLED',
       'osf_dialog_btn': 'UNDERSTOOD, OPEN OSMAND',
+      'missing_osmand_title': 'OsmAnd Not Found!',
+      'missing_osmand_desc': 'You do not have the OsmAnd navigation app installed yet. BromBrom requires it to load the custom map data. Would you like to install OsmAnd from the Play Store now?',
+      'btn_get_osmand': 'GET OSMAND',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
       'show_logs': 'Show Debug Logs',
@@ -198,6 +205,7 @@ class _InstallerScreenState extends State<InstallerScreen> {
       });
     } else {
       setState(() => _hasPermission = true);
+      await _checkOsmAndInstalled();
       _checkVersions();
     }
   }
@@ -205,6 +213,54 @@ class _InstallerScreenState extends State<InstallerScreen> {
   Future<void> _requestPermission() async {
     await Permission.manageExternalStorage.request();
     _checkPermissions();
+  }
+
+  Future<void> _checkOsmAndInstalled() async {
+    if (!Platform.isAndroid) return;
+    try {
+      final intentFree = AndroidIntent(action: 'android.intent.action.MAIN', package: 'net.osmand');
+      final intentPro = AndroidIntent(action: 'android.intent.action.MAIN', package: 'net.osmand.plus');
+      
+      bool freeResolved = await intentFree.canResolveActivity() ?? false;
+      bool proResolved = await intentPro.canResolveActivity() ?? false;
+      
+      setState(() {
+        _osmandInstalled = freeResolved || proResolved;
+      });
+      
+      if (!_osmandInstalled && mounted) {
+        _showMissingOsmAndDialog();
+      }
+    } catch(e) {
+      _log("OsmAnd Check Error: $e");
+    }
+  }
+
+  void _showMissingOsmAndDialog() {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(_t('missing_osmand_title'), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          content: Text(_t('missing_osmand_desc')),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(backgroundColor: Colors.blue[800], foregroundColor: Colors.white),
+              child: Text(_t('btn_get_osmand')),
+              onPressed: () {
+                Navigator.of(context).pop();
+                AndroidIntent(
+                  action: 'action_view',
+                  data: 'market://details?id=net.osmand',
+                  flags: <int>[0x10000000], // FLAG_ACTIVITY_NEW_TASK
+                ).launch();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _checkVersions() async {
@@ -567,7 +623,13 @@ class _InstallerScreenState extends State<InstallerScreen> {
                         foregroundColor: Colors.white,
                         elevation: _osfUpdateAvailable ? 8 : 2,
                       ),
-                      onPressed: () => _downloadFile(OSF_FILENAME),
+                      onPressed: () {
+                        if (!_osmandInstalled) {
+                          _showMissingOsmAndDialog();
+                        } else {
+                          _downloadFile(OSF_FILENAME);
+                        }
+                      },
                       child: Column(
                         children: [
                           Row(
