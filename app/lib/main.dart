@@ -627,6 +627,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                           ],
                         ),
                       ),
+                ],
                 const SizedBox(height: 24),
                 // Support Project & OsmAnd Link
                 Row(
