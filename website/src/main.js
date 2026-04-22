@@ -63,21 +63,25 @@ const translations = {
 // Language Matcher
 let currentLang = 'nl';
 
+// Cache DOM elements to prevent redundant queries
+const i18nElements = document.querySelectorAll('[data-i18n]');
+const langOptionBtns = document.querySelectorAll('.lang-option');
+
 function updateLanguage(lang) {
   currentLang = lang;
-  document.querySelectorAll('[data-i18n]').forEach(el => {
+  i18nElements.forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (translations[lang][key]) {
       el.innerHTML = translations[lang][key];
     }
   });
 
-  document.querySelectorAll('.lang-option').forEach(btn => {
+  langOptionBtns.forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === lang);
   });
 }
 
-document.querySelectorAll('.lang-option').forEach(btn => {
+langOptionBtns.forEach(btn => {
   btn.addEventListener('click', () => updateLanguage(btn.dataset.lang));
 });
 
