@@ -73,6 +73,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Uploading APK to 'latest' release..."
-          gh release upload latest app/build/app/outputs/flutter-apk/BromBrom.apk --clobber || echo "Release 'latest' not found yet. Map build will create it."
+          echo "Uploading APK to 'stable' release..."
+          gh release upload stable app/build/app/outputs/flutter-apk/BromBrom.apk --clobber || echo "Release 'stable' not found yet. Map build will create it."
 

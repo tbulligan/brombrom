@@ -62,9 +62,9 @@ jobs:
 
       - name: Zero-Downtime Release Update
         run: |
-          # 1. Force move the 'latest' tag locally and on remote
-          git tag -f latest
-          git push origin latest -f
+          # 1. Force move the 'stable' tag locally and on remote
+          git tag -f stable
+          git push origin stable -f
           
           # 2. Define release notes
           NOTES="## Automated Monthly Build
@@ -85,23 +85,23 @@ jobs:
           **Base Branch**: ${{ github.ref_name }}"
 
           # 3. Ensure release exists and update metadata
-          gh release edit latest --title "Latest BromBrom OsmAnd Build" --notes "$NOTES" || \
-          gh release create latest --title "Latest BromBrom OsmAnd Build" --notes "$NOTES"
+          gh release edit stable --title "Latest BromBrom OsmAnd Build" --notes "$NOTES" || \
+          gh release create stable --title "Latest BromBrom OsmAnd Build" --notes "$NOTES"
 
           # 4. Upload raw files for legacy app backwards compatibility
           # We upload directly from source since dist/ now contains the .osf package
-          gh release download latest -p "routing.xml" -O existing_routing.xml --clobber 2>/dev/null || touch existing_routing.xml
+          gh release download stable -p "routing.xml" -O existing_routing.xml --clobber 2>/dev/null || touch existing_routing.xml
           
           if cmp -s existing_routing.xml config/routing.xml; then
             echo "routing.xml is unchanged, uploading map and OSF only."
-            gh release upload latest \
+            gh release upload stable \
               config/routing.xml \
               OsmAndMapCreator/NL_BromBrom_tagged.obf \
               dist/BromBrom.osf \
               --clobber
           else
             echo "routing.xml changed, uploading all artifacts."
-            gh release upload latest \
+            gh release upload stable \
               config/routing.xml \
               OsmAndMapCreator/NL_BromBrom_tagged.obf \
               dist/BromBrom.osf \
