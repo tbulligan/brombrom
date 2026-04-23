@@ -43,7 +43,7 @@ dependencies:
   shared_preferences: ^2.4.0
   intl: ^0.19.0
   background_downloader: ^8.6.0
-  workmanager: ^0.8.0
+  workmanager: ^0.7.0
   flutter_local_notifications: ^18.0.0
 
 dev_dependencies:
