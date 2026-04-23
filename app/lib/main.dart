@@ -596,6 +596,22 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         const SizedBox(height: 8),
                         if (_latestReleaseDate != null)
                           Text("${_t('latest_release')}: ${DateFormat('yyyy-MM-dd HH:mm').format(_latestReleaseDate!)}"),
+                        
+                        if (_isDownloading) ...[
+                          const SizedBox(height: 16),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: LinearProgressIndicator(
+                              value: _progress,
+                              backgroundColor: Colors.orange[100],
+                              color: Colors.orange[800],
+                              minHeight: 10,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text("${(_progress * 100).toStringAsFixed(1)}%", 
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange[800])),
+                        ],
                       ],
                     ),
                   ),
@@ -641,7 +657,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                             ),
                             if (_localOsfDate != null) ...[
                               const SizedBox(height: 8),
-                              Text("${_t('on_disk')}: ${_t('version_current')}", 
+                              Text("${_t('on_disk')}: ${DateFormat('yyyy-MM-dd HH:mm').format(_localOsfDate!)}", 
                                  style: const TextStyle(fontSize: 12)),
                             ]
                           ],
@@ -692,12 +708,28 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     height: 150,
                     margin: const EdgeInsets.only(top: 8),
                     padding: const EdgeInsets.all(8),
-                    color: Colors.black12,
-                    child: ListView.builder(
-                       shrinkWrap: true,
-                       physics: const NeverScrollableScrollPhysics(),
-                       itemCount: _logs.length,
-                       itemBuilder: (ctx, i) => Text(_logs[i], style: const TextStyle(fontSize: 10, fontFamily: 'monospace')),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.remove(_prefLastKnownRelease);
+                            await prefs.remove(_prefBgScheduled);
+                            _log("Update cache cleared. Restart app or refresh to test update logic.");
+                            _checkVersions();
+                          },
+                          child: const Text("Clear Update Cache (Test Logic)"),
+                        ),
+                        const SizedBox(height: 8),
+                        Expanded(
+                          child: ListView.builder(
+                             shrinkWrap: true,
+                             itemCount: _logs.length,
+                             itemBuilder: (ctx, i) => Text(_logs[i], style: const TextStyle(fontSize: 10, fontFamily: 'monospace')),
+                          ),
+                        ),
+                      ],
                     ),
                   )
               ],
