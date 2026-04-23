@@ -18,6 +18,7 @@ const String _bgTaskTag = "brombrom_update_check";
 const String _releaseApiUrl = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
 const String _prefLastKnownRelease = "last_known_release_date";
 const String _prefBgScheduled = "bg_task_scheduled";
+const String _prefOnboardingSeen = "onboarding_seen";
 
 // ── Background Task Handler (runs in a separate isolate) ──
 @pragma('vm:entry-point')
@@ -139,6 +140,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   int _devTapCount = 0;
   DateTime? _lastTapTime;
   String _locale = 'nl';
+  bool _showOnboarding = false;
   
   // CACHED URLs
   final Map<String, String> _downloadUrls = {};
@@ -162,18 +164,32 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'btn_osf_update': 'BromBrom Navigatie INSTALLEREN / BIJWERKEN',
       'btn_osf_download': 'BromBrom Navigatie OPNIEUW DOWNLOADEN',
       'on_disk': 'Lokaal aanwezig',
-      'osf_dialog_title': 'Activering Vereist',
-      'osf_dialog_p1': 'OsmAnd zal nu openen. Tik op "Toepassen" of "Alles vervangen" en wacht tot de import voltooid is.',
-      'osf_dialog_p2': '⚠️ Bij het "Import voltooid" scherm:',
-      'osf_dialog_step1': '1. Tik direct op "Instellingen"',
-      'osf_dialog_step2': '2. Scroll naar beneden naar "BromBrom"',
-      'osf_dialog_step3': '3. Zet de schakelaar op INGESCHAKELD',
+      'osf_dialog_title': 'Openen in OsmAnd',
+      'osf_dialog_p1': 'OsmAnd opent nu. Volg deze stappen precies:',
+      'osf_dialog_step1': '1. Tik op "Alle instellingen en bronnen" → "Doorgaan"',
+      'osf_dialog_step2': '2. Tik op "Alles vervangen" (update) of "Toepassen" (eerste keer)',
+      'osf_dialog_step3': '3. Wacht tot de import klaar is',
+      'osf_dialog_step4': '4. Tik op het "Import voltooid" scherm op "Instellingen"',
+      'osf_dialog_step5': '5. Scroll naar beneden naar "BromBrom" en zet de schakelaar AAN',
+      'osf_dialog_step6': '6. Tik op het oranje auto-icoon om BromBrom als actief profiel te selecteren',
+      'osf_dialog_warning': '⚠️ Sla stap 4–6 niet over — OsmAnd verbergt en activeert nieuwe profielen niet automatisch.',
       'osf_dialog_btn': 'BEGREPEN, OPEN OSMAND',
       'btn_get_osmand': 'Download OsmAnd App',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
       'show_logs': 'Logboeken tonen',
       'hide_logs': 'Logboeken verbergen',
+      'ob_slide1_title': 'Navigeer veilig met je Brommobiel',
+      'ob_slide1_body': 'BromBrom voegt een speciaal navigatieprofiel toe aan OsmAnd. Je vermijdt automatisch snelwegen en C9-wegen.',
+      'ob_slide2_title': 'Je hebt OsmAnd nodig',
+      'ob_slide2_body': 'BromBrom werkt binnen de gratis OsmAnd app. Als je OsmAnd nog niet hebt, download het dan nu vóórdat je verdergaat.',
+      'ob_slide2_btn': 'Download OsmAnd',
+      'ob_slide3_title': 'Altijd de nieuwste kaart',
+      'ob_slide3_body': 'BromBrom controleert elke dag op nieuwe kaarten. Zet meldingen aan en je krijgt automatisch een seintje wanneer er een update klaarstaat.',
+      'ob_slide3_btn': 'Meldingen inschakelen',
+      'ob_skip': 'Niet nu',
+      'ob_next': 'Volgende',
+      'ob_finish': 'Aan de slag!',
     },
     'en': {
       'app_name': 'BromBrom Manager',
@@ -193,18 +209,32 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'btn_osf_update': 'INSTALL / UPDATE BromBrom Navigation',
       'btn_osf_download': 'RE-DOWNLOAD BromBrom Navigation',
       'on_disk': 'On device',
-      'osf_dialog_title': 'Activation Required',
-      'osf_dialog_p1': 'OsmAnd will now open. Tap "Apply" or "Replace all" and wait for the import to finish.',
-      'osf_dialog_p2': '⚠️ On the "Import complete" screen:',
-      'osf_dialog_step1': '1. Tap "Settings"',
-      'osf_dialog_step2': '2. Scroll down to "BromBrom"',
-      'osf_dialog_step3': '3. Set its switch to ENABLED',
+      'osf_dialog_title': 'Open in OsmAnd',
+      'osf_dialog_p1': 'OsmAnd will now open. Follow these steps exactly:',
+      'osf_dialog_step1': '1. Tap "All Settings and Resources" → "Continue"',
+      'osf_dialog_step2': '2. Tap "Replace all" (update) or "Apply" (first time)',
+      'osf_dialog_step3': '3. Wait for the import to complete',
+      'osf_dialog_step4': '4. On the "Import complete" screen, tap "Settings"',
+      'osf_dialog_step5': '5. Scroll down to "BromBrom" and toggle it ON',
+      'osf_dialog_step6': '6. Tap the orange car icon to select BromBrom as your active profile',
+      'osf_dialog_warning': '⚠️ Do not skip steps 4–6 — OsmAnd does not enable or activate new profiles automatically.',
       'osf_dialog_btn': 'UNDERSTOOD, OPEN OSMAND',
       'btn_get_osmand': 'Download OsmAnd App',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
       'show_logs': 'Show Debug Logs',
       'hide_logs': 'Hide Debug Logs',
+      'ob_slide1_title': 'Navigate Safely in Your Microcar',
+      'ob_slide1_body': 'BromBrom adds a dedicated navigation profile to OsmAnd that automatically avoids motorways and C9-restricted roads.',
+      'ob_slide2_title': 'You need OsmAnd',
+      'ob_slide2_body': 'BromBrom works inside the free OsmAnd app. If you don\'t have OsmAnd yet, download it now before continuing.',
+      'ob_slide2_btn': 'Download OsmAnd',
+      'ob_slide3_title': 'Always the Latest Map',
+      'ob_slide3_body': 'BromBrom checks daily for new maps. Enable notifications and you\'ll automatically be notified when an update is ready.',
+      'ob_slide3_btn': 'Enable Notifications',
+      'ob_skip': 'Not now',
+      'ob_next': 'Next',
+      'ob_finish': 'Let\'s go!',
     }
   };
 
@@ -257,6 +287,12 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       await _requestNotificationPermission();
       await _scheduleBackgroundUpdateCheck();
       _checkVersions();
+      // Show onboarding carousel on first launch
+      final prefs = await SharedPreferences.getInstance();
+      final bool seen = prefs.getBool(_prefOnboardingSeen) ?? false;
+      if (!seen && mounted) {
+        setState(() => _showOnboarding = true);
+      }
     });
   }
 
@@ -472,15 +508,36 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
           title: Text(_t('osf_dialog_title'), style: const TextStyle(fontWeight: FontWeight.bold)),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           content: SingleChildScrollView(
-            child: ListBody(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text(_t('osf_dialog_p1')),
+                Text(_t('osf_dialog_p1'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 12),
+                Text(_t('osf_dialog_step1'), style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(_t('osf_dialog_step2'), style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(_t('osf_dialog_step3'), style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(_t('osf_dialog_step4'), style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(_t('osf_dialog_step5'), style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(_t('osf_dialog_step6'), style: const TextStyle(fontSize: 14)),
                 const SizedBox(height: 16),
-                Text(_t('osf_dialog_p2'), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
-                const SizedBox(height: 8),
-                Text(_t('osf_dialog_step1'), style: const TextStyle(fontSize: 15)),
-                Text(_t('osf_dialog_step2'), style: const TextStyle(fontSize: 15)),
-                Text(_t('osf_dialog_step3'), style: const TextStyle(fontSize: 15)),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange[300]!),
+                  ),
+                  child: Text(
+                    _t('osf_dialog_warning'),
+                    style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
+                  ),
+                ),
               ],
             ),
           ),
@@ -488,7 +545,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: Colors.blue[800],
+                backgroundColor: Colors.orange[800],
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
               child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -574,8 +631,166 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
+  Future<void> _dismissOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_prefOnboardingSeen, true);
+    if (mounted) setState(() => _showOnboarding = false);
+  }
+
+  Widget _buildOnboardingCarousel() {
+    final PageController pageController = PageController();
+    int currentPage = 0;
+
+    final Color orange = Colors.orange[800]!;
+
+    final List<Map<String, String>> slides = [
+      {
+        'icon': '🚗',
+        'title': _t('ob_slide1_title'),
+        'body': _t('ob_slide1_body'),
+      },
+      {
+        'icon': '🗺️',
+        'title': _t('ob_slide2_title'),
+        'body': _t('ob_slide2_body'),
+        'btn': _t('ob_slide2_btn'),
+      },
+      {
+        'icon': '🔔',
+        'title': _t('ob_slide3_title'),
+        'body': _t('ob_slide3_body'),
+        'btn': _t('ob_slide3_btn'),
+      },
+    ];
+
+    return StatefulBuilder(
+      builder: (context, setPageState) {
+        return Material(
+          color: Colors.black.withOpacity(0.92),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: TextButton(
+                      onPressed: _dismissOnboarding,
+                      child: Text(_t('ob_skip'), style: const TextStyle(color: Colors.white70)),
+                    ),
+                  ),
+                  Expanded(
+                    child: PageView.builder(
+                      controller: pageController,
+                      itemCount: slides.length,
+                      onPageChanged: (i) => setPageState(() => currentPage = i),
+                      itemBuilder: (context, index) {
+                        final slide = slides[index];
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(slide['icon']!, style: const TextStyle(fontSize: 64)),
+                            const SizedBox(height: 32),
+                            Text(
+                              slide['title']!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              slide['body']!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 16, color: Colors.white70, height: 1.5),
+                            ),
+                            if (slide.containsKey('btn')) ...[
+                              const SizedBox(height: 28),
+                              OutlinedButton(
+                                onPressed: () {
+                                  if (index == 1) {
+                                    // Open OsmAnd on Play Store
+                                    AndroidIntent(
+                                      action: 'action_view',
+                                      data: 'https://play.google.com/store/apps/details?id=net.osmand',
+                                    ).launch();
+                                  } else if (index == 2) {
+                                    _requestNotificationPermission();
+                                  }
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  side: const BorderSide(color: Colors.white54),
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                ),
+                                child: Text(slide['btn']!),
+                              ),
+                            ]
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  // Dot indicators
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(slides.length, (i) {
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: currentPage == i ? 20 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: currentPage == i ? orange : Colors.white38,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: orange,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        if (currentPage < slides.length - 1) {
+                          pageController.nextPage(
+                            duration: const Duration(milliseconds: 350),
+                            curve: Curves.easeInOut,
+                          );
+                        } else {
+                          _dismissOnboarding();
+                        }
+                      },
+                      child: Text(
+                        currentPage == slides.length - 1 ? _t('ob_finish') : _t('ob_next'),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        _buildMainScaffold(),
+        if (_showOnboarding) _buildOnboardingCarousel(),
+      ],
+    );
+  }
+
+  Widget _buildMainScaffold() {
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(

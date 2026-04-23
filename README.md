@@ -34,20 +34,30 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
 ### ✅ Option A: BromBrom Manager (Android Recommended)
 The fastest way to install and keep your navigation updated automatically.
 
-1.  **Download** the **BromBrom Manager App** (`BromBrom.apk`) from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
-2.  **Install** and **Open** the app. 
-3.  **Install/Update**: Tap the big Orange **"INSTALL / UPDATE BromBrom Navigation"** button. 
-4.  **Import**: The app will securely download and pass the smart map package (`.osf`) to OsmAnd. When OsmAnd opens, tap **Apply** (or **Replace all** if updating).
-5.  **Enable Profile**: Open OsmAnd's main menu ☰ -> "Settings" -> "App profiles" -> Ensure the **BromBrom** profile is toggled ON.
+1.  **Download** the **BromBrom Manager App** from the **[Google Play Store](https://play.google.com/store/apps/details?id=com.brombrom.app)** or the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
+2.  **Install** and **Open** the app.
+3.  **Install/Update**: Tap the big orange **"INSTALL / UPDATE BromBrom Navigation"** button.
+4.  OsmAnd will open. Tap **"All Settings and Resources"** → **"Continue"**.
+5.  Tap **"Replace all"** (update) or **"Apply"** (first time) and wait for the import to finish.
+6.  On the **"Import complete"** screen, tap **"Settings"**.
+7.  Scroll down to **"BromBrom"** and toggle it **ON**.
+8.  Tap the **orange car icon** in the OsmAnd navigation bar to select BromBrom as your active profile.
+
+> ⚠️ Do not skip steps 6–8. OsmAnd does not enable or activate new profiles automatically.
 
 ### 🍏 Option B: Direct Import (iOS & Advanced Android Users)
-Because the entire BromBrom profile is now securely packaged into a Smart Folder (`.osf`), manual installation is incredibly easy across all operating systems.
+Because the entire BromBrom profile is packaged into a Smart Folder (`.osf`), manual installation is easy across all operating systems.
 
 1. Go to the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)** on your phone.
 2. Download the **`BromBrom.osf`** package file.
 3. Tap on the downloaded file. Your OS will prompt you to open it with **OsmAnd**.
-4. In OsmAnd's import screen, tap **Apply** (or **Replace all** if updating).
-5. Open OsmAnd's main menu ☰ -> "Settings" -> "App profiles" -> Ensure **BromBrom** is toggled ON.
+4. Tap **"All Settings and Resources"** → **"Continue"**.
+5. Tap **"Replace all"** (update) or **"Apply"** (first time) and wait for the import to finish.
+6. On the **"Import complete"** screen, tap **"Settings"**.
+7. Scroll down to **"BromBrom"** and toggle it **ON**.
+8. Tap the **orange car icon** in the OsmAnd navigation bar to select BromBrom as your active profile.
+
+> ⚠️ Do not skip steps 6–8. OsmAnd does not enable or activate new profiles automatically.
 
 See the [Manual Install Guide](docs/manual_install.md) for deeper troubleshooting.
 
