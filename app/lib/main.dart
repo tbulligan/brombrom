@@ -355,14 +355,11 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
         if (name == OSF_FILENAME) {
           remoteOsfDate = updatedAt;
-        } else if (name == APK_FILENAME) {
-          remoteApkDate = updatedAt;
         }
       }
       
       _latestReleaseDate = latestDate;
       _remoteOsfDate = remoteOsfDate;
-      _remoteApkDate = remoteApkDate;
       _log("Latest Release: $_latestReleaseDate");
 
       // Persist for background task comparison
@@ -584,7 +581,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        if (!_osfUpdateAvailable && !_apkUpdateAvailable)
+                        if (!_osfUpdateAvailable)
                            Row(
                              mainAxisAlignment: MainAxisAlignment.center,
                              children: [
