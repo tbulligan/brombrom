@@ -52,27 +52,34 @@ jobs:
           if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
             flutter build apk --release
+            flutter build appbundle --release
           else
-            echo "Signing secrets missing, building unsigned/debug-signed APK"
+            echo "Signing secrets missing, building unsigned/debug-signed APK and AAB"
             flutter build apk --release
+            flutter build appbundle --release
           fi
 
-      - name: Rename APK
+      - name: Rename Build Artifacts
         if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-        run: mv app/build/app/outputs/flutter-apk/app-release.apk app/build/app/outputs/flutter-apk/BromBrom.apk
+        run: |
+          mv app/build/app/outputs/flutter-apk/app-release.apk app/build/app/outputs/flutter-apk/BromBrom.apk
+          mv app/build/app/outputs/bundle/release/app-release.aab app/build/app/outputs/bundle/release/BromBrom.aab
 
-      - name: Upload APK Artifact
+      - name: Upload Build Artifacts
         if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: actions/upload-artifact@v4
         with:
-          name: BromBrom
-          path: app/build/app/outputs/flutter-apk/BromBrom.apk
+          name: BromBrom-Android-Builds
+          path: |
+            app/build/app/outputs/flutter-apk/BromBrom.apk
+            app/build/app/outputs/bundle/release/BromBrom.aab
 
       - name: Push APK to Latest Release
         if: success() && github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Uploading APK to 'stable' release..."
+          echo "Uploading APK and AAB to 'stable' release..."
           gh release upload stable app/build/app/outputs/flutter-apk/BromBrom.apk --clobber || echo "Release 'stable' not found yet. Map build will create it."
+          gh release upload stable app/build/app/outputs/bundle/release/BromBrom.aab --clobber || echo "Release 'stable' not found yet."
 

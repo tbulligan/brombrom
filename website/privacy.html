@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/brombrom/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/brombrom/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/brombrom/favicon-16x16.png">
+  <link rel="manifest" href="/brombrom/site.webmanifest">
+  <link rel="shortcut icon" href="/brombrom/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy - BromBrom</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <style>
+    :root {
+      --primary: #f26f21;
+      --primary-hover: #d95e16;
+      --bg: #0f1115;
+      --surface: #1a1d24;
+      --surface-light: #252a34;
+      --text: #f0f0f0;
+      --text-muted: #a0a0a0;
+      --border: #2e3545;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px;
+    }
+    
+    h1 {
+      color: var(--primary);
+      margin-bottom: 24px;
+      font-size: 2.5rem;
+    }
+    
+    h2 {
+      margin-top: 32px;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+    
+    p {
+      margin-bottom: 16px;
+      color: var(--text-muted);
+    }
+    
+    ul {
+      margin-left: 24px;
+      margin-bottom: 16px;
+      color: var(--text-muted);
+    }
+    
+    li {
+      margin-bottom: 8px;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+    
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 32px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    
+    .back-link:hover {
+      color: var(--primary);
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <a href="/brombrom/" class="back-link">
+      <i class="ph-bold ph-arrow-left"></i>
+      Back to Home
+    </a>
+
+    <h1>Privacy Policy</h1>
+    <p><strong>Effective Date:</strong> April 2026</p>
+
+    <p>This Privacy Policy applies to the <strong>BromBrom Manager</strong> Android application and the BromBrom website. We believe in absolute privacy and transparency.</p>
+
+    <h2>1. Data Collection</h2>
+    <p>The BromBrom Manager app <strong>does not collect, store, or transmit any personal data</strong>. We do not use any tracking SDKs (like Google Analytics, Firebase, or Facebook Pixel). We do not require you to create an account, and we do not track your location.</p>
+
+    <h2>2. Location Data</h2>
+    <p>The BromBrom Manager app itself does not use your device's location. The offline map data (.osf) downloaded by our app is meant to be used within the third-party <strong>OsmAnd</strong> application. OsmAnd uses your device's GPS to provide navigation, but this data remains on your device and is not shared with us.</p>
+
+    <h2>3. Network Usage</h2>
+    <p>The BromBrom Manager app connects to the internet solely for the following purpose:</p>
+    <ul>
+      <li>To communicate with the public GitHub API to check for map updates.</li>
+      <li>To download the map updates (.osf files) directly from GitHub releases.</li>
+    </ul>
+
+    <h2>4. App Permissions</h2>
+    <p>The app requests the following permissions for specific functionalities:</p>
+    <ul>
+      <li><strong>Notifications:</strong> To alert you when a new map update is available (checked in the background).</li>
+    </ul>
+
+    <h2>5. Third-Party Services</h2>
+    <p>While our app does not track you, we rely on the following third-party service:</p>
+    <ul>
+      <li><strong>GitHub:</strong> Used to host our releases and check for updates. Their privacy policy applies when the app interacts with their servers.</li>
+    </ul>
+
+    <h2>6. Changes to this Policy</h2>
+    <p>If we decide to change our privacy policy, we will post those changes on this page. Since we collect no data, we have no way to notify you directly of changes.</p>
+
+    <h2>7. Contact Us</h2>
+    <p>If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us by creating an issue on our <a href="https://github.com/tbulligan/brombrom">GitHub repository</a>.</p>
+  </div>
+</body>
+</html>
