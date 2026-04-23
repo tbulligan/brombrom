@@ -643,28 +643,39 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
     final Color orange = Colors.orange[800]!;
 
-    final List<Map<String, String>> slides = [
-      {
-        'icon': '🚗',
-        'title': _t('ob_slide1_title'),
-        'body': _t('ob_slide1_body'),
-      },
-      {
-        'icon': '🗺️',
-        'title': _t('ob_slide2_title'),
-        'body': _t('ob_slide2_body'),
-        'btn': _t('ob_slide2_btn'),
-      },
-      {
-        'icon': '🔔',
-        'title': _t('ob_slide3_title'),
-        'body': _t('ob_slide3_body'),
-        'btn': _t('ob_slide3_btn'),
-      },
-    ];
-
     return StatefulBuilder(
       builder: (context, setPageState) {
+        // Slides evaluated inside the builder so _t() re-reads _locale on every rebuild.
+        final List<Map<String, String>> slides = [
+          {
+            'icon': '\ud83d\ude97',
+            'title': _t('ob_slide1_title'),
+            'body': _t('ob_slide1_body'),
+          },
+          {
+            'icon': '\ud83d\uddfa\ufe0f',
+            'title': _t('ob_slide2_title'),
+            'body': _t('ob_slide2_body'),
+            'btn': _t('ob_slide2_btn'),
+          },
+          {
+            'icon': '\ud83d\udd14',
+            'title': _t('ob_slide3_title'),
+            'body': _t('ob_slide3_body'),
+            'btn': _t('ob_slide3_btn'),
+          },
+        ];
+
+        void toggleLanguage() {
+          final newLang = _locale == 'nl' ? 'en' : 'nl';
+          // Update parent locale state so _t() returns new language immediately.
+          setState(() => _locale = newLang);
+          // Rebuild the carousel subtree.
+          setPageState(() {});
+          // Persist so main app inherits the choice after onboarding is dismissed.
+          SharedPreferences.getInstance().then((p) => p.setString('language_code', newLang));
+        }
+
         return Material(
           color: Colors.black.withOpacity(0.92),
           child: SafeArea(
@@ -672,12 +683,28 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
                 children: [
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: TextButton(
-                      onPressed: _dismissOnboarding,
-                      child: Text(_t('ob_skip'), style: const TextStyle(color: Colors.white70)),
-                    ),
+                  // Top bar: language toggle (left) + skip (right)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: toggleLanguage,
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.white12,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ),
+                        child: Text(
+                          _locale == 'nl' ? '\ud83c\uddec\ud83c\udde7  EN' : '\ud83c\uddf3\ud83c\uddf1  NL',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _dismissOnboarding,
+                        child: Text(_t('ob_skip'), style: const TextStyle(color: Colors.white70)),
+                      ),
+                    ],
                   ),
                   Expanded(
                     child: PageView.builder(
@@ -707,7 +734,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                               OutlinedButton(
                                 onPressed: () {
                                   if (index == 1) {
-                                    // Open OsmAnd on Play Store
                                     AndroidIntent(
                                       action: 'action_view',
                                       data: 'https://play.google.com/store/apps/details?id=net.osmand',
