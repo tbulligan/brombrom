@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:background_downloader/background_downloader.dart';
+import 'package:background_downloader/background_downloader.dart' hide PermissionStatus;
 import 'package:path_provider/path_provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:permission_handler/permission_handler.dart';
