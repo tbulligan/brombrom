@@ -773,11 +773,13 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       ],
                     ),
                   )
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
