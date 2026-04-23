@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background_downloader/background_downloader.dart';
@@ -122,7 +121,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   // CONFIG
   static const String RELEASE_API = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
   static const String OSF_FILENAME = "BromBrom.osf";
-  static const String APK_FILENAME = "BromBrom.apk";
   
   // PATHS (App Specific, No permissions needed)
   String? _targetDir;
@@ -135,12 +133,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   // VERSION INFO
   DateTime? _latestReleaseDate;
   DateTime? _remoteOsfDate;
-  DateTime? _remoteApkDate;
   DateTime? _localOsfDate;
-  DateTime? _localApkDate;
-  String? _localAppVersion;
   bool _osfUpdateAvailable = false;
-  bool _apkUpdateAvailable = false;
   bool _showLogs = false;
   String _locale = 'nl';
   
@@ -163,15 +157,9 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'status_dl_done': 'Download voltooid!',
       'status_dl_error': 'Fout: {error}',
       'latest_release': 'Laatste release',
-      'btn_apk_update': 'BromBrom App BIJWERKEN',
-      'btn_apk_download': 'App OPNIEUW DOWNLOADEN',
-      'installed_version': 'Geïnstalleerd',
-      'in_downloads': 'In Downloads',
-      'version_old': 'Oude versie',
-      'version_current': 'Huidige',
       'btn_osf_update': 'BromBrom Navigatie INSTALLEREN / BIJWERKEN',
       'btn_osf_download': 'BromBrom Navigatie OPNIEUW DOWNLOADEN',
-      'on_disk': 'In Downloads',
+      'on_disk': 'Lokaal aanwezig',
       'osf_dialog_title': 'Activering Vereist',
       'osf_dialog_p1': 'OsmAnd zal nu openen. Tik op "Toepassen" of "Alles vervangen" en wacht tot de import voltooid is.',
       'osf_dialog_p2': '⚠️ Bij het "Import voltooid" scherm:',
@@ -200,15 +188,9 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'status_dl_done': 'Download Complete!',
       'status_dl_error': 'Error: {error}',
       'latest_release': 'Latest Release',
-      'btn_apk_update': 'UPDATE BromBrom App',
-      'btn_apk_download': 'RE-DOWNLOAD App',
-      'installed_version': 'Installed',
-      'in_downloads': 'In Downloads',
-      'version_old': 'Old Version',
-      'version_current': 'Current',
       'btn_osf_update': 'INSTALL / UPDATE BromBrom Navigation',
       'btn_osf_download': 'RE-DOWNLOAD BromBrom Navigation',
-      'on_disk': 'In Downloads',
+      'on_disk': 'On device',
       'osf_dialog_title': 'Activation Required',
       'osf_dialog_p1': 'OsmAnd will now open. Tap "Apply" or "Replace all" and wait for the import to finish.',
       'osf_dialog_p2': '⚠️ On the "Import complete" screen:',
@@ -393,20 +375,11 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       final File osfFile = File('$_targetDir/$OSF_FILENAME');
       _localOsfDate = await osfFile.exists() ? await osfFile.lastModified() : null;
 
-      final File apkFile = File('$_targetDir/$APK_FILENAME');
-      _localApkDate = await apkFile.exists() ? await apkFile.lastModified() : null;
-
-      final packageInfo = await PackageInfo.fromPlatform();
-      _localAppVersion = "${packageInfo.version}+${packageInfo.buildNumber}";
-      
       _osfUpdateAvailable = _localOsfDate == null || 
           _localOsfDate!.isBefore(_remoteOsfDate ?? _latestReleaseDate!);
 
-      _apkUpdateAvailable = _localApkDate == null || 
-          _localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate!);
-
       setState(() {
-        _statusMessage = (_osfUpdateAvailable || _apkUpdateAvailable) 
+        _statusMessage = _osfUpdateAvailable 
             ? _t('status_updates') 
             : _t('status_uptodate_brief');
       });
@@ -472,9 +445,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
           _statusMessage = _t('status_dl_done');
         });
 
-        if (fileName.endsWith(".apk")) {
-          _installApk(file.path);
-        } else if (fileName.endsWith(".osf")) {
+        if (fileName.endsWith(".osf")) {
           _showOsfInstructionsDialog(file.path);
         }
       } else {
@@ -565,28 +536,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     } catch (e) {
       _log("Launch Error: $e. Using Share Sheet.");
       _shareFile(path);
-    }
-  }
-  
-  Future<void> _installApk(String path) async {
-    final fileName = path.split('/').last;
-    final contentUri = "content://com.brombrom.app.fileprovider/map_imports_ext/$fileName";
-    
-    _log("Installing APK: $contentUri");
-    
-    try {
-       final AndroidIntent intent = AndroidIntent(
-        action: 'action_view',
-        data: contentUri,
-        type: 'application/vnd.android.package-archive',
-        flags: <int>[
-          0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
-          0x10000000, // FLAG_ACTIVITY_NEW_TASK
-        ],
-      );
-      await intent.launch();
-    } catch (e) {
-      _log("Install Error: $e");
     }
   }
   
@@ -702,47 +651,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         ),
                       ),
 
-                    const SizedBox(height: 24),
-
-                    // APP UPDATE
-                    if (_apkUpdateAvailable)
-                      ElevatedButton(
-                        onPressed: () => _downloadFile(APK_FILENAME),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: Colors.orange[800],
-                          foregroundColor: Colors.white,
-                          elevation: 8,
-                        ),
-                        child: Column(
-                          children: [
-                            Text(_t('btn_apk_update')),
-                            Text("${_t('installed_version')}: ${_localAppVersion ?? 'Unknown'}", style: const TextStyle(fontSize: 10, color: Colors.white70)),
-                            if (_localApkDate != null)
-                              Text("${_t('in_downloads')}: ${(_localApkDate!.isBefore(_remoteApkDate ?? _latestReleaseDate ?? DateTime(0))) ? _t('version_old') : _t('version_current')}", 
-                                style: const TextStyle(fontSize: 10, color: Colors.white70)),
-                          ],
-                        ),
-                      )
-                    else
-                      OutlinedButton(
-                        onPressed: () => _downloadFile(APK_FILENAME),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(color: Colors.orange[800]!, width: 2),
-                          backgroundColor: Colors.orange[50],
-                          foregroundColor: Colors.orange[800],
-                        ),
-                        child: Column(
-                          children: [
-                            Text(_t('btn_apk_download')),
-                            Text("${_t('installed_version')}: ${_localAppVersion ?? 'Unknown'}", style: TextStyle(fontSize: 10, color: Colors.orange[800])),
-                            if (_localApkDate != null)
-                              Text("${_t('in_downloads')}: ${_t('version_current')}", 
-                                style: TextStyle(fontSize: 10, color: Colors.orange[800])),
-                          ],
-                        ),
-                      ),
                 ],
                 const SizedBox(height: 24),
                 // Support Project & OsmAnd Link
