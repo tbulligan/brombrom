@@ -722,6 +722,29 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                           child: const Text("Clear Update Cache (Test Logic)"),
                         ),
                         const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () async {
+                             _log("Forcing background fetch logic manually...");
+                             // Simulate the callback dispatcher logic
+                             try {
+                               final response = await http.get(Uri.parse(_releaseApiUrl));
+                               if (response.statusCode == 200) {
+                                 final data = jsonDecode(response.body);
+                                 final String publishedAt = data['published_at'] ?? '';
+                                 _log("GitHub says: $publishedAt");
+                                 // We ignore the date comparison here to force the notification
+                                 await _showUpdateNotification();
+                                 _log("Notification fired!");
+                               } else {
+                                 _log("GitHub API Error: ${response.statusCode}");
+                               }
+                             } catch (e) {
+                               _log("Manual test error: $e");
+                             }
+                          },
+                          child: const Text("Force Notification (Test UI)"),
+                        ),
+                        const SizedBox(height: 8),
                         Expanded(
                           child: ListView.builder(
                              shrinkWrap: true,
