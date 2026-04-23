@@ -136,6 +136,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   DateTime? _localOsfDate;
   bool _osfUpdateAvailable = false;
   bool _showLogs = false;
+  int _devTapCount = 0;
+  DateTime? _lastTapTime;
   String _locale = 'nl';
   
   // CACHED URLs
@@ -536,6 +538,24 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
   
+  void _handleTitleTap() {
+    final now = DateTime.now();
+    if (_lastTapTime == null || now.difference(_lastTapTime!) > const Duration(seconds: 2)) {
+      _devTapCount = 1;
+    } else {
+      _devTapCount++;
+    }
+    _lastTapTime = now;
+
+    if (_devTapCount >= 5) {
+      setState(() {
+        _showLogs = !_showLogs;
+        _devTapCount = 0;
+      });
+      _log(_showLogs ? "Developer mode enabled" : "Developer mode disabled");
+    }
+  }
+
   Future<void> _shareFile(String path) async {
     final xFile = XFile(path);
     await Share.shareXFiles([xFile]);
@@ -558,10 +578,13 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text(_t('app_name')), 
-          backgroundColor: Colors.orange[800], 
-          foregroundColor: Colors.white,
-          actions: [
+        title: GestureDetector(
+          onTap: _handleTitleTap,
+          child: Text(_t('app_name'), style: const TextStyle(fontWeight: FontWeight.bold)),
+        ),
+        backgroundColor: Colors.orange[800],
+        foregroundColor: Colors.white,
+        actions: [
             _buildLanguageSwitcher(),
             const SizedBox(width: 8),
           ],
@@ -690,64 +713,59 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                           style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
                       ),
                     ),
-                  ],
-                ),
-    
-                const SizedBox(height: 32),
-                
-                Center(
-                  child: TextButton(
-                    onPressed: () => setState(() => _showLogs = !_showLogs),
-                    child: Text(_showLogs ? _t('hide_logs') : _t('show_logs'), 
-                      style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                  ),
-                ),
-
-                if (_showLogs)
+                    if (_showLogs)
                   Container(
-                    height: 150,
-                    margin: const EdgeInsets.only(top: 8),
-                    padding: const EdgeInsets.all(8),
+                    margin: const EdgeInsets.only(top: 24),
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.black.withOpacity(0.05),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        const Text("DEVELOPER TOOLS", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
+                        const SizedBox(height: 12),
                         ElevatedButton(
                           onPressed: () async {
                             final prefs = await SharedPreferences.getInstance();
                             await prefs.remove(_prefLastKnownRelease);
                             await prefs.remove(_prefBgScheduled);
-                            _log("Update cache cleared. Restart app or refresh to test update logic.");
+                            _log("Update cache cleared.");
                             _checkVersions();
                           },
-                          child: const Text("Clear Update Cache (Test Logic)"),
+                          child: const Text("Clear Update Cache"),
                         ),
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () async {
-                             _log("Forcing background fetch logic manually...");
-                             // Simulate the callback dispatcher logic
                              try {
-                               final response = await http.get(Uri.parse(_releaseApiUrl));
-                               if (response.statusCode == 200) {
-                                 final data = jsonDecode(response.body);
-                                 final String publishedAt = data['published_at'] ?? '';
-                                 _log("GitHub says: $publishedAt");
-                                 // We ignore the date comparison here to force the notification
-                                 await _showUpdateNotification();
-                                 _log("Notification fired!");
+                               final file = File('$_targetDir/$OSF_FILENAME');
+                               if (await file.exists()) {
+                                 await file.delete();
+                                 _log("Local OSF deleted.");
+                                 _checkVersions();
                                } else {
-                                 _log("GitHub API Error: ${response.statusCode}");
+                                 _log("No local OSF found to delete.");
                                }
                              } catch (e) {
-                               _log("Manual test error: $e");
+                               _log("Delete error: $e");
                              }
+                          },
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red[50], foregroundColor: Colors.red[900]),
+                          child: const Text("Delete Local OSF (Force Update)"),
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () async {
+                             _log("Forcing notification...");
+                             await _showUpdateNotification();
                           },
                           child: const Text("Force Notification (Test UI)"),
                         ),
+                        const SizedBox(height: 12),
+                        const Divider(),
                         const SizedBox(height: 8),
-                        Expanded(
+                        SizedBox(
+                          height: 150,
                           child: ListView.builder(
-                             shrinkWrap: true,
                              itemCount: _logs.length,
                              itemBuilder: (ctx, i) => Text(_logs[i], style: const TextStyle(fontSize: 10, fontFamily: 'monospace')),
                           ),
@@ -759,7 +777,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
             ),
           ),
         ),
-      )
+      ),
     );
   }
 }
