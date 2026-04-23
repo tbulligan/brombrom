@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -10,8 +11,87 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:workmanager/workmanager.dart';
+
+// ── Background Task Constants ──
+const String _bgTaskName = "com.brombrom.updateCheck";
+const String _bgTaskTag = "brombrom_update_check";
+const String _releaseApiUrl = "https://api.github.com/repos/tbulligan/brombrom/releases/latest";
+const String _prefLastKnownRelease = "last_known_release_date";
+const String _prefBgScheduled = "bg_task_scheduled";
+
+// ── Background Task Handler (runs in a separate isolate) ──
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    try {
+      // 1. Fetch latest release date from GitHub
+      final response = await http.get(Uri.parse(_releaseApiUrl));
+      if (response.statusCode != 200) return Future.value(false);
+
+      final data = jsonDecode(response.body);
+      final String publishedAt = data['published_at'] ?? '';
+      if (publishedAt.isEmpty) return Future.value(true);
+
+      // 2. Compare with last known release date
+      final prefs = await SharedPreferences.getInstance();
+      final String? lastKnown = prefs.getString(_prefLastKnownRelease);
+
+      if (lastKnown != null && publishedAt != lastKnown) {
+        // New release detected! Fire a notification.
+        final remoteDate = DateTime.tryParse(publishedAt);
+        final localDate = DateTime.tryParse(lastKnown);
+
+        if (remoteDate != null && localDate != null && remoteDate.isAfter(localDate)) {
+          await _showUpdateNotification();
+        }
+      }
+
+      // 3. Persist the latest known date (even on first run)
+      await prefs.setString(_prefLastKnownRelease, publishedAt);
+
+      return Future.value(true);
+    } catch (e) {
+      print("BG Task Error: $e");
+      return Future.value(false); // retry
+    }
+  });
+}
+
+/// Show a native Android notification for a new map update.
+Future<void> _showUpdateNotification() async {
+  final FlutterLocalNotificationsPlugin notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  const AndroidInitializationSettings androidSettings =
+      AndroidInitializationSettings('@mipmap/launcher_icon');
+  const InitializationSettings initSettings =
+      InitializationSettings(android: androidSettings);
+  await notificationsPlugin.initialize(initSettings);
+
+  const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    'brombrom_updates',
+    'BromBrom Updates',
+    channelDescription: 'Notifications when new BromBrom map data is available',
+    importance: Importance.high,
+    priority: Priority.high,
+    icon: '@mipmap/launcher_icon',
+  );
+
+  const NotificationDetails platformDetails =
+      NotificationDetails(android: androidDetails);
+
+  await notificationsPlugin.show(
+    0,
+    'BromBrom: Nieuwe kaartdata beschikbaar! 🗺️',
+    'Open BromBrom Manager om je navigatie bij te werken.',
+    platformDetails,
+  );
+}
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
   runApp(const BromBromApp());
 }
 
@@ -190,6 +270,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     WidgetsBinding.instance.addObserver(this);
     _loadLocale().then((_) async {
       await _initTargetDir();
+      await _requestNotificationPermission();
+      await _scheduleBackgroundUpdateCheck();
       _checkVersions();
     });
   }
@@ -202,6 +284,51 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     } catch(e) {
       _log("Failed to get external storage dir: $e");
       _targetDir = "/storage/emulated/0/Download";
+    }
+  }
+
+  /// Request POST_NOTIFICATIONS permission on Android 13+.
+  Future<void> _requestNotificationPermission() async {
+    if (!Platform.isAndroid) return;
+    try {
+      final FlutterLocalNotificationsPlugin notificationsPlugin =
+          FlutterLocalNotificationsPlugin();
+      final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
+          notificationsPlugin.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      if (androidPlugin != null) {
+        await androidPlugin.requestNotificationsPermission();
+        _log("Notification permission requested.");
+      }
+    } catch (e) {
+      _log("Notification permission error: $e");
+    }
+  }
+
+  /// Schedule a weekly background task to check for updates.
+  /// Only registers once (persisted via SharedPreferences).
+  Future<void> _scheduleBackgroundUpdateCheck() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bool alreadyScheduled = prefs.getBool(_prefBgScheduled) ?? false;
+    if (alreadyScheduled) {
+      _log("Background update check already scheduled.");
+      return;
+    }
+
+    try {
+      await Workmanager().registerPeriodicTask(
+        _bgTaskTag,
+        _bgTaskName,
+        frequency: const Duration(hours: 24),
+        constraints: Constraints(
+          networkType: NetworkType.connected,
+        ),
+        existingWorkPolicy: ExistingWorkPolicy.keep,
+      );
+      await prefs.setBool(_prefBgScheduled, true);
+      _log("Background update check scheduled (every 24h).");
+    } catch (e) {
+      _log("Failed to schedule background task: $e");
     }
   }
 
@@ -255,6 +382,13 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       _remoteOsfDate = remoteOsfDate;
       _remoteApkDate = remoteApkDate;
       _log("Latest Release: $_latestReleaseDate");
+
+      // Persist for background task comparison
+      final String publishedAt = data['published_at'] ?? '';
+      if (publishedAt.isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_prefLastKnownRelease, publishedAt);
+      }
 
       final File osfFile = File('$_targetDir/$OSF_FILENAME');
       _localOsfDate = await osfFile.exists() ? await osfFile.lastModified() : null;
