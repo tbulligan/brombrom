@@ -41,7 +41,7 @@ The fastest way to install and keep your navigation updated automatically.
 5.  Tap **"Replace all"** (update) or **"Apply"** (first time) and wait for the import to finish.
 6.  On the **"Import complete"** screen, tap **"Settings"**.
 7.  Scroll down to **"BromBrom"** and toggle it **ON**.
-8.  Tap the **orange car icon** in the OsmAnd navigation bar to select BromBrom as your active profile.
+8.  You can now select **BromBrom** from the **Navigation menu** (orange car icon).
 
 > ⚠️ Do not skip steps 6–8. OsmAnd does not enable or activate new profiles automatically.
 
@@ -55,7 +55,7 @@ Because the entire BromBrom profile is packaged into a Smart Folder (`.osf`), ma
 5. Tap **"Replace all"** (update) or **"Apply"** (first time) and wait for the import to finish.
 6. On the **"Import complete"** screen, tap **"Settings"**.
 7. Scroll down to **"BromBrom"** and toggle it **ON**.
-8. Tap the **orange car icon** in the OsmAnd navigation bar to select BromBrom as your active profile.
+8. You can now select **BromBrom** from the **Navigation menu** (orange car icon).
 
 > ⚠️ Do not skip steps 6–8. OsmAnd does not enable or activate new profiles automatically.
 

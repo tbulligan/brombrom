@@ -174,7 +174,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'osf_dialog_step3': '3. Wacht tot de import klaar is',
       'osf_dialog_step4': '4. Tik op het "Import voltooid" scherm op "Instellingen"',
       'osf_dialog_step5': '5. Scroll naar beneden naar "BromBrom" en zet de schakelaar AAN',
-      'osf_dialog_step6': '6. Tik op het oranje auto-icoon om BromBrom als actief profiel te selecteren',
+      'osf_dialog_step6': '6. Je kunt BromBrom nu selecteren in het Navigatiemenu (oranje auto-icoon)',
       'osf_dialog_warning': '⚠️ Sla stap 4–6 niet over — OsmAnd verbergt en activeert nieuwe profielen niet automatisch.',
       'osf_dialog_btn': 'BEGREPEN, OPEN OSMAND',
       'btn_get_osmand': 'Download OsmAnd App',
@@ -220,7 +220,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'osf_dialog_step3': '3. Wait for the import to complete',
       'osf_dialog_step4': '4. On the "Import complete" screen, tap "Settings"',
       'osf_dialog_step5': '5. Scroll down to "BromBrom" and toggle it ON',
-      'osf_dialog_step6': '6. Tap the orange car icon to select BromBrom as your active profile',
+      'osf_dialog_step6': '6. You can now select BromBrom from the Navigation menu (orange car icon)',
       'osf_dialog_warning': '⚠️ Do not skip steps 4–6 — OsmAnd does not enable or activate new profiles automatically.',
       'osf_dialog_btn': 'UNDERSTOOD, OPEN OSMAND',
       'btn_get_osmand': 'Download OsmAnd App',
@@ -514,38 +514,42 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
         return AlertDialog(
           title: Text(_t('osf_dialog_title'), style: const TextStyle(fontWeight: FontWeight.bold)),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text(_t('osf_dialog_p1'), style: const TextStyle(fontWeight: FontWeight.w500)),
-                const SizedBox(height: 12),
-                Text(_t('osf_dialog_step1'), style: const TextStyle(fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(_t('osf_dialog_step2'), style: const TextStyle(fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(_t('osf_dialog_step3'), style: const TextStyle(fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(_t('osf_dialog_step4'), style: const TextStyle(fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(_t('osf_dialog_step5'), style: const TextStyle(fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(_t('osf_dialog_step6'), style: const TextStyle(fontSize: 14)),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.orange[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange[300]!),
+          content: Scrollbar(
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(right: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(_t('osf_dialog_p1'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 12),
+                  Text(_t('osf_dialog_step1'), style: const TextStyle(fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Text(_t('osf_dialog_step2'), style: const TextStyle(fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Text(_t('osf_dialog_step3'), style: const TextStyle(fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Text(_t('osf_dialog_step4'), style: const TextStyle(fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Text(_t('osf_dialog_step5'), style: const TextStyle(fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Text(_t('osf_dialog_step6'), style: const TextStyle(fontSize: 14)),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.orange[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange[300]!),
+                    ),
+                    child: Text(
+                      _t('osf_dialog_warning'),
+                      style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
+                    ),
                   ),
-                  child: Text(
-                    _t('osf_dialog_warning'),
-                    style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           actions: <Widget>[

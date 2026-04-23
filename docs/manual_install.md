@@ -16,7 +16,7 @@ The iOS version of OsmAnd natively supports OsmAnd Smart Folders (`.osf`).
 5. Tap **"Apply"** (or **"Replace all"** if updating) and wait for the import to finish.
 6. On the **"Import complete"** screen, tap **"Settings"**.
 7. Scroll down to **"BromBrom"** and toggle it **ON**.
-8. Tap the **orange car icon** in the OsmAnd navigation bar to select BromBrom as your active profile.
+8. You can now select **BromBrom** from the **Navigation menu** (orange car icon).
 
 > ⚠️ Do not skip steps 6–8. OsmAnd does not enable or activate new profiles automatically.
 
@@ -32,7 +32,7 @@ If you prefer not to use the BromBrom Manager app, you can achieve the exact sam
 6. Tap **"Replace all"** (updating) or **"Apply"** (first time) and wait for the import to finish.
 7. On the **"Import complete"** screen, tap **"Settings"**.
 8. Scroll down to **"BromBrom"** and toggle it **ON**.
-9. Tap the **orange car icon** in the OsmAnd navigation bar to select BromBrom as your active profile.
+9. You can now select **BromBrom** from the **Navigation menu** (orange car icon).
 
 > ⚠️ Do not skip steps 7–9. OsmAnd does not enable or activate new profiles automatically.
 
