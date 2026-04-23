@@ -142,6 +142,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   DateTime? _lastTapTime;
   String _locale = 'nl';
   bool _showOnboarding = false;
+  late PageController _onboardingPageController;
+  int _onboardingCurrentPage = 0;
   
   // CACHED URLs
   final Map<String, String> _downloadUrls = {};
@@ -285,6 +287,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _onboardingPageController = PageController();
     _loadLocale().then((_) async {
       await _initTargetDir();
       // NOTE: Notification permission is now requested via the onboarding carousel or manually, not on start.
@@ -358,6 +361,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _onboardingPageController.dispose();
     super.dispose();
   }
 
@@ -641,9 +645,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   }
 
   Widget _buildOnboardingCarousel() {
-    final PageController pageController = PageController();
-    int currentPage = 0;
-
     final Color orange = Colors.orange[800]!;
 
     return StatefulBuilder(
@@ -711,9 +712,9 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                   ),
                   Expanded(
                     child: PageView.builder(
-                      controller: pageController,
+                      controller: _onboardingPageController,
                       itemCount: slides.length,
-                      onPageChanged: (i) => setPageState(() => currentPage = i),
+                      onPageChanged: (i) => setPageState(() => _onboardingCurrentPage = i),
                       itemBuilder: (context, index) {
                         final slide = slides[index];
                         return Column(
@@ -773,10 +774,10 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: currentPage == i ? 20 : 8,
+                        width: _onboardingCurrentPage == i ? 20 : 8,
                         height: 8,
                         decoration: BoxDecoration(
-                          color: currentPage == i ? orange : Colors.white38,
+                          color: _onboardingCurrentPage == i ? orange : Colors.white38,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       );
@@ -793,8 +794,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () {
-                        if (currentPage < slides.length - 1) {
-                          pageController.nextPage(
+                        if (_onboardingCurrentPage < slides.length - 1) {
+                          _onboardingPageController.nextPage(
                             duration: const Duration(milliseconds: 350),
                             curve: Curves.easeInOut,
                           );
@@ -803,7 +804,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         }
                       },
                       child: Text(
-                        currentPage == slides.length - 1 ? _t('ob_finish') : _t('ob_next'),
+                        _onboardingCurrentPage == slides.length - 1 ? _t('ob_finish') : _t('ob_next'),
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
