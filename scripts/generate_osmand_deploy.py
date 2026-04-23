@@ -83,7 +83,7 @@ def create_osmand_deploy_package():
           "appMode": {
             "customIconColor": -45024,
             "iconColor": "DEFAULT",
-            "iconName": "ic_action_car_dark",
+            "iconName": "mx_activities_car",
             "locIcon": "STATIC_CAR",
             "navIcon": "MOVEMENT_DEFAULT",
             "order": 13,

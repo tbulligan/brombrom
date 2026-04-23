@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 // ── Background Task Constants ──
 const String _bgTaskName = "com.brombrom.updateCheck";
@@ -187,6 +188,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_slide3_title': 'Altijd de nieuwste kaart',
       'ob_slide3_body': 'BromBrom controleert elke dag op nieuwe kaarten. Zet meldingen aan en je krijgt automatisch een seintje wanneer er een update klaarstaat.',
       'ob_slide3_btn': 'Meldingen inschakelen',
+      'ob_notifications_enabled': 'Meldingen aan ✓',
       'ob_skip': 'Niet nu',
       'ob_next': 'Volgende',
       'ob_finish': 'Aan de slag!',
@@ -232,6 +234,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_slide3_title': 'Always the Latest Map',
       'ob_slide3_body': 'BromBrom checks daily for new maps. Enable notifications and you\'ll automatically be notified when an update is ready.',
       'ob_slide3_btn': 'Enable Notifications',
+      'ob_notifications_enabled': 'Notifications enabled ✓',
       'ob_skip': 'Not now',
       'ob_next': 'Next',
       'ob_finish': 'Let\'s go!',
@@ -284,7 +287,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     WidgetsBinding.instance.addObserver(this);
     _loadLocale().then((_) async {
       await _initTargetDir();
-      await _requestNotificationPermission();
+      // NOTE: Notification permission is now requested via the onboarding carousel or manually, not on start.
       await _scheduleBackgroundUpdateCheck();
       _checkVersions();
       // Show onboarding carousel on first launch
@@ -731,23 +734,31 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                             ),
                             if (slide.containsKey('btn')) ...[
                               const SizedBox(height: 28),
-                              OutlinedButton(
-                                onPressed: () {
-                                  if (index == 1) {
-                                    AndroidIntent(
-                                      action: 'action_view',
-                                      data: 'https://play.google.com/store/apps/details?id=net.osmand',
-                                    ).launch();
-                                  } else if (index == 2) {
-                                    _requestNotificationPermission();
-                                  }
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  side: const BorderSide(color: Colors.white54),
-                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                ),
-                                child: Text(slide['btn']!),
+                              FutureBuilder<PermissionStatus>(
+                                future: index == 2 ? Permission.notification.status : Future.value(PermissionStatus.denied),
+                                builder: (context, snapshot) {
+                                  final isGranted = snapshot.data?.isGranted ?? false;
+                                  return OutlinedButton(
+                                    onPressed: isGranted ? null : () async {
+                                      if (index == 1) {
+                                        AndroidIntent(
+                                          action: 'action_view',
+                                          data: 'https://play.google.com/store/apps/details?id=net.osmand',
+                                        ).launch();
+                                      } else if (index == 2) {
+                                        await _requestNotificationPermission();
+                                        setPageState(() {}); // Rebuild carousel slide to show updated status
+                                      }
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      disabledForegroundColor: Colors.greenAccent,
+                                      side: BorderSide(color: isGranted ? Colors.greenAccent : Colors.white54),
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                    ),
+                                    child: Text(index == 2 && isGranted ? _t('ob_notifications_enabled') : slide['btn']!),
+                                  );
+                                }
                               ),
                             ]
                           ],
