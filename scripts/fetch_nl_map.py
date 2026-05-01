@@ -19,7 +19,7 @@ print("Fetching Netherlands OSM...")
 with open(PBF_FILE, "wb") as f, tqdm(
     desc="NL OSM", total=total_size, unit="B", unit_scale=True
 ) as pbar:
-    for chunk in r.iter_content(chunk_size=8192):
+    for chunk in r.iter_content(chunk_size=1024 * 1024):
         f.write(chunk)
         pbar.update(len(chunk))
 
