@@ -66,3 +66,10 @@ def test_geometric_side():
     # Point on line (approx)
     p_on = Point(0, 5)
     assert snap_c9_to_roads.get_geometric_side(p_on, line, 5.0) is None
+
+def test_distance_meters():
+    from scripts import tag_c9_roads
+    # Distance between same points should be 0
+    assert tag_c9_roads.distance_meters(5.0, 52.0, 5.0, 52.0) == pytest.approx(0.0)
+    # Approximate distance between (5.0, 52.0) and (5.01, 52.0)
+    assert tag_c9_roads.distance_meters(5.0, 52.0, 5.01, 52.0) == pytest.approx(685.35, abs=5.0)

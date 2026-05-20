@@ -3,7 +3,6 @@
 This document tracks technical debt and potential enhancements for the BromBrom navigation engine.
 
 ## 🛠️ High Priority
-- [ ] **Robust Way Splitting**: Implement logic in `tag_c9_roads.py` to split long OSM ways at the exact point of a C9 restriction. This prevents "whole-road" blocking where only a segment is restricted.
 - [ ] **QA Validation Expansion**: Enhance `scripts/validate_results.py` to compare current statistics against "known good" historic baselines to catch subtle data regressions.
 
 ## 🔍 Research & Exploration
