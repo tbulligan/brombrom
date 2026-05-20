@@ -31,6 +31,7 @@ BromBrom is a **multi-component system**:
 ## 🚀 Release Strategy
 *   **Schedule**: Automated builds trigger on the **2nd of every month**.
 *   **Zero-Downtime**: We use `gh release upload --clobber` to overwrite artifacts in-place on the `latest` tag. This prevents 404 errors for users during the update window.
+*   **Commit Messages**: Never use generic or auto-generated commit messages (e.g., "Merge branch 'develop'"). All commit messages—especially merge commits—must be descriptive and follow conventional commits style (e.g., `chore(release): merge version check fix from develop into main`).
 
 ## ⚠️ Known Complexities
 *   **NDK Versioning**: Flutter plugins in this project require **Android NDK 27.0.12077973**. Do not downgrade in `app/android/app/build.gradle.kts`.
