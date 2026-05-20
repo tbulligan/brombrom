@@ -34,7 +34,7 @@ OsmAnd is a free and open-source offline navigation app for Android and iOS: htt
 ### ✅ Option A: BromBrom Manager (Android Recommended)
 The fastest way to install and keep your navigation updated automatically.
 
-1.  **Download** the **BromBrom Manager App** from the **[Google Play Store](https://play.google.com/store/apps/details?id=com.brombrom.app)** or the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
+1.  **Download** the **BromBrom Manager App** from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
 2.  **Install** and **Open** the app.
 3.  **Install/Update**: Tap the big orange **"INSTALL / UPDATE BromBrom Navigation"** button.
 4.  OsmAnd will open. Tap **"All Settings and Resources"** → **"Continue"**.
