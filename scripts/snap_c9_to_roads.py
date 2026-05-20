@@ -297,6 +297,40 @@ def main():
     forbidden_ids = c9_gdf["road_index"].dropna().unique()
     forbidden_roads = roads_gdf.loc[forbidden_ids].copy()
     forbidden_roads["microcar"] = "no"
+
+    # Identify the OSM ID field name dynamically
+    id_field = None
+    for field in ['osm_id', 'id', 'OSM_ID']:
+        if field in roads_gdf.columns:
+            id_field = field
+            break
+    if id_field is None:
+        raise ValueError("No OSM ID column found in roads_gdf")
+
+    # Reproject snap points to WGS84 for lon/lat
+    c9_gdf_wgs84 = c9_gdf.to_crs(epsg=4326)
+    snap_geom_series = gpd.GeoSeries(c9_gdf["snap_point"], crs=28992).to_crs(epsg=4326)
+    c9_gdf_wgs84["snap_lon"] = snap_geom_series.x
+    c9_gdf_wgs84["snap_lat"] = snap_geom_series.y
+
+    snaps_by_road = {}
+    for idx, row in c9_gdf_wgs84.dropna(subset=["road_index"]).iterrows():
+        road_row_idx = int(row["road_index"])
+        osm_id = int(roads_gdf.loc[road_row_idx][id_field])
+        snap_info = {
+            "lon": row["snap_lon"],
+            "lat": row["snap_lat"],
+            "bearing": row["bearing"] if not pd.isna(row["bearing"]) else None
+        }
+        if osm_id not in snaps_by_road:
+            snaps_by_road[osm_id] = []
+        snaps_by_road[osm_id].append(snap_info)
+
+    # Store snap details in a JSON column
+    forbidden_roads["c9_snaps"] = forbidden_roads[id_field].map(
+        lambda oid: json.dumps(snaps_by_road.get(int(oid), []))
+    )
+
     forbidden_roads.to_crs(epsg=4326).to_file(
         "nl_roads_brom.gpkg",
         layer="brom_roads",

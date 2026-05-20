@@ -1,12 +1,28 @@
 import geopandas as gpd
+import pandas as pd
 import os
 import osmium
+import math
+import json
+from shapely.geometry import Point
+
+def bearing_between(p1, p2):
+    dx, dy = p2.x - p1.x, p2.y - p1.y
+    return (math.degrees(math.atan2(dy, dx)) + 360) % 360
+
+def distance_meters(lon1, lat1, lon2, lat2):
+    lat_avg = math.radians((lat1 + lat2) / 2.0)
+    dx = (lon2 - lon1) * 111320.0 * math.cos(lat_avg)
+    dy = (lat2 - lat1) * 111320.0
+    return math.sqrt(dx*dx + dy*dy)
 
 class TagC9Handler(osmium.SimpleHandler):
-    def __init__(self, writer, forbidden_ways):
+    def __init__(self, writer, forbidden_ways, way_snaps):
         super().__init__()
         self.writer = writer
         self.forbidden_ways = forbidden_ways
+        self.way_snaps = way_snaps
+        self.next_way_id = 90000000000
 
     def node(self, n):
         # forward all nodes unchanged
@@ -19,6 +35,7 @@ class TagC9Handler(osmium.SimpleHandler):
     def way(self, w):
         tags = dict(w.tags)
         modified = False
+        way_id = int(w.id)
         
         # 1. Existing OSM Coverage: Promote 'microcar=no' to 'motor_vehicle=no'
         # This ensures OsmAnd (which mainly looks at motor_vehicle) respects these.
@@ -26,16 +43,89 @@ class TagC9Handler(osmium.SimpleHandler):
             tags['motor_vehicle'] = 'no'
             modified = True
 
-        # 2. NDW Pipeline Coverage: Tag ways identified as C9-forbidden
-        if int(w.id) in self.forbidden_ways:
-            if tags.get('motor_vehicle') != 'no' or tags.get('microcar') != 'no':
-                tags['motor_vehicle'] = 'no'
-                tags['microcar'] = 'no'
-                modified = True
+        # 2. NDW Pipeline Coverage: Tag/split ways identified as C9-forbidden
+        if way_id in self.forbidden_ways:
+            snaps = self.way_snaps.get(way_id, [])
+            split_done = False
             
-        if modified:
-            w = w.replace(tags=tags)
-        self.writer.add_way(w)
+            if snaps and len(w.nodes) >= 3:
+                node_list = list(w.nodes)
+                coords = [(n.lon, n.lat) for n in node_list]
+                
+                # Check for snaps in the middle
+                for snap in snaps:
+                    snap_lon = snap['lon']
+                    snap_lat = snap['lat']
+                    bearing_sign = snap['bearing']
+                    
+                    # Find closest node
+                    min_dist = float('inf')
+                    split_idx = -1
+                    for idx, (n_lon, n_lat) in enumerate(coords):
+                        d = distance_meters(n_lon, n_lat, snap_lon, snap_lat)
+                        if d < min_dist:
+                            min_dist = d
+                            split_idx = idx
+                            
+                    # Calculate distances from closest node to start/end
+                    dist_to_start = distance_meters(coords[split_idx][0], coords[split_idx][1], coords[0][0], coords[0][1])
+                    dist_to_end = distance_meters(coords[split_idx][0], coords[split_idx][1], coords[-1][0], coords[-1][1])
+                    
+                    # Only split if closest node is not near start or end
+                    if dist_to_start >= 25.0 and dist_to_end >= 25.0:
+                        # Split way!
+                        nodes_A = [n.ref for n in node_list[:split_idx + 1]]
+                        nodes_B = [n.ref for n in node_list[split_idx:]]
+                        
+                        # Determine directionality
+                        # Calculate bearing of segment B
+                        p_split = Point(coords[split_idx])
+                        p_next = Point(coords[split_idx + 1])
+                        bearing_B = bearing_between(p_split, p_next)
+                        
+                        # Calculate angle difference
+                        restrict_B = True # Default if bearing is missing
+                        if bearing_sign is not None:
+                            diff = min(abs(bearing_sign - bearing_B), 360 - abs(bearing_sign - bearing_B))
+                            # If difference is < 90 degrees, the sign applies in the direction of B
+                            if diff < 90.0:
+                                restrict_B = True
+                            else:
+                                restrict_B = False
+                                
+                        # Print debug info
+                        print(f"Way {way_id} ('{tags.get('name')}') split at node {node_list[split_idx].ref} (ratio {split_idx/len(node_list):.2f}). Restricting Way {'B' if restrict_B else 'A'}.")
+                        
+                        tags_A = tags.copy()
+                        tags_B = tags.copy()
+                        
+                        if restrict_B:
+                            tags_B['motor_vehicle'] = 'no'
+                            tags_B['microcar'] = 'no'
+                        else:
+                            tags_A['motor_vehicle'] = 'no'
+                            tags_A['microcar'] = 'no'
+                            
+                        w_A = w.replace(nodes=nodes_A, tags=tags_A)
+                        w_B = w.replace(id=self.next_way_id, nodes=nodes_B, tags=tags_B)
+                        self.next_way_id += 1
+                        
+                        self.writer.add_way(w_A)
+                        self.writer.add_way(w_B)
+                        split_done = True
+                        break # Only split once
+            
+            if not split_done:
+                if tags.get('motor_vehicle') != 'no' or tags.get('microcar') != 'no':
+                    tags['motor_vehicle'] = 'no'
+                    tags['microcar'] = 'no'
+                    modified = True
+                w = w.replace(tags=tags)
+                self.writer.add_way(w)
+        else:
+            if modified:
+                w = w.replace(tags=tags)
+            self.writer.add_way(w)
 
 def main():
     if os.path.exists("NL_BromBrom_tagged.osm.pbf"):
@@ -46,9 +136,11 @@ def main():
     print(f"Loaded {len(gdf)} C9-forbidden roads")
 
     forbidden_ways = set()
+    id_field = None
     id_fields = ['osm_id', 'id', 'OSM_ID']
     for field in id_fields:
         if field in gdf.columns:
+            id_field = field
             forbidden_ways = set(gdf[field].dropna().astype(int).unique())
             print(f"Using '{field}' with {len(forbidden_ways)} unique ways")
             break
@@ -56,12 +148,24 @@ def main():
     if not forbidden_ways:
         raise ValueError("No valid OSM ID field found")
 
+    # Load snaps detail mapping
+    way_snaps = {}
+    if 'c9_snaps' in gdf.columns:
+        for idx, row in gdf.iterrows():
+            oid = int(row[id_field])
+            snaps_str = row['c9_snaps']
+            if snaps_str and not pd.isna(snaps_str):
+                try:
+                    way_snaps[oid] = json.loads(snaps_str)
+                except Exception:
+                    pass
+
     print("Tagging OSM PBF...")
     with osmium.SimpleWriter("NL_BromBrom_tagged.osm.pbf", overwrite=True) as writer:
-        handler = TagC9Handler(writer, forbidden_ways)
-        # Optimization: Use the filtered roads-only PBF as base (huge RAM saving)
-        handler.apply_file("nl_roads.osm.pbf")
-    print(f"✓ NL_BromBrom_tagged.osm.pbf created ({len(forbidden_ways)} C9 ways tagged)")
+        handler = TagC9Handler(writer, forbidden_ways, way_snaps)
+        # Optimization: Use the filtered roads-only PBF as base (huge RAM saving) and cache locations
+        handler.apply_file("nl_roads.osm.pbf", locations=True)
+    print(f"✓ NL_BromBrom_tagged.osm.pbf created ({len(forbidden_ways)} C9 ways processed)")
 
 if __name__ == "__main__":
     main()
