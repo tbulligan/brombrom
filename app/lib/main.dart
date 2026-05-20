@@ -34,22 +34,32 @@ void callbackDispatcher() {
       final String publishedAt = data['published_at'] ?? '';
       if (publishedAt.isEmpty) return Future.value(true);
 
+      DateTime latestDate = DateTime.parse(publishedAt);
+      final List assets = data['assets'] ?? [];
+      for (var asset in assets) {
+        final DateTime updatedAt = DateTime.parse(asset['updated_at']);
+        if (updatedAt.isAfter(latestDate)) {
+          latestDate = updatedAt;
+        }
+      }
+      final String latestDateStr = latestDate.toIso8601String();
+
       // 2. Compare with last known release date
       final prefs = await SharedPreferences.getInstance();
       final String? lastKnown = prefs.getString(_prefLastKnownRelease);
 
-      if (lastKnown != null && publishedAt != lastKnown) {
+      if (lastKnown != null && latestDateStr != lastKnown) {
         // New release detected! Fire a notification.
-        final remoteDate = DateTime.tryParse(publishedAt);
+        final remoteDate = latestDate;
         final localDate = DateTime.tryParse(lastKnown);
 
-        if (remoteDate != null && localDate != null && remoteDate.isAfter(localDate)) {
+        if (localDate != null && remoteDate.isAfter(localDate)) {
           await _showUpdateNotification();
         }
       }
 
       // 3. Persist the latest known date (even on first run)
-      await prefs.setString(_prefLastKnownRelease, publishedAt);
+      await prefs.setString(_prefLastKnownRelease, latestDateStr);
 
       return Future.value(true);
     } catch (e) {
@@ -408,10 +418,9 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       _log("Latest Release: $_latestReleaseDate");
 
       // Persist for background task comparison
-      final String publishedAt = data['published_at'] ?? '';
-      if (publishedAt.isNotEmpty) {
+      if (_latestReleaseDate != null) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_prefLastKnownRelease, publishedAt);
+        await prefs.setString(_prefLastKnownRelease, _latestReleaseDate!.toIso8601String());
       }
 
       final File osfFile = File('$_targetDir/$OSF_FILENAME');
