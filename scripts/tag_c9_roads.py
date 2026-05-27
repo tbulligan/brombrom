@@ -33,18 +33,27 @@ class TagC9Handler(osmium.SimpleHandler):
         self.writer.add_relation(r)
 
     def way(self, w):
+        way_id = int(w.id)
+        is_forbidden = way_id in self.forbidden_ways
+        
+        # Fast path check using native C++ key lookup (no dict copying) (Task 3 optimization)
+        has_microcar_no = (w.tags.get('microcar') == 'no' and w.tags.get('motor_vehicle') != 'no')
+        
+        if not is_forbidden and not has_microcar_no:
+            self.writer.add_way(w)
+            return
+
         tags = dict(w.tags)
         modified = False
-        way_id = int(w.id)
         
         # 1. Existing OSM Coverage: Promote 'microcar=no' to 'motor_vehicle=no'
         # This ensures OsmAnd (which mainly looks at motor_vehicle) respects these.
-        if tags.get('microcar') == 'no' and tags.get('motor_vehicle') != 'no':
+        if has_microcar_no:
             tags['motor_vehicle'] = 'no'
             modified = True
 
         # 2. NDW Pipeline Coverage: Tag/split ways identified as C9-forbidden
-        if way_id in self.forbidden_ways:
+        if is_forbidden:
             snaps = self.way_snaps.get(way_id, [])
             split_done = False
             
@@ -151,12 +160,13 @@ def main():
     # Load snaps detail mapping
     way_snaps = {}
     if 'c9_snaps' in gdf.columns:
-        for idx, row in gdf.iterrows():
-            oid = int(row[id_field])
-            snaps_str = row['c9_snaps']
+        # Task 2 optimization: Use zip over columns for fast iteration instead of iterrows
+        for oid, snaps_str in zip(gdf[id_field].values, gdf['c9_snaps'].values):
+            if pd.isna(oid):
+                continue
             if snaps_str and not pd.isna(snaps_str):
                 try:
-                    way_snaps[oid] = json.loads(snaps_str)
+                    way_snaps[int(oid)] = json.loads(snaps_str)
                 except Exception:
                     pass
 

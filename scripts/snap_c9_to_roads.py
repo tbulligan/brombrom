@@ -313,14 +313,17 @@ def main():
     c9_gdf_wgs84["snap_lon"] = snap_geom_series.x
     c9_gdf_wgs84["snap_lat"] = snap_geom_series.y
 
+    # Vectorized map to find the OSM ID for each snapped road (Task 1 optimization)
+    c9_gdf_wgs84["osm_id"] = c9_gdf_wgs84["road_index"].map(roads_gdf[id_field])
+
     snaps_by_road = {}
-    for idx, row in c9_gdf_wgs84.dropna(subset=["road_index"]).iterrows():
-        road_row_idx = int(row["road_index"])
-        osm_id = int(roads_gdf.loc[road_row_idx][id_field])
+    # Use fast itertuples iteration instead of iterrows
+    for row in c9_gdf_wgs84.dropna(subset=["osm_id"]).itertuples():
+        osm_id = int(row.osm_id)
         snap_info = {
-            "lon": row["snap_lon"],
-            "lat": row["snap_lat"],
-            "bearing": row["bearing"] if not pd.isna(row["bearing"]) else None
+            "lon": row.snap_lon,
+            "lat": row.snap_lat,
+            "bearing": row.bearing if not pd.isna(row.bearing) else None
         }
         if osm_id not in snaps_by_road:
             snaps_by_road[osm_id] = []
