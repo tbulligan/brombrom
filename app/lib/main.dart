@@ -27,7 +27,13 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
       // 1. Fetch latest release date from GitHub
-      final response = await http.get(Uri.parse(_releaseApiUrl));
+      final response = await http.get(
+        Uri.parse(_releaseApiUrl),
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      );
       if (response.statusCode != 200) return Future.value(false);
 
       final data = jsonDecode(response.body);
@@ -141,6 +147,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   String _statusMessage = 'Checking configuration...';
   bool _isDownloading = false;
   double _progress = 0.0;
+  bool _isChecking = true;
+  String? _checkError;
   
   // VERSION INFO
   DateTime? _latestReleaseDate;
@@ -383,17 +391,26 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   }
 
   Future<void> _checkVersions() async {
-    setState(() => _statusMessage = _t('status_checking'));
+    setState(() {
+      _isChecking = true;
+      _checkError = null;
+      _statusMessage = _t('status_checking');
+    });
     
     try {
-      final response = await http.get(Uri.parse(RELEASE_API));
+      final response = await http.get(
+        Uri.parse(RELEASE_API),
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      );
       if (response.statusCode != 200) throw Exception("API Error ${response.statusCode}");
       
       final data = jsonDecode(response.body);
       
       DateTime latestDate = DateTime.parse(data['published_at']);
       DateTime? remoteOsfDate;
-      DateTime? remoteApkDate;
 
       final List assets = data['assets'] ?? [];
       for (var asset in assets) {
@@ -430,6 +447,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
           _localOsfDate!.isBefore(_remoteOsfDate ?? _latestReleaseDate!);
 
       setState(() {
+        _isChecking = false;
+        _checkError = null;
         _statusMessage = _osfUpdateAvailable 
             ? _t('status_updates') 
             : _t('status_uptodate_brief');
@@ -437,7 +456,11 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
     } catch (e) {
       _log("Check Error: $e");
-      setState(() => _statusMessage = _t('status_error'));
+      setState(() {
+        _isChecking = false;
+        _checkError = e.toString();
+        _statusMessage = _t('status_error');
+      });
     }
   }
 
@@ -870,21 +893,116 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        if (!_osfUpdateAvailable)
-                           Row(
-                             mainAxisAlignment: MainAxisAlignment.center,
-                             children: [
-                               const Icon(Icons.check_circle, color: Colors.green),
-                               const SizedBox(width: 8),
-                               Expanded(child: Text(_t('status_uptodate_full'), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green))),
-                             ],
-                           )
-                        else 
-                           Text(_statusMessage, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        if (_isChecking)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.orange,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _statusMessage,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        else if (_checkError != null)
+                          InkWell(
+                            onTap: _checkVersions,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.error_outline, color: Colors.red),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _statusMessage,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          _locale == 'nl' 
+                                              ? 'Tik om opnieuw te proberen' 
+                                              : 'Tap to retry',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(Icons.refresh, color: Colors.red),
+                                ],
+                              ),
+                            ),
+                          )
+                        else if (_osfUpdateAvailable)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.info_outline, color: Colors.orange[800]),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _statusMessage,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.orange[800],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.check_circle, color: Colors.green),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _t('status_uptodate_full'),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
     
-                        const SizedBox(height: 8),
-                        if (_latestReleaseDate != null)
-                          Text("${_t('latest_release')}: ${DateFormat('yyyy-MM-dd HH:mm').format(_latestReleaseDate!)}"),
+                        if (_latestReleaseDate != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            "${_t('latest_release')}: ${DateFormat('yyyy-MM-dd HH:mm').format(_latestReleaseDate!)}",
+                            style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                          ),
+                        ],
                         
                         if (_isDownloading) ...[
                           const SizedBox(height: 16),
@@ -908,8 +1026,33 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                 const SizedBox(height: 32),
                 
                 if (!_isDownloading) ...[
-                    // OSF BUNDLE UPDATE
-                    if (_osfUpdateAvailable)
+                    if (_isChecking)
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          side: const BorderSide(color: Colors.grey, width: 2),
+                          foregroundColor: Colors.grey,
+                        ),
+                        onPressed: null,
+                        child: Text(
+                          _locale == 'nl' ? 'Controleren op updates...' : 'Checking for updates...',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      )
+                    else if (_checkError != null)
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          side: const BorderSide(color: Colors.grey, width: 2),
+                          foregroundColor: Colors.grey,
+                        ),
+                        onPressed: null,
+                        child: Text(
+                          _locale == 'nl' ? 'Fout bij update-controle' : 'Update check failed',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      )
+                    else if (_osfUpdateAvailable)
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 24),
@@ -952,7 +1095,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                           ],
                         ),
                       ),
-
                 ],
                 const SizedBox(height: 24),
                 // Support Project & OsmAnd Link
