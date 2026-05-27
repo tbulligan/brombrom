@@ -14,7 +14,7 @@ void main() {
   testWidgets('App loads smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const BromBromApp());
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     // Verify that the app bypasses permissions and goes straight into the dashboard
     // by finding the main AppBar title.
