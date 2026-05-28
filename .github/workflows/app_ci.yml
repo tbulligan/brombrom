@@ -54,12 +54,12 @@ jobs:
         run: |
           if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
-            flutter build apk --release
-            flutter build appbundle --release
+            flutter build apk --release --build-number=${{ github.run_number }}
+            flutter build appbundle --release --build-number=${{ github.run_number }}
           else
             echo "Signing secrets missing, building unsigned/debug-signed APK and AAB"
-            flutter build apk --release
-            flutter build appbundle --release
+            flutter build apk --release --build-number=${{ github.run_number }}
+            flutter build appbundle --release --build-number=${{ github.run_number }}
           fi
 
       - name: Rename Build Artifacts
