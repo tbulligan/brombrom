@@ -88,8 +88,8 @@ jobs:
           **Base Branch**: ${{ github.ref_name }}"
 
           # 3. Ensure release exists and update metadata
-          gh release edit stable --title "Latest BromBrom OsmAnd Build" --notes "$NOTES" || \
-          gh release create stable --title "Latest BromBrom OsmAnd Build" --notes "$NOTES"
+          gh release edit stable --title "Latest BromBrom Build" --notes "$NOTES" || \
+          gh release create stable --title "Latest BromBrom Build" --notes "$NOTES"
 
           # 4. Upload raw files for legacy app backwards compatibility
           # We upload directly from source since dist/ now contains the .osf package
