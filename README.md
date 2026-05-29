@@ -7,8 +7,8 @@
 > [!IMPORTANT]
 > BromBrom is a *planning aid* only. You are responsible for following traffic signs and Dutch law.
 
-[![Latest Release](https://img.shields.io/github/v/tag/tbulligan/brombrom?label=Latest%20Release&color=blue&logo=github)](https://github.com/tbulligan/brombrom/releases/latest)
-[![Website](https://img.shields.io/badge/Website-Live-brightgreen?logo=google-chrome)](https://tbulligan.github.io/brombrom/)
+[![Latest Release](https://badgen.net/github/release/tbulligan/brombrom?color=blue&icon=github&label=Latest%20Release)](https://github.com/tbulligan/brombrom/releases/latest)
+[![Website](https://img.shields.io/badge/Website-Live-brightgreen?logo=google-chrome)](https://brombrom.bulligan.com/)
 
 **BromBrom** creates a professional-grade **OsmAnd** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
 
