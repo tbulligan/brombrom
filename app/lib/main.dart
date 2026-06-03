@@ -1133,7 +1133,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       icon: const Icon(Icons.language, color: Colors.blue, size: 20),
                       label: Text(
                           _t('visit_website'), 
-                          style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)
+                          style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                       ),
                     ),
                     const SizedBox(height: 8),
