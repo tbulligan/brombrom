@@ -198,7 +198,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'btn_get_osmand': 'Download OsmAnd App',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
-      'visit_website': 'Website bezoeken',
+      'visit_website': 'Website bezoeken (Visuele Handleiding)',
       'show_logs': 'Logboeken tonen',
       'hide_logs': 'Logboeken verbergen',
       'ob_slide1_title': 'Navigeer veilig met je Brommobiel',
@@ -245,7 +245,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'btn_get_osmand': 'Download OsmAnd App',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
-      'visit_website': 'Visit website',
+      'visit_website': 'Visit website (Visual Setup Guide)',
       'show_logs': 'Show Debug Logs',
       'hide_logs': 'Hide Debug Logs',
       'ob_slide1_title': 'Navigate Safely in Your Microcar',
@@ -1129,20 +1129,20 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     ),
                     const SizedBox(height: 8),
                     TextButton.icon(
-                      onPressed: _launchCoffeeUrl,
-                      icon: const Icon(Icons.coffee, color: Colors.brown, size: 20),
-                      label: Text(
-                          _t('buy_coffee'), 
-                          style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton.icon(
                       onPressed: _launchWebsiteUrl,
                       icon: const Icon(Icons.language, color: Colors.blue, size: 20),
                       label: Text(
                           _t('visit_website'), 
                           style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: _launchCoffeeUrl,
+                      icon: const Icon(Icons.coffee, color: Colors.brown, size: 20),
+                      label: Text(
+                          _t('buy_coffee'), 
+                          style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
                       ),
                     ),
                     if (_showLogs)

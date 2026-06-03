@@ -210,8 +210,19 @@ header {
   transform: scale(1.01);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .hero-actions {
   margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hero-actions-row {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
