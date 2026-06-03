@@ -9,11 +9,13 @@ on:
     paths:
       - "website/**"
       - "assets/**"
+      - ".github/workflows/deploy-website.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "website/**"
       - "assets/**"
+      - ".github/workflows/deploy-website.yml"
   workflow_dispatch:
 
 permissions:
