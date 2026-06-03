@@ -23,7 +23,7 @@
   <meta property="og:title" content="BromBrom - Navigatie voor Brommobielen" />
   <meta property="og:description" content="Veilig en legaal navigeren met je brommobiel. Vermijd C9 en snelwegen." />
   <meta property="og:image"
-    content="https://raw.githubusercontent.com/tbulligan/brombrom/main/assets/brombrom-banner.png" />
+    content="https://raw.githubusercontent.com/tbulligan/brombrom/main/assets/brombrom-banner-EN.png" />
 </head>
 
 <body>
@@ -78,7 +78,7 @@
 
         <!-- Hero Banner Image -->
         <div class="fade-in" style="width:100%; display:flex; justify-content:center;">
-          <img src="https://raw.githubusercontent.com/tbulligan/brombrom/main/assets/brombrom-banner.png"
+          <img id="hero-banner-img" src="/assets/brombrom-banner-NL.jpg"
             alt="BromBrom OsmAnd Interface" class="hero-banner">
         </div>
       </section>
@@ -92,7 +92,7 @@
             </div>
             <h3 data-i18n="feat_1_title">C9 Handhaving</h3>
             <p data-i18n="feat_1_desc">Vermijdt automatisch wegen gemarkeerd met het C9 verkeersbord (gesloten voor
-              langzaam motorverkeer), zodat u legaal en veilig blijft.</p>
+              langzaam motorverkeer), zodat je legaal en veilig blijft.</p>
           </div>
 
           <div class="card fade-in">
@@ -111,6 +111,52 @@
             <h3 data-i18n="feat_3_title">100% Offline</h3>
             <p data-i18n="feat_3_desc">Gebouwd op OsmAnd. Navigeer overal in Nederland zonder internetverbinding. Geen
               dataverbruik nodig.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Routing Comparison Section -->
+      <section id="comparison" class="fade-in">
+        <h2 class="comparison-title" data-i18n="comparison_title">Auto vs. Brommobiel Route</h2>
+        <p class="comparison-desc" data-i18n="comparison_desc">Zie het verschil: standaard autonavigatie stuurt je over verboden snelwegen en C9-wegen (links), terwijl BromBrom je over veilige en legale service-wegen routeert (rechts).</p>
+        
+        <div class="comparison-grid">
+          <!-- Car Mockup -->
+          <div class="phone-mockup">
+            <div class="phone-speaker"></div>
+            <div class="phone-screen">
+              <div class="phone-status-bar">
+                <span class="time">12:30</span>
+                <div class="phone-status-icons">
+                  <i class="ph ph-wifi-high"></i>
+                  <i class="ph ph-battery-full"></i>
+                </div>
+              </div>
+              <div class="carousel-slides">
+                <div class="phone-label phone-label-forbidden" data-i18n="label_car">Auto (Niet toegestaan)</div>
+                <img src="/assets/bbm-screenshots/bbm-9.1-vs-car.png" alt="Standard Car Routing (Forbidden)" />
+              </div>
+              <div class="phone-home-indicator"></div>
+            </div>
+          </div>
+          
+          <!-- Brommobiel Mockup -->
+          <div class="phone-mockup">
+            <div class="phone-speaker"></div>
+            <div class="phone-screen">
+              <div class="phone-status-bar">
+                <span class="time">12:30</span>
+                <div class="phone-status-icons">
+                   <i class="ph ph-wifi-high"></i>
+                   <i class="ph ph-battery-full"></i>
+                </div>
+              </div>
+              <div class="carousel-slides">
+                <div class="phone-label phone-label-legal" data-i18n="label_brombrom">BromBrom (Legaal)</div>
+                <img src="/assets/bbm-screenshots/bbm-9.2-vs-microcar.png" alt="BromBrom Routing (Legal)" />
+              </div>
+              <div class="phone-home-indicator"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -135,8 +181,8 @@
             <div class="step-number">2</div>
             <div class="step-content">
               <h4 data-i18n="step_2_title">Installeer & Geef Toestemming</h4>
-              <p data-i18n="step_2_desc">Open de APK om te installeren. U moet "Alle Bestanden Toegang" geven zodat de
-                manager uw OsmAnd kaartenmap kan bijwerken.</p>
+              <p data-i18n="step_2_desc">Open de APK om te installeren. Je moet "Alle Bestanden Toegang" geven zodat de
+                manager je OsmAnd kaartenmap kan bijwerken.</p>
             </div>
           </div>
 
@@ -145,10 +191,62 @@
             <div class="step-content">
               <h4 data-i18n="step_3_title">Eén-klik Update</h4>
               <p data-i18n="step_3_desc">Open BromBrom Manager en tik op <strong>Update Kaart</strong> en <strong>Update
-                  Routing</strong>. U bent klaar om te rijden!</p>
+                  Routing</strong>. Je bent klaar om te rijden!</p>
             </div>
           </div>
 
+        </div>
+
+        <!-- Interactive Screenshot Walkthrough -->
+        <div class="carousel-container fade-in">
+          <h3 class="carousel-section-title" data-i18n="carousel_section_title">Visuele Handleiding</h3>
+          
+          <!-- Mode Selector Toggle -->
+          <div class="carousel-mode-selector">
+            <button class="btn btn-secondary active" id="mode-first-time" data-mode="first-time" data-i18n="carousel_mode_first_time">Eerste Installatie</button>
+            <button class="btn btn-secondary" id="mode-update" data-mode="update" data-i18n="carousel_mode_update">Updates</button>
+          </div>
+
+          <div class="carousel-layout">
+            <!-- Phone Mockup Frame -->
+            <div class="phone-mockup">
+              <div class="phone-speaker"></div>
+              <div class="phone-screen">
+                <div class="phone-status-bar">
+                  <span class="time">12:30</span>
+                  <div class="phone-status-icons">
+                    <i class="ph ph-wifi-high"></i>
+                    <i class="ph ph-battery-full"></i>
+                  </div>
+                </div>
+                <div class="carousel-slides">
+                  <img id="carousel-img" src="" alt="BromBrom Setup Walkthrough" />
+                </div>
+                <div class="phone-home-indicator"></div>
+              </div>
+            </div>
+
+            <!-- Carousel Info & Controls -->
+            <div class="carousel-info">
+              <div class="carousel-step-badge">
+                <span id="carousel-step-counter">1 / 11</span>
+              </div>
+              <h4 id="carousel-step-title">Stap 1</h4>
+              <p id="carousel-step-description">Laad de instructies...</p>
+              
+              <div class="carousel-controls">
+                <button class="btn btn-secondary btn-icon" id="prev-slide-btn" aria-label="Vorige stap">
+                  <i class="ph ph-arrow-left"></i>
+                </button>
+                <button class="btn btn-primary btn-icon" id="next-slide-btn" aria-label="Volgende stap">
+                  <i class="ph ph-arrow-right"></i>
+                </button>
+              </div>
+
+              <!-- Indicators / Dots -->
+              <div class="carousel-dots" id="carousel-dots"></div>
+            </div>
+          </div>
         </div>
 
         <!-- Pro Tip Card -->

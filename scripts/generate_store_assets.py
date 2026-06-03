@@ -16,7 +16,7 @@ def generate_assets():
 
     # Paths
     src_logo = os.path.join(logo_dir, "brombrom-logo.jpg")
-    src_banner = os.path.join(assets_dir, "brombrom-banner.png")
+    src_banner = os.path.join(assets_dir, "brombrom-banner-EN.png")
     
     dest_icon = os.path.join(assets_dir, "play_store_icon.png")
     dest_feature = os.path.join(assets_dir, "play_store_feature_graphic.png")
