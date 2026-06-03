@@ -4,7 +4,7 @@ import geopandas as gpd
 import pandas as pd
 import json
 import os
-from shapely.geometry import LineString
+from shapely.geometry import LineString, box
 
 try:
     import build_config as config
@@ -80,11 +80,11 @@ def snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms):
         
         return best_idx, best_snap_pt
 
-    primary = list(spatial_index.query(point.buffer(PRIMARY_TOL)))
+    primary = list(spatial_index.query(box(point.x - PRIMARY_TOL, point.y - PRIMARY_TOL, point.x + PRIMARY_TOL, point.y + PRIMARY_TOL)))
     if len(primary) > 0:
         return get_best_snap(primary)
 
-    fallback = list(spatial_index.query(point.buffer(FALLBACK_TOL)))
+    fallback = list(spatial_index.query(box(point.x - FALLBACK_TOL, point.y - FALLBACK_TOL, point.x + FALLBACK_TOL, point.y + FALLBACK_TOL)))
     if len(fallback) > 0:
         return get_best_snap(fallback)
 
@@ -157,7 +157,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     if pd.isna(bearing) and not has_side:
         return snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms)
 
-    candidates = list(spatial_index.query(point.buffer(FALLBACK_TOL)))
+    candidates = list(spatial_index.query(box(point.x - FALLBACK_TOL, point.y - FALLBACK_TOL, point.x + FALLBACK_TOL, point.y + FALLBACK_TOL)))
     if len(candidates) == 0:
         return None, None
 

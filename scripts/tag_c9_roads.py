@@ -70,10 +70,13 @@ class TagC9Handler(osmium.SimpleHandler):
                     # Find closest node
                     min_dist = float('inf')
                     split_idx = -1
+                    cos_lat = math.cos(math.radians(snap_lat))
                     for idx, (n_lon, n_lat) in enumerate(coords):
-                        d = distance_meters(n_lon, n_lat, snap_lon, snap_lat)
-                        if d < min_dist:
-                            min_dist = d
+                        dx = (n_lon - snap_lon) * 111320.0 * cos_lat
+                        dy = (n_lat - snap_lat) * 111320.0
+                        d2 = dx*dx + dy*dy
+                        if d2 < min_dist:
+                            min_dist = d2
                             split_idx = idx
                             
                     # Calculate distances from closest node to start/end
