@@ -1128,13 +1128,23 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       label: Text(_t('btn_get_osmand'), style: TextStyle(color: Colors.blueGrey[600], fontSize: 13, decoration: TextDecoration.underline)),
                     ),
                     const SizedBox(height: 8),
-                    TextButton.icon(
+                    TextButton(
                       onPressed: _launchWebsiteUrl,
-                      icon: const Icon(Icons.language, color: Colors.blue, size: 20),
-                      label: Text(
-                          _t('visit_website'), 
-                          style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            const WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: Icon(Icons.language, color: Colors.blue, size: 20),
+                            ),
+                            const WidgetSpan(child: SizedBox(width: 8)),
+                            TextSpan(
+                              text: _t('visit_website'),
+                              style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                     const SizedBox(height: 8),
