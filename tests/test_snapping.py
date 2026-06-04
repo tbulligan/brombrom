@@ -73,3 +73,15 @@ def test_distance_meters():
     assert tag_c9_roads.distance_meters(5.0, 52.0, 5.0, 52.0) == pytest.approx(0.0)
     # Approximate distance between (5.0, 52.0) and (5.01, 52.0)
     assert tag_c9_roads.distance_meters(5.0, 52.0, 5.01, 52.0) == pytest.approx(685.35, abs=5.0)
+
+def test_pre_warning_logic():
+    # Test positive cases (pre-warnings)
+    assert snap_c9_to_roads.is_pre_warning({'textSigns': "[{'type': 'VOOR', 'text': '100 m'}]"})
+    assert snap_c9_to_roads.is_pre_warning({'textSigns': "[{'type': 'VOOR', 'text': 'na 500 m'}]"})
+    assert snap_c9_to_roads.is_pre_warning({'textSigns': '[{"type": "VOOR", "text": "150 m"}]'})
+
+    # Test negative cases (regular signs or exemptions)
+    assert not snap_c9_to_roads.is_pre_warning({'textSigns': "[{'type': 'UIT', 'text': 'Uitgezonderd brommobielen'}]"})
+    assert not snap_c9_to_roads.is_pre_warning({'textSigns': '[]'})
+    assert not snap_c9_to_roads.is_pre_warning({'textSigns': ''})
+    assert not snap_c9_to_roads.is_pre_warning({})

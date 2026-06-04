@@ -84,7 +84,7 @@ class TagC9Handler(osmium.SimpleHandler):
                     dist_to_end = distance_meters(coords[split_idx][0], coords[split_idx][1], coords[-1][0], coords[-1][1])
                     
                     # Only split if closest node is not near start or end
-                    if dist_to_start >= 25.0 and dist_to_end >= 25.0:
+                    if dist_to_start >= 5.0 and dist_to_end >= 5.0:
                         # Split way!
                         nodes_A = [n.ref for n in node_list[:split_idx + 1]]
                         nodes_B = [n.ref for n in node_list[split_idx:]]

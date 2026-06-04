@@ -28,6 +28,11 @@ VEHICLE_KEYWORDS_PATTERN = re.compile(r'bromm[oa][a-z]*|ob65|45\s?km')
 # Covers: 'geen', 'verboden', 'ook voor' (prohibition reinforcement)
 NEGATIVE_GUARDS_PATTERN = re.compile(r'geen|verboden|ook voor')
 
+# 4. Pre-warnings (Must NOT have)
+# Matches NDW voorwaarschuwingsborden with type "VOOR"
+PRE_WARNING_PATTERN = re.compile(r"['\"]type['\"]\s*:\s*['\"]VOOR['\"]", re.IGNORECASE)
+
+
 # Global highway class priorities for snapping and filtering
 HIGHWAY_PRIORITY = {
     "motorway": 0,
@@ -44,6 +49,22 @@ HIGHWAY_PRIORITY = {
     "unclassified": 4
 }
 
+
+def is_pre_warning(row):
+    """
+    Check if a sign is a pre-warning (voorwaarschuwing) sign.
+    Returns True if the sign's textSigns metadata designates it as a 'VOOR' warning.
+    """
+    texts = row.get('textSigns', '')
+    if pd.isna(texts) or not texts:
+        return False
+    
+    try:
+        if not isinstance(texts, str):
+            texts = str(texts)
+        return PRE_WARNING_PATTERN.search(texts) is not None
+    except Exception:
+        return False
 
 def has_microcar_exemption(row):
     """
@@ -198,6 +219,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     candidate_geoms = roads_geoms[candidates]
 
     for idx, line in zip(candidates, candidate_geoms):
+        road_row = roads_gdf.iloc[idx]
         proj_dist = line.project(point)
         proj_pt = line.interpolate(proj_dist)
 
@@ -207,11 +229,18 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
 
         seg_bearing = bearing_between(proj_pt, seg_end)
         
+        # Check OneWay status
+        tags = str(road_row.get('other_tags', ''))
+        is_oneway = '"oneway"=>"yes"' in tags or '"junction"=>"roundabout"' in tags or '"highway"=>"motorway"' in tags
+
         # Handle missing bearing gracefully
         if pd.isna(bearing):
             angle_diff = 0.0 # No angular penalty if we don't know the sign's angle
         else:
             angle_diff = min(abs(bearing - seg_bearing), 360 - abs(bearing - seg_bearing))
+            if not is_oneway:
+                angle_diff_opp = min(abs(bearing - (seg_bearing + 180) % 360), 360 - abs(bearing - (seg_bearing + 180) % 360))
+                angle_diff = min(angle_diff, angle_diff_opp)
         
         # Side Matching Logic
         side_penalty = 0.0
@@ -219,11 +248,6 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
         if row_side in ['L', 'R']:
             geom_side = get_geometric_side(point, line, proj_dist)
             
-            # Check OneWay status (accessing row from roads_gdf using iloc)
-            # We assume indices align with roads_geoms, which they do
-            tags = str(roads_gdf.iloc[idx].get('other_tags', ''))
-            is_oneway = '"oneway"=>"yes"' in tags or '"junction"=>"roundabout"' in tags or '"highway"=>"motorway"' in tags
-
             if geom_side == row_side:
                 side_penalty = -2.0 # Bonus for matching side
             # No penalty for mismatch: rely on Angle (for opposing) and Bonus (for parallel)
@@ -231,7 +255,6 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
             else:
                 side_penalty = 0.0
         
-        road_row = roads_gdf.iloc[idx]
         highway = str(road_row.get('highway', ''))
         priority = HIGHWAY_PRIORITY.get(highway, 99)
         if priority >= 4:
@@ -243,7 +266,8 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
             
         dist = proj_pt.distance(point)
         # Score formulation: Distance is king, but orientation/side/priority refine it.
-        score = dist * 0.7 + angle_diff * 0.03 + side_penalty + priority_penalty
+        # Use a larger weight (0.15) for angle difference to prevent perpendicular false snaps
+        score = dist * 0.7 + angle_diff * 0.15 + side_penalty + priority_penalty
 
         if score < best_score:
             best_score = score
@@ -263,6 +287,12 @@ def main():
 
     # Load and reproject to RD New (EPSG:28992) for accurate distances
     c9_gdf = gpd.read_file("c9_ndw.gpkg").to_crs(epsg=28992)
+    
+    # Filter out pre-warning (voorwaarschuwing) signs before snapping
+    pre_warning_mask = c9_gdf.apply(is_pre_warning, axis=1)
+    print(f"Filtering out {pre_warning_mask.sum()} pre-warning (VOOR) signs...")
+    c9_gdf = c9_gdf[~pre_warning_mask]
+    
     roads_gdf = gpd.read_file("nl_roads.gpkg").to_crs(epsg=28992)
 
     # Build spatial index
