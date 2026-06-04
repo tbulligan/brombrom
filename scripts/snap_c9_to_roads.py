@@ -28,6 +28,23 @@ VEHICLE_KEYWORDS_PATTERN = re.compile(r'bromm[oa][a-z]*|ob65|45\s?km')
 # Covers: 'geen', 'verboden', 'ook voor' (prohibition reinforcement)
 NEGATIVE_GUARDS_PATTERN = re.compile(r'geen|verboden|ook voor')
 
+# Global highway class priorities for snapping and filtering
+HIGHWAY_PRIORITY = {
+    "motorway": 0,
+    "motorway_link": 0,
+    "trunk": 1,
+    "trunk_link": 1,
+    "primary": 1,
+    "primary_link": 1,
+    "secondary": 2,
+    "secondary_link": 2,
+    "tertiary": 3,
+    "tertiary_link": 3,
+    "residential": 4,
+    "unclassified": 4
+}
+
+
 def has_microcar_exemption(row):
     """
     Check textSigns for 'brommobielen' exemptions using robust semantic logic.
@@ -70,8 +87,21 @@ def snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms):
             # roads_geoms is a numpy array of geometries, aligned with iloc
             geom = roads_geoms[idx]
             dist = geom.distance(point)
-            if dist < best_dist:
-                best_dist = dist
+            
+            # Apply priority penalty to fallback snapping as well
+            road_row = roads_gdf.iloc[idx]
+            highway = str(road_row.get('highway', ''))
+            priority = HIGHWAY_PRIORITY.get(highway, 99)
+            if priority >= 4:
+                priority_penalty = 8.0 / 0.7  # Convert score penalty to meters
+            elif priority == 3:
+                priority_penalty = 2.0 / 0.7
+            else:
+                priority_penalty = 0.0
+                
+            effective_dist = dist + priority_penalty
+            if effective_dist < best_dist:
+                best_dist = effective_dist
                 best_idx = roads_gdf.index[idx] # Get the label index
                 
                 # Calculate snap point
@@ -201,9 +231,19 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
             else:
                 side_penalty = 0.0
         
+        road_row = roads_gdf.iloc[idx]
+        highway = str(road_row.get('highway', ''))
+        priority = HIGHWAY_PRIORITY.get(highway, 99)
+        if priority >= 4:
+            priority_penalty = 8.0
+        elif priority == 3:
+            priority_penalty = 2.0
+        else:
+            priority_penalty = 0.0
+            
         dist = proj_pt.distance(point)
-        # Score formulation: Distance is king, but orientation/side refine it.
-        score = dist * 0.7 + angle_diff * 0.03 + side_penalty
+        # Score formulation: Distance is king, but orientation/side/priority refine it.
+        score = dist * 0.7 + angle_diff * 0.03 + side_penalty + priority_penalty
 
         if score < best_score:
             best_score = score
@@ -247,22 +287,8 @@ def main():
 
     print(f"Directionally snapped {c9_gdf['road_index'].notna().sum()}/{len(c9_gdf)} C9s")
 
-    # Highway filtering
-    highway_priority = {
-        "motorway": 0,
-        "motorway_link": 0,
-        "trunk": 1,
-        "trunk_link": 1,
-        "primary": 1,
-        "primary_link": 1,
-        "secondary": 2,
-        "secondary_link": 2,
-        "tertiary": 3,
-        "tertiary_link": 3,
-        "residential": 4,
-        "unclassified": 4
-    }
-    roads_gdf["priority"] = roads_gdf["highway"].map(highway_priority).fillna(99)
+    # Highway filtering using global priorities
+    roads_gdf["priority"] = roads_gdf["highway"].map(HIGHWAY_PRIORITY).fillna(99)
     valid_indices = roads_gdf[roads_gdf["priority"] < 10].index
     
     # Filter out snaps to invalid road types
