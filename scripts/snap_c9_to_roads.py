@@ -31,9 +31,43 @@ NEGATIVE_GUARDS_PATTERN = re.compile(r'geen|verboden|ook voor')
 # 4. Pre-warnings (Must NOT have)
 # Matches NDW voorwaarschuwingsborden with type "VOOR"
 PRE_WARNING_PATTERN = re.compile(r"['\"]type['\"]\s*:\s*['\"]VOOR['\"]", re.IGNORECASE)
+def normalize_name(name):
+    if not name or pd.isna(name):
+        return ""
+    name = str(name).lower().strip()
+    name = re.sub(r'[^a-z0-9\s]', '', name)
+    name = name.replace(" ", "")
+    
+    suffixes = ['straatweg', 'straat', 'weg', 'wei', 'dijk', 'dyk', 'laan', 'leane', 'singel', 'polder', 'pad', 'plein', 'steeg']
+    suffixes.sort(key=len, reverse=True)
+    for suffix in suffixes:
+        if name.endswith(suffix) and len(name) > len(suffix):
+            name = name[:-len(suffix)]
+            break
+    return name
+
+def check_name_match(ndw_name, osm_name):
+    if pd.isna(ndw_name) or not ndw_name or pd.isna(osm_name) or not osm_name:
+        return True
+    
+    ndw_parts = re.split(r'[;/,-]', str(ndw_name))
+    osm_parts = re.split(r'[;/,-]', str(osm_name))
+    
+    for ndw_p in ndw_parts:
+        ndw_norm = normalize_name(ndw_p)
+        if not ndw_norm:
+            continue
+        for osm_p in osm_parts:
+            osm_norm = normalize_name(osm_p)
+            if not osm_norm:
+                continue
+            if (ndw_norm == osm_norm) or (ndw_norm in osm_norm) or (osm_norm in ndw_norm):
+                return True
+    return False
 
 
 # Global highway class priorities for snapping and filtering
+
 HIGHWAY_PRIORITY = {
     "motorway": 0,
     "motorway_link": 0,
@@ -95,9 +129,12 @@ def has_microcar_exemption(row):
     except Exception:
         return False
 
-def snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms):
+def snap_c9_distance_only(row, roads_gdf, spatial_index, roads_geoms):
     # Original distance-based snap for fallback
     # Helper to calculate precise snap
+    point = row.geometry
+    ndw_name = row.get("roadName")
+    
     def get_best_snap(candidates_indices):
         best_idx = None
         best_dist = float('inf')
@@ -120,7 +157,12 @@ def snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms):
             else:
                 priority_penalty = 0.0
                 
-            effective_dist = dist + priority_penalty
+            # Apply name mismatch penalty
+            osm_name = road_row.get('name')
+            name_matched = check_name_match(ndw_name, osm_name)
+            name_penalty = 0.0 if name_matched else (30.0 / 0.7)
+            
+            effective_dist = dist + priority_penalty + name_penalty
             if effective_dist < best_dist:
                 best_dist = effective_dist
                 best_idx = roads_gdf.index[idx] # Get the label index
@@ -206,7 +248,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     has_side = side in ['L', 'R']
     
     if pd.isna(bearing) and not has_side:
-        return snap_c9_distance_only(point, roads_gdf, spatial_index, roads_geoms)
+        return snap_c9_distance_only(row, roads_gdf, spatial_index, roads_geoms)
 
     candidates = list(spatial_index.query(box(point.x - FALLBACK_TOL, point.y - FALLBACK_TOL, point.x + FALLBACK_TOL, point.y + FALLBACK_TOL)))
     if len(candidates) == 0:
@@ -265,9 +307,15 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
             priority_penalty = 0.0
             
         dist = proj_pt.distance(point)
+        # Name match penalty
+        ndw_name = row.get("roadName")
+        osm_name = road_row.get("name")
+        name_matched = check_name_match(ndw_name, osm_name)
+        name_penalty = 0.0 if name_matched else 30.0
+
         # Score formulation: Distance is king, but orientation/side/priority refine it.
         # Use a larger weight (0.15) for angle difference to prevent perpendicular false snaps
-        score = dist * 0.7 + angle_diff * 0.15 + side_penalty + priority_penalty
+        score = dist * 0.7 + angle_diff * 0.15 + side_penalty + priority_penalty + name_penalty
 
         if score < best_score:
             best_score = score

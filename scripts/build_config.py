@@ -3,7 +3,7 @@ from pathlib import Path
 # Snapping Tolerances (in meters)
 # Used in snap_c9_to_roads.py
 PRIMARY_TOL = 2.0
-FALLBACK_TOL = 12.0
+FALLBACK_TOL = 60.0
 
 # BRouter Configuration
 # Used in build_brom_segments.py

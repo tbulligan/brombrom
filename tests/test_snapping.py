@@ -85,3 +85,24 @@ def test_pre_warning_logic():
     assert not snap_c9_to_roads.is_pre_warning({'textSigns': '[]'})
     assert not snap_c9_to_roads.is_pre_warning({'textSigns': ''})
     assert not snap_c9_to_roads.is_pre_warning({})
+
+def test_name_matching_logic():
+    # Test normalization
+    assert snap_c9_to_roads.normalize_name('Hegedyk') == 'hege'
+    assert snap_c9_to_roads.normalize_name('Westergoawei') == 'westergoa'
+    assert snap_c9_to_roads.normalize_name('Groningerstraatweg') == 'groninger'
+    assert snap_c9_to_roads.normalize_name('Blitsaerderleane') == 'blitsaerder'
+    
+    # Test matching
+    assert snap_c9_to_roads.check_name_match('Hegedyk', 'Hegedyk')
+    assert not snap_c9_to_roads.check_name_match('Hegedyk', 'Westergoawei')
+    assert not snap_c9_to_roads.check_name_match('Tolhûswei', 'Blitsaerderleane')
+    
+    # Missing names should match (no penalty)
+    assert snap_c9_to_roads.check_name_match('Tolhûswei', None)
+    assert snap_c9_to_roads.check_name_match(None, 'Hegedyk')
+    
+    # Multi-name / composite roads
+    assert snap_c9_to_roads.check_name_match('Groningerstraatweg;N355', 'Groningerstraatweg')
+    assert snap_c9_to_roads.check_name_match('Westergoawei', 'Rijksweg N313 / Westergoawei')
+
