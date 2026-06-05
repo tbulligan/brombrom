@@ -42,5 +42,9 @@ BromBrom is a **multi-component system**:
 *   **Memory Usage**: OBF generation (Java) requires **6GB+ RAM**.
 
 ## 🧪 Testing & Validation
+*   **Unit Tests**: Run unit tests via pytest inside the micromamba environment:
+    ```bash
+    micromamba run -n brombrom pytest
+    ```
 *   **Graph Drills**: Use `scripts/validate_results.py` to verify map sanity and OSF artifact existence.
 *   **App Testing**: Push app changes to `develop`. Build results can be downloaded as APK artifacts from GitHub Actions before merging to `main`.
