@@ -153,10 +153,11 @@
 
 			<select value="-1" t="highway" v="motorway"/>
 			<select value="-1" t="highway" v="motorway_link"/>
-			<select value="-1" t="highway" v="trunk"/>
-			<select value="-1" t="highway" v="trunk_link"/>
 			<select value="-1" t="motorroad" v="yes"/>
 			<select value="-1" t="microcar" v="no"/>
+			<select value="1" t="junction" v="roundabout"/>
+			<select value="-1" t="highway" v="trunk"/>
+			<select value="-1" t="highway" v="trunk_link"/>
 			<select value="1" t="highway" v="primary"/>
 			<select value="1" t="highway" v="primary_link"/>
 			<select value="1" t="highway" v="secondary"/>
