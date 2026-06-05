@@ -106,3 +106,16 @@ def test_name_matching_logic():
     assert snap_c9_to_roads.check_name_match('Groningerstraatweg;N355', 'Groningerstraatweg')
     assert snap_c9_to_roads.check_name_match('Westergoawei', 'Rijksweg N313 / Westergoawei')
 
+def test_get_road_speed():
+    # Test valid speed parsing
+    assert snap_c9_to_roads.get_road_speed({'other_tags': '"maxspeed"=>"50"'}) == 50.0
+    assert snap_c9_to_roads.get_road_speed({'other_tags': '"maxspeed"=>"30"'}) == 50.0
+    assert snap_c9_to_roads.get_road_speed({'other_tags': '"maxspeed"=>"walk"'}) == 50.0
+    assert snap_c9_to_roads.get_road_speed({'other_tags': '"maxspeed"=>"80"'}) == 80.0
+    assert snap_c9_to_roads.get_road_speed({'other_tags': '"maxspeed"=>"NL:30"'}) == 50.0
+
+    # Test invalid / missing speed
+    assert snap_c9_to_roads.get_road_speed({'other_tags': '"surface"=>"asphalt"'}) is None
+    assert snap_c9_to_roads.get_road_speed(None) is None
+    assert snap_c9_to_roads.get_road_speed({}) is None
+

@@ -27,6 +27,7 @@ BromBrom is a **multi-component system**:
 *   `.github/workflows/build_and_release.yml`: The automation engine. Uploads the final OSF.
 *   `scripts/generate_osmand_deploy.py`: Master compiler for `.osf`. The `profile_brombrom.json` contained here is hardcoded from a pristine native OsmAnd export.
 *   `scripts/snap_c9_to_roads.py`: Algorithmic core affecting user safety.
+*   `docs/snapping_logic.md`: Algorithmic documentation for spatial snapping and exemptions. Must be kept up to date whenever the snapping logic is modified.
 
 ## 🚀 Release Strategy
 *   **Schedule**: Automated builds trigger on the **2nd of every month**.

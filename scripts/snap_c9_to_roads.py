@@ -100,6 +100,27 @@ def is_pre_warning(row):
     except Exception:
         return False
 
+def get_road_speed(road_row):
+    """Parse speed limit from road's other_tags."""
+    if road_row is None:
+        return None
+    try:
+        tags_str = road_row.get('other_tags') or ""
+    except AttributeError:
+        return None
+    if not tags_str or pd.isna(tags_str):
+        return None
+    match = re.search(r'"maxspeed"=>"([^"]+)"', tags_str)
+    if match:
+        val = match.group(1).strip()
+        if val in ['50', '30', '15', '5', 'walk', 'NL:15', 'NL:30', 'NL:50']:
+            return 50.0
+        try:
+            return float(val)
+        except ValueError:
+            pass
+    return None
+
 def has_microcar_exemption(row):
     """
     Check textSigns for 'brommobielen' exemptions using robust semantic logic.
@@ -364,6 +385,76 @@ def main():
     c9_gdf["snap_point"] = snap_results[1]
 
     print(f"Directionally snapped {c9_gdf['road_index'].notna().sum()}/{len(c9_gdf)} C9s")
+
+    # Post-snapping pre-warning detection heuristic
+    print("Running post-snapping pre-warning filter...")
+    snapped_signs = c9_gdf.dropna(subset=['road_index']).copy()
+    if not snapped_signs.empty:
+        snapped_signs['norm_name'] = snapped_signs['roadName'].apply(normalize_name)
+        
+        speeds = []
+        highways = []
+        for r_idx in snapped_signs['road_index']:
+            road_row = roads_gdf.loc[r_idx]
+            speeds.append(get_road_speed(road_row))
+            highways.append(road_row.get('highway', ''))
+        snapped_signs['road_speed'] = speeds
+        snapped_signs['road_highway'] = highways
+        
+        pre_warnings = set()
+        for idx_A, row_A in snapped_signs.iterrows():
+            speed_A = row_A['road_speed']
+            highway_A = row_A['road_highway']
+            
+            # We only consider low-speed roads as potential pre-warnings
+            is_low_speed = (speed_A is not None and speed_A <= 50) or highway_A in ['residential', 'living_street', 'service']
+            if not is_low_speed:
+                continue
+                
+            name_A = row_A['norm_name']
+            bearing_A = row_A['bearing']
+            if pd.isna(bearing_A):
+                bearing_A = get_bearing_from_side(row_A['side'])
+                
+            geom_A = row_A.geometry
+            
+            for idx_B, row_B in snapped_signs.iterrows():
+                if idx_A == idx_B:
+                    continue
+                    
+                # Must be the same road
+                if not name_A or name_A != row_B['norm_name']:
+                    continue
+                    
+                # Must be within 1.5 km
+                dist_m = geom_A.distance(row_B.geometry)
+                if dist_m > 1500.0:
+                    continue
+                    
+                # Must have similar bearings
+                bearing_B = row_B['bearing']
+                if pd.isna(bearing_B):
+                    bearing_B = get_bearing_from_side(row_B['side'])
+                    
+                if bearing_A is not None and bearing_B is not None:
+                    angle_diff = min(abs(bearing_A - bearing_B), 360 - abs(bearing_A - bearing_B))
+                    if angle_diff > 45.0:
+                        continue
+                
+                # Sign B must be on a high-speed road or trunk/motorway
+                speed_B = row_B['road_speed']
+                highway_B = row_B['road_highway']
+                is_high_speed_B = (speed_B is not None and speed_B > 50) or highway_B in ['trunk', 'trunk_link', 'motorway', 'motorway_link']
+                
+                if is_high_speed_B:
+                    # Sign A is a pre-warning!
+                    pre_warnings.add(idx_A)
+                    print(f"Identified Sign {row_A.get('id')} on '{row_A.get('roadName')}' as pre-warning for Sign {row_B.get('id')} (distance {dist_m:.1f}m).")
+                    break
+                    
+        if pre_warnings:
+            c9_gdf.loc[list(pre_warnings), "road_index"] = None
+            print(f"Post-snapping pre-warning filter ignored {len(pre_warnings)} signs.")
 
     # Highway filtering using global priorities
     roads_gdf["priority"] = roads_gdf["highway"].map(HIGHWAY_PRIORITY).fillna(99)

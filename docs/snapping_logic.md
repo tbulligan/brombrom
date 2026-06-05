@@ -1,40 +1,55 @@
 # Snapping & Spatial Logic
 
 ## Overview
-The heart of BromBrom is its directional snapping and exemption parsing logic. This ensures that C9 traffic signs from the NDW dataset are correctly mapped to OpenStreetMap road segments.
+The heart of BromBrom is its directional snapping, name-matching validation, and pre-warning/exemption parsing logic. This ensures that C9 traffic signs from the NDW dataset are correctly mapped to OpenStreetMap road segments.
 
-## Challenge: Ambiguous Siding
-NDW C9 traffic signs often lack explicit compass bearings, but provide a `side` attribute which can be:
-- **Cardinal**: `N`, `O`, `Z`, `W` (Reliable, mapped to degrees)
-- **Relative**: `L` (Left), `R` (Right) (Ambiguous without road context)
+## Snapping Candidates & Search Tolerances
+To map C9 sign points to OSM linestrings, BromBrom uses a two-tier spatial query:
+1. **Primary Search**: Query a narrow bounding box around the sign point (`PRIMARY_TOL = 2.0` meters).
+2. **Fallback Search**: If no candidates are found, query a wider bounding box (`FALLBACK_TOL = 60.0` meters).
 
-Signs with `L`/`R` side usage (~30% of dataset) require geometric validation to avoid generic "Distance Only" snapping, which is error-prone in dense areas or near intersections.
+Using a larger fallback tolerance of 60 meters accommodates NDW GPS inaccuracies while name-matching constraints prevent incorrect snaps to adjacent roads.
 
-## Geometric Side Matching (2D Cross-Product)
-BromBrom uses a geometric side detection algorithm in `snap_c9_to_roads.py` to resolve relative siding.
+## Snapping Score Formulation
+When multiple candidate road segments are found, they are scored using a weighted formulation. The road with the lowest score is selected:
 
-### Algorithm
-1. Project the sign point onto the candidate road segment.
-2. Determine the vector of the road at the projection point.
-3. Calculate the **2D Cross Product** of the road vector and the vector to the sign.
-4. Determine if the sign lies geometrically to the **Left** or **Right** of the road.
-5. **Score Boost**:
-   - If `Sign.Side == Geometric.Side`: Apply a score bonus (equivalent to being 5m closer).
-   - If `Sign.Side != Geometric.Side`: Apply a score penalty (equivalent to being 10m further).
+$$\text{Score} = (\text{Distance} \times 0.7) + (\text{Angle Difference} \times 0.15) + \text{Side Penalty} + \text{Priority Penalty} + \text{Name Penalty}$$
 
-### Impact
-This ensures that a "Right" sign snaps to the road where it is physically on the right, distinguishing between:
-- Parallel roads
-- Dual carriageways
-- Intersecting roads (where the sign position favors one alignment)
+This ensures distance is the primary metric, while orientation, side alignment, highway class, and road names refine the snap.
 
-This dramatically reduces "False Positives" on adjacent but irrelevant roads.
+### 1. Orientation & Bearing Matching
+- The sign's cardinal placement (`side` mapped to wind-rose angles) or explicit `bearing` is compared to the segment's bearing.
+- For bi-directional roads, the sign's bearing can match either the forward or backward road bearing to handle digitization directions safely.
+
+### 2. Geometric Side Matching (2D Cross-Product)
+For relative siding (`L`/`R`), the sign position is projected onto the road segment:
+- A 2D cross-product determines if the sign is geometrically on the left or right of the road.
+- **Score Bonus**: If the physical placement matches the geometric side, a bonus of `-2.0` (equivalent to being ~2.8m closer) is applied. Mismatches do not receive a penalty to prevent false-negative exclusions (e.g. at highway junctions).
+
+### 3. Highway Priority Penalty
+To prevent signs from snapping to minor parallel roads (like residential streets or cycleways mapped as roads), a penalty is applied based on the highway class:
+- `residential`, `living_street`, `service`, `unclassified` (Priority >= 4): `+8.0` penalty.
+- `tertiary`, `tertiary_link` (Priority = 3): `+2.0` penalty.
+- `primary`, `secondary`, `trunk`, `motorway` (Priority <= 2): `+0.0` penalty.
+
+### 4. Name Matching Validation
+To prevent snaps onto crossing roads or parallel routes of a different road:
+- The normalized NDW road name is matched against the normalized OSM road name (stripping suffixes like *straatweg*, *weg*, *dijk*, etc.).
+- **Name Penalty**: If the names do not match, a penalty of `+30.0` is applied (equivalent to being ~43m further away). This ensures that name-matching segments are strongly preferred.
+
+## Pre-Warning Filtering & Validation
+Pre-warning signs (voorwaarschuwingsborden) warn drivers about a downstream restriction. They do not represent active restrictions and must be ignored to prevent false closures.
+
+### 1. Metadata-based Filtering
+Signs containing `type: "VOOR"` in their `textSigns` attribute (indicating a warning in e.g. 500m) are filtered out immediately.
+
+### 2. Post-Snapping Downstream Heuristic
+Since many pre-warnings lack complete metadata in NDW (empty `textSigns`), BromBrom employs a downstream validation heuristic:
+- If a sign A snaps to a low-speed road segment (`maxspeed <= 50` or minor road classes) but another C9 sign B exists downstream on the same road (matching normalized names) within **1.5 km** and heading in a similar direction (bearing difference <= 45°), and B snaps to a high-speed road (`maxspeed > 50` or `trunk`/`motorway` class):
+- Sign A is flagged as a pre-warning and ignored, while the downstream sign B remains to enforce the restriction where it actually starts.
 
 ## Exemption Parsing
 Beyond spatial snapping, BromBrom accurately parses "onderborden" (sub-plates) to identify roads where microcars are exempt from C9 restrictions.
-
-### Key Features
 - **Official Codes**: Recognizes standard Dutch exemption codes like `OB65`.
 - **Fuzzy Text Matching**: Handles complex Dutch text (e.g., `uitgezonderd brommobielen`) and is resilient to OCR-prone typos (e.g., `brommoblelen`).
 - **Negative Guards**: Prevents false exemptions by identifying explicit prohibitions like *"Geldt ook voor brommobiel"* (Also applies to microcars).
-
