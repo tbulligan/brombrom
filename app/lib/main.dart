@@ -189,21 +189,25 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'latest_release': 'Laatste release',
       'btn_osf_update': 'Bijwerken',
       'on_disk': 'Lokaal aanwezig',
-      'osf_dialog_title': 'BromBrom Installeren',
-      'osf_dialog_p1': 'OsmAnd opent nu. Volg deze stappen precies:',
-      'osf_dialog_step1': '1. Tik op "Alle instellingen en bronnen" → "Doorgaan"',
-      'osf_dialog_step2': '2. Tik op "Toepassen" (eerste keer)',
-      'osf_dialog_step3': '3. Wacht tot de import klaar is',
-      'osf_dialog_step4': '4. Tik op het "Import voltooid" scherm op "Instellingen"',
-      'osf_dialog_step5': '5. Scroll naar beneden naar "BromBrom" en zet de schakelaar AAN',
-      'osf_dialog_step6': '6. Je kunt BromBrom nu selecteren in het Navigatiemenu (oranje auto-icoon)',
-      'osf_dialog_warning': '⚠️ Sla stap 4–6 niet over — OsmAnd verbergt en activeert nieuwe profielen niet automatisch.',
+      'osf_dialog_title': 'BromBrom instellen',
+      'osf_dialog_p1': 'OsmAnd opent zo direct. Volg deze stappen nauwkeurig:',
+      'osf_dialog_step1': '1. Open het bestand met OsmAnd.',
+      'osf_dialog_step2': '2. Vink zowel "Instellingen" als "Bronnen" aan en tik op "Doorgaan".',
+      'osf_dialog_step3': '3. Kies "Alles vervangen" indien gevraagd.',
+      'osf_dialog_step4': '4. Tik op "Sluiten" zodra de import is voltooid.',
+      'osf_dialog_step5': '5. Open het OsmAnd-hoofdmenu (drie streepjes).',
+      'osf_dialog_step6': '6. Ga naar Instellingen.',
+      'osf_dialog_step7': '7. Zoek "BromBrom" en schakel de schuifregelaar in (ON).',
+      'osf_dialog_step8': '8. Tik op "Profielenlijst bewerken" en sleep BromBrom naar boven.',
+      'osf_dialog_step9': '9. Tik op het profiel-icoon in het navigatiemenu en selecteer BromBrom.',
+      'osf_dialog_warning': '⚠️ Sla stap 5–9 niet over — OsmAnd activeert nieuwe profielen niet automatisch.',
       'osf_dialog_btn': 'OPEN OSMAND',
-      'osf_dialog_title_update': 'BromBrom Kaart Bijwerken',
+      'osf_dialog_title_update': 'BromBrom bijwerken',
       'osf_dialog_p1_update': 'OsmAnd opent zo direct om de kaart bij te werken. Volg deze stappen:',
-      'osf_dialog_step1_update': '1. Tik op "Alle instellingen en bronnen" → "Doorgaan"',
-      'osf_dialog_step2_update': '2. Tik op "Alles vervangen"',
-      'osf_dialog_step3_update': '3. OsmAnd start nu direct met de bijgewerkte kaart!',
+      'osf_dialog_step1_update': '1. Open het bestand met OsmAnd.',
+      'osf_dialog_step2_update': '2. Vink zowel "Instellingen" als "Bronnen" aan en tik op "Doorgaan".',
+      'osf_dialog_step3_update': '3. Kies "Alles vervangen" indien gevraagd.',
+      'osf_dialog_step4_update': '4. Tik op "Sluiten" zodra de import is voltooid.',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
       'visit_website': 'Website bezoeken (Visuele Handleiding)',
@@ -243,21 +247,25 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'latest_release': 'Latest Release',
       'btn_osf_update': 'Update',
       'on_disk': 'On device',
-      'osf_dialog_title': 'Import BromBrom Map',
-      'osf_dialog_p1': 'OsmAnd will now open. Follow these steps exactly:',
-      'osf_dialog_step1': '1. Tap "All Settings and Resources" → "Continue"',
-      'osf_dialog_step2': '2. Tap "Apply" (first time)',
-      'osf_dialog_step3': '3. Wait for the import to complete',
-      'osf_dialog_step4': '4. On the "Import complete" screen, tap "Settings"',
-      'osf_dialog_step5': '5. Scroll down to "BromBrom" and toggle it ON',
-      'osf_dialog_step6': '6. You can now select BromBrom from the Navigation menu (orange car icon)',
-      'osf_dialog_warning': '⚠️ Do not skip steps 4–6 — OsmAnd does not enable or activate new profiles automatically.',
+      'osf_dialog_title': 'Set up BromBrom',
+      'osf_dialog_p1': 'OsmAnd will open now. Follow these steps exactly:',
+      'osf_dialog_step1': '1. Open the file with OsmAnd.',
+      'osf_dialog_step2': '2. Check both "Settings" and "Resources" and tap "Continue".',
+      'osf_dialog_step3': '3. Select "Replace all" if prompted.',
+      'osf_dialog_step4': '4. Tap "Close" once the import is complete.',
+      'osf_dialog_step5': '5. Open the OsmAnd main menu (three lines).',
+      'osf_dialog_step6': '6. Go to Settings.',
+      'osf_dialog_step7': '7. Find "BromBrom" and switch the toggle to ON.',
+      'osf_dialog_step8': '8. Tap "Edit profile list" and drag BromBrom to the top.',
+      'osf_dialog_step9': '9. Tap the navigation profile icon and select BromBrom.',
+      'osf_dialog_warning': '⚠️ Do not skip steps 5–9 — OsmAnd does not enable or activate new profiles automatically.',
       'osf_dialog_btn': 'OPEN OSMAND',
-      'osf_dialog_title_update': 'Update BromBrom Map',
+      'osf_dialog_title_update': 'Update BromBrom',
       'osf_dialog_p1_update': 'OsmAnd will open now to update the map. Follow these steps:',
-      'osf_dialog_step1_update': '1. Tap "All Settings and Resources" → "Continue"',
-      'osf_dialog_step2_update': '2. Tap "Replace all"',
-      'osf_dialog_step3_update': '3. OsmAnd will start directly with the updated map!',
+      'osf_dialog_step1_update': '1. Open the file with OsmAnd.',
+      'osf_dialog_step2_update': '2. Check both "Settings" and "Resources" and tap "Continue".',
+      'osf_dialog_step3_update': '3. Select "Replace all" if prompted.',
+      'osf_dialog_step4_update': '4. Tap "Close" once the import is complete.',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
       'visit_website': 'Visit website (Visual Setup Guide)',
@@ -654,6 +662,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         Text(_t('osf_dialog_step2_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
                         const SizedBox(height: 6),
                         Text(_t('osf_dialog_step3_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step4_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
                       ]
                     : <Widget>[
                         Text(_t('osf_dialog_p1'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
@@ -669,6 +679,12 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         Text(_t('osf_dialog_step5'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
                         const SizedBox(height: 6),
                         Text(_t('osf_dialog_step6'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step7'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step8'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step9'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(10),
@@ -1237,24 +1253,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     return _buildInstallOsmAndAction();
                   }
 
-                  if (_osfUpdateAvailable) {
-                    return ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        backgroundColor: Colors.orange[800],
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 4,
-                      ),
-                      onPressed: () => _downloadFile(OSF_FILENAME),
-                      child: Text(
-                        _t('btn_osf_update'), // "Bijwerken" / "Update"
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    );
-                  }
-
-                  // Up to date -> Show single Navigate button with the reinstall option below it
+                  // Show single Navigate button with the reinstall option below it
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
@@ -1311,12 +1310,43 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       ),
                     ),
                     const SizedBox(height: 8),
-                    TextButton.icon(
+                    TextButton(
                       onPressed: _launchCoffeeUrl,
-                      icon: const Icon(Icons.coffee, color: Colors.brown, size: 20),
-                      label: Text(
-                          _t('buy_coffee'), 
-                          style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold)
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            const WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: Icon(Icons.coffee, color: Colors.brown, size: 20),
+                            ),
+                            const WidgetSpan(child: SizedBox(width: 8)),
+                            TextSpan(
+                              text: _t('buy_coffee'),
+                              style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => setState(() => _showLogs = !_showLogs),
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            const WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: Icon(Icons.bug_report_outlined, color: Colors.grey, size: 20),
+                            ),
+                            const WidgetSpan(child: SizedBox(width: 8)),
+                            TextSpan(
+                              text: _showLogs ? _t('hide_logs') : _t('show_logs'),
+                              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                     if (_showLogs)
