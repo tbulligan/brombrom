@@ -180,16 +180,12 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'allow_access': 'TOEGANG TOEGESTAAN',
       'status_permissions': 'Permissies controleren...',
       'status_checking': 'GitHub & lokale bestanden controleren...',
-      'status_updates': 'Updates beschikbaar!',
-      'status_uptodate_brief': 'Alles is up-to-date.',
-      'status_uptodate_full': 'Jouw navigatie is helemaal up-to-date',
       'status_error': 'Verbindings-/API-fout',
       'status_dl': 'Bezig met downloaden van {file}...',
       'status_dl_done': 'Download voltooid!',
       'status_dl_error': 'Fout: {error}',
       'latest_release': 'Laatste release',
-      'btn_osf_update': 'BromBrom Navigatie INSTALLEREN / BIJWERKEN',
-      'btn_osf_download': 'BromBrom Navigatie OPNIEUW DOWNLOADEN',
+      'btn_osf_update': 'Bijwerken',
       'on_disk': 'Lokaal aanwezig',
       'osf_dialog_title': 'Openen in OsmAnd',
       'osf_dialog_p1': 'OsmAnd opent nu. Volg deze stappen precies:',
@@ -201,7 +197,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'osf_dialog_step6': '6. Je kunt BromBrom nu selecteren in het Navigatiemenu (oranje auto-icoon)',
       'osf_dialog_warning': '⚠️ Sla stap 4–6 niet over — OsmAnd verbergt en activeert nieuwe profielen niet automatisch.',
       'osf_dialog_btn': 'BEGREPEN, OPEN OSMAND',
-      'btn_get_osmand': 'Download OsmAnd App',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
       'visit_website': 'Website bezoeken (Visuele Handleiding)',
@@ -219,8 +214,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_skip': 'Niet nu',
       'ob_next': 'Volgende',
       'ob_finish': 'Aan de slag!',
-      'banner_osmand_info': 'BromBrom is geen zelfstandige navigatie-app. Na het installeren en configureren van BromBrom moet je OsmAnd gebruiken voor de navigatie.',
-      'btn_navigate': 'Navigeren in OsmAnd',
+      'btn_navigate': 'Navigeren',
       'ob_install_osmand_required': 'Installeer OsmAnd om verder te gaan',
       'ob_notification_permission_required': 'Verleen meldingstoestemming om te voltooien',
       'ob_osmand_installed_checkmark': 'OsmAnd geïnstalleerd ✓',
@@ -232,16 +226,12 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'allow_access': 'ALLOW ACCESS',
       'status_permissions': 'Checking permissions...',
       'status_checking': 'Checking GitHub & Local files...',
-      'status_updates': 'Updates Available!',
-      'status_uptodate_brief': 'Everything is up to date.',
-      'status_uptodate_full': 'Your navigation is completely up to date',
       'status_error': 'Connection/API Error',
       'status_dl': 'Downloading {file}...',
       'status_dl_done': 'Download Complete!',
       'status_dl_error': 'Error: {error}',
       'latest_release': 'Latest Release',
-      'btn_osf_update': 'INSTALL / UPDATE BromBrom Navigation',
-      'btn_osf_download': 'RE-DOWNLOAD BromBrom Navigation',
+      'btn_osf_update': 'Update',
       'on_disk': 'On device',
       'osf_dialog_title': 'Open in OsmAnd',
       'osf_dialog_p1': 'OsmAnd will now open. Follow these steps exactly:',
@@ -253,7 +243,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'osf_dialog_step6': '6. You can now select BromBrom from the Navigation menu (orange car icon)',
       'osf_dialog_warning': '⚠️ Do not skip steps 4–6 — OsmAnd does not enable or activate new profiles automatically.',
       'osf_dialog_btn': 'UNDERSTOOD, OPEN OSMAND',
-      'btn_get_osmand': 'Download OsmAnd App',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
       'visit_website': 'Visit website (Visual Setup Guide)',
@@ -271,8 +260,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_skip': 'Not now',
       'ob_next': 'Next',
       'ob_finish': 'Let\'s go!',
-      'banner_osmand_info': 'BromBrom is not a standalone navigation app. After installing and configuring BromBrom, you must use OsmAnd for navigation.',
-      'btn_navigate': 'Navigate in OsmAnd',
+      'btn_navigate': 'Navigate',
       'ob_install_osmand_required': 'Install OsmAnd to continue',
       'ob_notification_permission_required': 'Grant notification permission to finish',
       'ob_osmand_installed_checkmark': 'OsmAnd is installed ✓',
@@ -992,293 +980,129 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Card(
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        if (_isChecking)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: Colors.orange,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  _statusMessage,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        else if (_checkError != null)
-                          InkWell(
-                            onTap: _checkVersions,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.error_outline, color: Colors.red),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          _statusMessage,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            color: Colors.red,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          _locale == 'nl' 
-                                              ? 'Tik om opnieuw te proberen' 
-                                              : 'Tap to retry',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                            decoration: TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const Icon(Icons.refresh, color: Colors.red),
-                                ],
-                              ),
-                            ),
-                          )
-                        else if (_osfUpdateAvailable)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.info_outline, color: Colors.orange[800]),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  _statusMessage,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.orange[800],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        else
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.check_circle, color: Colors.green),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  _t('status_uptodate_full'),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-    
-                        if (_latestReleaseDate != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            "${_t('latest_release')}: ${DateFormat('yyyy-MM-dd HH:mm').format(_latestReleaseDate!)}",
-                            style: TextStyle(color: Colors.grey[700], fontSize: 13),
-                          ),
-                        ],
-                        
-                        if (_isDownloading) ...[
-                          const SizedBox(height: 16),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value: _progress,
-                              backgroundColor: Colors.orange[100],
-                              color: Colors.orange[800],
-                              minHeight: 10,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text("${(_progress * 100).toStringAsFixed(1)}%", 
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange[800])),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Card(
-                  color: Colors.blue[50],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.blue[300]!, width: 1),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.info_outline, color: Colors.blue[800], size: 28),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _locale == 'nl' ? 'Belangrijke Instructie' : 'Important Instruction',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  color: Colors.blue[900],
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                _t('banner_osmand_info'),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.blue[900],
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                
-                if (!_isDownloading) ...[
-                    if (_isChecking)
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          side: const BorderSide(color: Colors.grey, width: 2),
-                          foregroundColor: Colors.grey,
-                        ),
-                        onPressed: null,
-                        child: Text(
-                          _locale == 'nl' ? 'Controleren op updates...' : 'Checking for updates...',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    else if (_checkError != null)
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          side: const BorderSide(color: Colors.grey, width: 2),
-                          foregroundColor: Colors.grey,
-                        ),
-                        onPressed: null,
-                        child: Text(
-                          _locale == 'nl' ? 'Fout bij update-controle' : 'Update check failed',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    else if (_osfUpdateAvailable)
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          backgroundColor: Colors.orange[800],
-                          foregroundColor: Colors.white,
-                          elevation: 8,
-                        ),
-                        onPressed: () => _downloadFile(OSF_FILENAME),
+                (() {
+                  if (_isDownloading) {
+                    return Card(
+                      color: Colors.white,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
                         child: Column(
                           children: [
-                            Text(
-                              _t('btn_osf_update'),
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.center,
+                            const SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: CircularProgressIndicator(color: Colors.orange),
                             ),
-                          ],
-                        ),
-                      )
-                    else
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          side: BorderSide(color: Colors.orange[800]!, width: 2),
-                          backgroundColor: Colors.orange[50],
-                          foregroundColor: Colors.orange[800],
-                        ),
-                        onPressed: () => _downloadFile(OSF_FILENAME),
-                        child: Column(
-                          children: [
+                            const SizedBox(height: 16),
                             Text(
-                              _t('btn_osf_download'),
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              _statusMessage,
                               textAlign: TextAlign.center,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             ),
-                            if (_localOsfDate != null) ...[
-                              const SizedBox(height: 8),
-                              Text("${_t('on_disk')}: ${DateFormat('yyyy-MM-dd HH:mm').format(_localOsfDate!)}", 
-                                 style: const TextStyle(fontSize: 12)),
-                            ]
+                            const SizedBox(height: 16),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: LinearProgressIndicator(
+                                value: _progress,
+                                backgroundColor: Colors.orange[100],
+                                color: Colors.orange[800],
+                                minHeight: 8,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "${(_progress * 100).toStringAsFixed(1)}%",
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange[800]),
+                            ),
                           ],
                         ),
                       ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
+                    );
+                  }
+
+                  if (_isChecking) {
+                    return Card(
+                      color: Colors.white,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const CircularProgressIndicator(color: Colors.orange),
+                            const SizedBox(height: 16),
+                            Text(
+                              _locale == 'nl' ? 'Controleren op updates...' : 'Checking for updates...',
+                              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (_checkError != null) {
+                    return ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        backgroundColor: Colors.green[700],
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: Colors.grey[300],
-                        disabledForegroundColor: Colors.grey[600],
-                        elevation: (_localOsfDate != null && !_osfUpdateAvailable && _osmandInstalled) ? 4 : 0,
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        backgroundColor: Colors.orange[50],
+                        foregroundColor: Colors.orange[800],
+                        side: BorderSide(color: Colors.orange[200]!, width: 2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
                       ),
-                      onPressed: (_localOsfDate != null && !_osfUpdateAvailable && _osmandInstalled) 
-                          ? () => _openOsmAnd() 
-                          : null,
-                      icon: const Icon(Icons.navigation_outlined, size: 24),
+                      onPressed: _checkVersions,
+                      icon: const Icon(Icons.refresh),
                       label: Text(
-                        _t('btn_navigate'),
+                        _locale == 'nl' ? 'Fout bij controle (Tik om te herstarten)' : 'Check failed (Tap to retry)',
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
                       ),
+                    );
+                  }
+
+                  if (_osfUpdateAvailable) {
+                    return ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        backgroundColor: Colors.orange[800],
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 4,
+                      ),
+                      onPressed: () => _downloadFile(OSF_FILENAME),
+                      child: Text(
+                        _t('btn_osf_update'), // "Bijwerken" / "Update"
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  }
+
+                  // Up to date -> Show single Navigate button in theme orange
+                  return ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      backgroundColor: Colors.orange[800],
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 4,
                     ),
-                ],
+                    onPressed: () => _openOsmAnd(),
+                    icon: const Icon(Icons.navigation_outlined, size: 24),
+                    label: Text(
+                      _t('btn_navigate'), // "Navigeren" / "Navigate"
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                })(),
                 const SizedBox(height: 24),
-                // Support Project & OsmAnd Link
+                // Support Project & Website Links
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TextButton.icon(
-                      onPressed: () {
-                        AndroidIntent(
-                          action: 'action_view',
-                          data: 'market://details?id=net.osmand',
-                          flags: <int>[0x10000000],
-                        ).launch();
-                      },
-                      icon: Icon(Icons.get_app, size: 20, color: Colors.blueGrey[600]),
-                      label: Text(_t('btn_get_osmand'), style: TextStyle(color: Colors.blueGrey[600], fontSize: 13, decoration: TextDecoration.underline)),
-                    ),
-                    const SizedBox(height: 8),
                     TextButton(
                       onPressed: _launchWebsiteUrl,
                       child: Text.rich(
@@ -1369,11 +1193,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                   )
                 ],
               ),
-            ],
-          ),
-        ),
-      ),
-    ),
   );
 }
 }
