@@ -742,12 +742,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     try {
       final isOsmAndPlus = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand.plus'});
       final packageName = isOsmAndPlus ? 'net.osmand.plus' : 'net.osmand';
-      final AndroidIntent intent = AndroidIntent(
-        action: 'android.intent.action.MAIN',
-        category: 'android.intent.category.LAUNCHER',
-        package: packageName,
-      );
-      await intent.launch();
+      await platform.invokeMethod('openPackage', {'packageName': packageName});
     } catch (e) {
       _log("Could not open OsmAnd: $e");
     }
