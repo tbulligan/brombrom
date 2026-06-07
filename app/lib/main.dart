@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background_downloader/background_downloader.dart' hide PermissionStatus;
 import 'package:path_provider/path_provider.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 // ── Background Task Constants ──
@@ -163,6 +164,11 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   late PageController _onboardingPageController;
   int _onboardingCurrentPage = 0;
   
+  // PACKAGE CHECK METHOD CHANNEL
+  static const platform = MethodChannel('com.brombrom.app/package_check');
+  bool _osmandInstalled = false;
+  bool _notificationPermissionGranted = false;
+  
   // CACHED URLs
   final Map<String, String> _downloadUrls = {};
 
@@ -213,6 +219,11 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_skip': 'Niet nu',
       'ob_next': 'Volgende',
       'ob_finish': 'Aan de slag!',
+      'banner_osmand_info': 'BromBrom is geen zelfstandige navigatie-app. Na het installeren en configureren van BromBrom moet je OsmAnd gebruiken voor de navigatie.',
+      'btn_navigate': 'Navigeren in OsmAnd',
+      'ob_install_osmand_required': 'Installeer OsmAnd om verder te gaan',
+      'ob_notification_permission_required': 'Verleen meldingstoestemming om te voltooien',
+      'ob_osmand_installed_checkmark': 'OsmAnd geïnstalleerd ✓',
     },
     'en': {
       'app_name': 'BromBrom Manager',
@@ -260,6 +271,11 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_skip': 'Not now',
       'ob_next': 'Next',
       'ob_finish': 'Let\'s go!',
+      'banner_osmand_info': 'BromBrom is not a standalone navigation app. After installing and configuring BromBrom, you must use OsmAnd for navigation.',
+      'btn_navigate': 'Navigate in OsmAnd',
+      'ob_install_osmand_required': 'Install OsmAnd to continue',
+      'ob_notification_permission_required': 'Grant notification permission to finish',
+      'ob_osmand_installed_checkmark': 'OsmAnd is installed ✓',
     }
   };
 
@@ -310,6 +326,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     _onboardingPageController = PageController();
     _loadLocale().then((_) async {
       await _initTargetDir();
+      await _checkOnboardingRequirements();
       // NOTE: Notification permission is now requested via the onboarding carousel or manually, not on start.
       await _scheduleBackgroundUpdateCheck();
       _checkVersions();
@@ -378,6 +395,30 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
+  Future<bool> _isOsmAndInstalled() async {
+    if (!Platform.isAndroid) return true;
+    try {
+      final bool isOsmAnd = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand'});
+      if (isOsmAnd) return true;
+      final bool isOsmAndPlus = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand.plus'});
+      return isOsmAndPlus;
+    } catch (e) {
+      _log("Error checking package: $e");
+      return false;
+    }
+  }
+
+  Future<void> _checkOnboardingRequirements() async {
+    final osmandInstalled = await _isOsmAndInstalled();
+    final notificationGranted = await Permission.notification.isGranted;
+    if (mounted) {
+      setState(() {
+        _osmandInstalled = osmandInstalled;
+        _notificationPermissionGranted = notificationGranted;
+      });
+    }
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -388,11 +429,14 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _checkVersions();
+      _checkOnboardingRequirements().then((_) {
+        _checkVersions();
+      });
     }
   }
 
   Future<void> _checkVersions() async {
+    await _checkOnboardingRequirements();
     setState(() {
       _isChecking = true;
       _checkError = null;
@@ -639,6 +683,21 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       _shareFile(path);
     }
   }
+
+  Future<void> _openOsmAnd() async {
+    try {
+      final isOsmAndPlus = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand.plus'});
+      final packageName = isOsmAndPlus ? 'net.osmand.plus' : 'net.osmand';
+      final AndroidIntent intent = AndroidIntent(
+        action: 'android.intent.action.MAIN',
+        category: 'android.intent.category.LAUNCHER',
+        package: packageName,
+      );
+      await intent.launch();
+    } catch (e) {
+      _log("Could not open OsmAnd: $e");
+    }
+  }
   
   void _handleTitleTap() {
     final now = DateTime.now();
@@ -738,7 +797,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
                 children: [
-                  // Top bar: language toggle (left) + skip (right)
+                  // Top bar: language toggle (left)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -751,14 +810,11 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         ),
                         child: Text(
-                          _locale == 'nl' ? '\ud83c\uddec\ud83c\udde7  EN' : '\ud83c\uddf3\ud83c\uddf1  NL',
+                          _locale == 'nl' ? '🇬🇧  EN' : '🇳🇱  NL',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                       ),
-                      TextButton(
-                        onPressed: _dismissOnboarding,
-                        child: Text(_t('ob_skip'), style: const TextStyle(color: Colors.white70)),
-                      ),
+                      // Skip ("Not now") button removed to make onboarding compulsory
                     ],
                   ),
                   Expanded(
@@ -786,21 +842,31 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                             ),
                             if (slide.containsKey('btn')) ...[
                               const SizedBox(height: 28),
-                              FutureBuilder<PermissionStatus>(
-                                future: index == 2 ? Permission.notification.status : Future.value(PermissionStatus.denied),
-                                builder: (context, snapshot) {
-                                  final isGranted = snapshot.data?.isGranted ?? false;
+                              (() {
+                                if (index == 1) {
+                                  final bool isInstalled = _osmandInstalled;
+                                  return OutlinedButton(
+                                    onPressed: isInstalled ? null : () async {
+                                      AndroidIntent(
+                                        action: 'action_view',
+                                        data: 'https://play.google.com/store/apps/details?id=net.osmand',
+                                      ).launch();
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      disabledForegroundColor: Colors.greenAccent,
+                                      side: BorderSide(color: isInstalled ? Colors.greenAccent : Colors.white54),
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                    ),
+                                    child: Text(isInstalled ? _t('ob_osmand_installed_checkmark') : slide['btn']!),
+                                  );
+                                } else if (index == 2) {
+                                  final bool isGranted = _notificationPermissionGranted;
                                   return OutlinedButton(
                                     onPressed: isGranted ? null : () async {
-                                      if (index == 1) {
-                                        AndroidIntent(
-                                          action: 'action_view',
-                                          data: 'https://play.google.com/store/apps/details?id=net.osmand',
-                                        ).launch();
-                                      } else if (index == 2) {
-                                        await _requestNotificationPermission();
-                                        setPageState(() {}); // Rebuild carousel slide to show updated status
-                                      }
+                                      await _requestNotificationPermission();
+                                      await _checkOnboardingRequirements();
+                                      setPageState(() {});
                                     },
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: Colors.white,
@@ -808,10 +874,11 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                                       side: BorderSide(color: isGranted ? Colors.greenAccent : Colors.white54),
                                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                     ),
-                                    child: Text(index == 2 && isGranted ? _t('ob_notifications_enabled') : slide['btn']!),
+                                    child: Text(isGranted ? _t('ob_notifications_enabled') : slide['btn']!),
                                   );
                                 }
-                              ),
+                                return const SizedBox.shrink();
+                              })(),
                             ]
                           ],
                         );
@@ -844,18 +911,41 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      onPressed: () {
-                        if (_onboardingCurrentPage < slides.length - 1) {
-                          _onboardingPageController.nextPage(
-                            duration: const Duration(milliseconds: 350),
-                            curve: Curves.easeInOut,
-                          );
-                        } else {
-                          _dismissOnboarding();
+                      onPressed: (() {
+                        if (_onboardingCurrentPage == 0) {
+                          return () {
+                            _onboardingPageController.nextPage(
+                              duration: const Duration(milliseconds: 350),
+                              curve: Curves.easeInOut,
+                            );
+                          };
+                        } else if (_onboardingCurrentPage == 1) {
+                          return _osmandInstalled ? () {
+                            _onboardingPageController.nextPage(
+                              duration: const Duration(milliseconds: 350),
+                              curve: Curves.easeInOut,
+                            );
+                          } : null;
+                        } else if (_onboardingCurrentPage == 2) {
+                          return _notificationPermissionGranted ? () {
+                            _dismissOnboarding();
+                          } : null;
                         }
-                      },
+                        return null;
+                      })(),
                       child: Text(
-                        _onboardingCurrentPage == slides.length - 1 ? _t('ob_finish') : _t('ob_next'),
+                        (() {
+                          if (_onboardingCurrentPage == 2) {
+                            return _notificationPermissionGranted 
+                                ? _t('ob_finish') 
+                                : _t('ob_notification_permission_required');
+                          } else if (_onboardingCurrentPage == 1) {
+                            return _osmandInstalled 
+                                ? _t('ob_next') 
+                                : _t('ob_install_osmand_required');
+                          }
+                          return _t('ob_next');
+                        })(),
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -1038,6 +1128,48 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+                Card(
+                  color: Colors.blue[50],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.blue[300]!, width: 1),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline, color: Colors.blue[800], size: 28),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _locale == 'nl' ? 'Belangrijke Instructie' : 'Important Instruction',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: Colors.blue[900],
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                _t('banner_osmand_info'),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.blue[900],
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 32),
                 
                 if (!_isDownloading) ...[
@@ -1110,6 +1242,25 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                           ],
                         ),
                       ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        backgroundColor: Colors.green[700],
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey[300],
+                        disabledForegroundColor: Colors.grey[600],
+                        elevation: (_localOsfDate != null && !_osfUpdateAvailable && _osmandInstalled) ? 4 : 0,
+                      ),
+                      onPressed: (_localOsfDate != null && !_osfUpdateAvailable && _osmandInstalled) 
+                          ? () => _openOsmAnd() 
+                          : null,
+                      icon: const Icon(Icons.navigation_outlined, size: 24),
+                      label: Text(
+                        _t('btn_navigate'),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                 ],
                 const SizedBox(height: 24),
                 // Support Project & OsmAnd Link
