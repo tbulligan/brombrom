@@ -221,7 +221,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_skip': 'Niet nu',
       'ob_next': 'Volgende',
       'ob_finish': 'Aan de slag!',
-      'btn_navigate': 'OsmAnd openen',
+      'btn_navigate': 'Navigeren',
       'ob_install_osmand_required': 'Installeer OsmAnd om verder te gaan',
       'ob_notification_permission_required': 'Verleen meldingstoestemming om te voltooien',
       'ob_osmand_installed_checkmark': 'OsmAnd geïnstalleerd ✓',
@@ -274,7 +274,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_skip': 'Not now',
       'ob_next': 'Next',
       'ob_finish': 'Let\'s go!',
-      'btn_navigate': 'Open OsmAnd',
+      'btn_navigate': 'Navigate',
       'ob_install_osmand_required': 'Install OsmAnd to continue',
       'ob_notification_permission_required': 'Grant notification permission to finish',
       'ob_osmand_installed_checkmark': 'OsmAnd is installed ✓',
@@ -799,7 +799,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   }
 
   void _launchWebsiteUrl() async {
-    const url = "https://brombrom.bulligan.com/";
+    const url = "https://brombrom.bulligan.com/#visual-guide";
     try {
       final AndroidIntent intent = AndroidIntent(
         action: 'action_view',
