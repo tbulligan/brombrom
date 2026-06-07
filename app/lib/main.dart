@@ -187,16 +187,21 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'latest_release': 'Laatste release',
       'btn_osf_update': 'Bijwerken',
       'on_disk': 'Lokaal aanwezig',
-      'osf_dialog_title': 'Openen in OsmAnd',
+      'osf_dialog_title': 'BromBrom Installeren',
       'osf_dialog_p1': 'OsmAnd opent nu. Volg deze stappen precies:',
       'osf_dialog_step1': '1. Tik op "Alle instellingen en bronnen" → "Doorgaan"',
-      'osf_dialog_step2': '2. Tik op "Alles vervangen" (update) of "Toepassen" (eerste keer)',
+      'osf_dialog_step2': '2. Tik op "Toepassen" (eerste keer)',
       'osf_dialog_step3': '3. Wacht tot de import klaar is',
       'osf_dialog_step4': '4. Tik op het "Import voltooid" scherm op "Instellingen"',
       'osf_dialog_step5': '5. Scroll naar beneden naar "BromBrom" en zet de schakelaar AAN',
       'osf_dialog_step6': '6. Je kunt BromBrom nu selecteren in het Navigatiemenu (oranje auto-icoon)',
       'osf_dialog_warning': '⚠️ Sla stap 4–6 niet over — OsmAnd verbergt en activeert nieuwe profielen niet automatisch.',
       'osf_dialog_btn': 'BEGREPEN, OPEN OSMAND',
+      'osf_dialog_title_update': 'BromBrom Kaart Bijwerken',
+      'osf_dialog_p1_update': 'OsmAnd opent zo direct om de kaart bij te werken. Volg deze stappen:',
+      'osf_dialog_step1_update': '1. Tik op "Alle instellingen en bronnen" → "Doorgaan"',
+      'osf_dialog_step2_update': '2. Tik op "Alles vervangen"',
+      'osf_dialog_step3_update': '3. OsmAnd start nu direct met de bijgewerkte kaart!',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
       'visit_website': 'Website bezoeken (Visuele Handleiding)',
@@ -233,16 +238,21 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'latest_release': 'Latest Release',
       'btn_osf_update': 'Update',
       'on_disk': 'On device',
-      'osf_dialog_title': 'Open in OsmAnd',
+      'osf_dialog_title': 'Import BromBrom Map',
       'osf_dialog_p1': 'OsmAnd will now open. Follow these steps exactly:',
       'osf_dialog_step1': '1. Tap "All Settings and Resources" → "Continue"',
-      'osf_dialog_step2': '2. Tap "Replace all" (update) or "Apply" (first time)',
+      'osf_dialog_step2': '2. Tap "Apply" (first time)',
       'osf_dialog_step3': '3. Wait for the import to complete',
       'osf_dialog_step4': '4. On the "Import complete" screen, tap "Settings"',
       'osf_dialog_step5': '5. Scroll down to "BromBrom" and toggle it ON',
       'osf_dialog_step6': '6. You can now select BromBrom from the Navigation menu (orange car icon)',
       'osf_dialog_warning': '⚠️ Do not skip steps 4–6 — OsmAnd does not enable or activate new profiles automatically.',
       'osf_dialog_btn': 'UNDERSTOOD, OPEN OSMAND',
+      'osf_dialog_title_update': 'Update BromBrom Map',
+      'osf_dialog_p1_update': 'OsmAnd will open now to update the map. Follow these steps:',
+      'osf_dialog_step1_update': '1. Tap "All Settings and Resources" → "Continue"',
+      'osf_dialog_step2_update': '2. Tap "Replace all"',
+      'osf_dialog_step3_update': '3. OsmAnd will start directly with the updated map!',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
       'visit_website': 'Visit website (Visual Setup Guide)',
@@ -383,19 +393,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
-  Future<bool> _isOsmAndInstalled() async {
-    if (!Platform.isAndroid) return true;
-    try {
-      final bool isOsmAnd = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand'});
-      if (isOsmAnd) return true;
-      final bool isOsmAndPlus = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand.plus'});
-      return isOsmAndPlus;
-    } catch (e) {
-      _log("Error checking package: $e");
-      return false;
-    }
-  }
-
   Future<void> _checkOnboardingRequirements() async {
     final osmandInstalled = await _isOsmAndInstalled();
     final notificationGranted = await Permission.notification.isGranted;
@@ -404,6 +401,59 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
         _osmandInstalled = osmandInstalled;
         _notificationPermissionGranted = notificationGranted;
       });
+    }
+  }
+
+  Future<void> _showOngoingImportNotification(bool wasUpdate) async {
+    if (!Platform.isAndroid) return;
+    try {
+      final FlutterLocalNotificationsPlugin notificationsPlugin =
+          FlutterLocalNotificationsPlugin();
+      
+      const AndroidInitializationSettings androidSettings =
+          AndroidInitializationSettings('@mipmap/launcher_icon');
+      const InitializationSettings initSettings =
+          InitializationSettings(android: androidSettings);
+      await notificationsPlugin.initialize(initSettings);
+
+      final String title = wasUpdate 
+          ? (_locale == 'nl' ? 'BromBrom Kaart Bijwerken' : 'Update BromBrom Map')
+          : (_locale == 'nl' ? 'BromBrom Installeren' : 'Install BromBrom Map');
+
+      final String body = wasUpdate
+          ? (_locale == 'nl' 
+              ? '1. Tik op Doorgaan | 2. Alles vervangen' 
+              : '1. Tap Continue | 2. Replace all')
+          : (_locale == 'nl'
+              ? '1. Doorgaan | 2. Toepassen | 3. Tik op Instellingen | 4. Toggle BromBrom AAN'
+              : '1. Continue | 2. Apply | 3. Tap Settings | 4. Toggle BromBrom ON');
+
+      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+        'brombrom_import_guide',
+        'BromBrom Import Guide',
+        channelDescription: 'Persistent guide steps when importing to OsmAnd',
+        importance: Importance.low,
+        priority: Priority.low,
+        ongoing: true,
+        autoCancel: false,
+        icon: '@mipmap/launcher_icon',
+      );
+
+      const NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
+      await notificationsPlugin.show(1, title, body, platformDetails);
+    } catch (e) {
+      _log("Error showing ongoing notification: $e");
+    }
+  }
+
+  Future<void> _cancelOngoingImportNotification() async {
+    if (!Platform.isAndroid) return;
+    try {
+      final FlutterLocalNotificationsPlugin notificationsPlugin =
+          FlutterLocalNotificationsPlugin();
+      await notificationsPlugin.cancel(1);
+    } catch (e) {
+      _log("Error cancelling ongoing notification: $e");
     }
   }
 
@@ -417,6 +467,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _cancelOngoingImportNotification();
       _checkOnboardingRequirements().then((_) {
         _checkVersions();
       });
@@ -499,6 +550,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   }
 
   Future<void> _downloadFile(String fileName) async {
+    final bool wasUpdate = _localOsfDate != null;
     setState(() {
       _isDownloading = true;
       _statusMessage = _t('status_dl').replaceFirst('{file}', fileName);
@@ -554,7 +606,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
         });
 
         if (fileName.endsWith(".osf")) {
-          _showOsfInstructionsDialog(file.path);
+          _showOsfInstructionsDialog(file.path, wasUpdate);
         }
       } else {
         throw Exception("Download failed with status: ${result.status}");
@@ -571,14 +623,17 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
-  Future<void> _showOsfInstructionsDialog(String filePath) async {
+  Future<void> _showOsfInstructionsDialog(String filePath, bool wasUpdate) async {
     if (!mounted) return;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(_t('osf_dialog_title'), style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(
+            wasUpdate ? _t('osf_dialog_title_update') : _t('osf_dialog_title'),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           content: Scrollbar(
             thumbVisibility: true,
@@ -587,34 +642,44 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text(_t('osf_dialog_p1'), style: const TextStyle(fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 12),
-                  Text(_t('osf_dialog_step1'), style: const TextStyle(fontSize: 14)),
-                  const SizedBox(height: 4),
-                  Text(_t('osf_dialog_step2'), style: const TextStyle(fontSize: 14)),
-                  const SizedBox(height: 4),
-                  Text(_t('osf_dialog_step3'), style: const TextStyle(fontSize: 14)),
-                  const SizedBox(height: 4),
-                  Text(_t('osf_dialog_step4'), style: const TextStyle(fontSize: 14)),
-                  const SizedBox(height: 4),
-                  Text(_t('osf_dialog_step5'), style: const TextStyle(fontSize: 14)),
-                  const SizedBox(height: 4),
-                  Text(_t('osf_dialog_step6'), style: const TextStyle(fontSize: 14)),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.orange[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange[300]!),
-                    ),
-                    child: Text(
-                      _t('osf_dialog_warning'),
-                      style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
+                children: wasUpdate
+                    ? <Widget>[
+                        Text(_t('osf_dialog_p1_update'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                        const SizedBox(height: 12),
+                        Text(_t('osf_dialog_step1_update'), style: const TextStyle(fontSize: 14)),
+                        const SizedBox(height: 4),
+                        Text(_t('osf_dialog_step2_update'), style: const TextStyle(fontSize: 14)),
+                        const SizedBox(height: 4),
+                        Text(_t('osf_dialog_step3_update'), style: const TextStyle(fontSize: 14)),
+                      ]
+                    : <Widget>[
+                        Text(_t('osf_dialog_p1'), style: const TextStyle(fontWeight: FontWeight.w500)),
+                        const SizedBox(height: 12),
+                        Text(_t('osf_dialog_step1'), style: const TextStyle(fontSize: 14)),
+                        const SizedBox(height: 4),
+                        Text(_t('osf_dialog_step2'), style: const TextStyle(fontSize: 14)),
+                        const SizedBox(height: 4),
+                        Text(_t('osf_dialog_step3'), style: const TextStyle(fontSize: 14)),
+                        const SizedBox(height: 4),
+                        Text(_t('osf_dialog_step4'), style: const TextStyle(fontSize: 14)),
+                        const SizedBox(height: 4),
+                        Text(_t('osf_dialog_step5'), style: const TextStyle(fontSize: 14)),
+                        const SizedBox(height: 4),
+                        Text(_t('osf_dialog_step6'), style: const TextStyle(fontSize: 14)),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange[300]!),
+                          ),
+                          child: Text(
+                            _t('osf_dialog_warning'),
+                            style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
               ),
             ),
           ),
@@ -628,6 +693,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
               child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold)),
               onPressed: () {
                 Navigator.of(context).pop();
+                _showOngoingImportNotification(wasUpdate);
                 _openOsfInOsmAnd(filePath);
               },
             ),
