@@ -221,7 +221,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_skip': 'Niet nu',
       'ob_next': 'Volgende',
       'ob_finish': 'Aan de slag!',
-      'btn_navigate': 'Navigeren',
+      'btn_navigate': 'OsmAnd openen',
       'ob_install_osmand_required': 'Installeer OsmAnd om verder te gaan',
       'ob_notification_permission_required': 'Verleen meldingstoestemming om te voltooien',
       'ob_osmand_installed_checkmark': 'OsmAnd geïnstalleerd ✓',
@@ -274,7 +274,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_skip': 'Not now',
       'ob_next': 'Next',
       'ob_finish': 'Let\'s go!',
-      'btn_navigate': 'Navigate',
+      'btn_navigate': 'Open OsmAnd',
       'ob_install_osmand_required': 'Install OsmAnd to continue',
       'ob_notification_permission_required': 'Grant notification permission to finish',
       'ob_osmand_installed_checkmark': 'OsmAnd is installed ✓',
@@ -430,59 +430,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
-  Future<void> _showOngoingImportNotification(bool wasUpdate) async {
-    if (!Platform.isAndroid) return;
-    try {
-      final FlutterLocalNotificationsPlugin notificationsPlugin =
-          FlutterLocalNotificationsPlugin();
-      
-      const AndroidInitializationSettings androidSettings =
-          AndroidInitializationSettings('@mipmap/launcher_icon');
-      const InitializationSettings initSettings =
-          InitializationSettings(android: androidSettings);
-      await notificationsPlugin.initialize(initSettings);
-
-      final String title = wasUpdate 
-          ? (_locale == 'nl' ? 'BromBrom Kaart Bijwerken' : 'Update BromBrom Map')
-          : (_locale == 'nl' ? 'BromBrom Installeren' : 'Install BromBrom Map');
-
-      final String body = wasUpdate
-          ? (_locale == 'nl' 
-              ? '1. Tik op Doorgaan | 2. Alles vervangen' 
-              : '1. Tap Continue | 2. Replace all')
-          : (_locale == 'nl'
-              ? '1. Doorgaan | 2. Toepassen | 3. Tik op Instellingen | 4. Toggle BromBrom AAN'
-              : '1. Continue | 2. Apply | 3. Tap Settings | 4. Toggle BromBrom ON');
-
-      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-        'brombrom_import_guide',
-        'BromBrom Import Guide',
-        channelDescription: 'Persistent guide steps when importing to OsmAnd',
-        importance: Importance.low,
-        priority: Priority.low,
-        ongoing: true,
-        autoCancel: false,
-        icon: '@mipmap/launcher_icon',
-      );
-
-      const NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
-      await notificationsPlugin.show(1, title, body, platformDetails);
-    } catch (e) {
-      _log("Error showing ongoing notification: $e");
-    }
-  }
-
-  Future<void> _cancelOngoingImportNotification() async {
-    if (!Platform.isAndroid) return;
-    try {
-      final FlutterLocalNotificationsPlugin notificationsPlugin =
-          FlutterLocalNotificationsPlugin();
-      await notificationsPlugin.cancel(1);
-    } catch (e) {
-      _log("Error cancelling ongoing notification: $e");
-    }
-  }
-
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -493,7 +440,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _cancelOngoingImportNotification();
       _checkOnboardingRequirements().then((_) {
         _checkVersions();
       });
@@ -739,19 +685,31 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
             ),
           ),
           actions: <Widget>[
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange[800],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold)),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showOngoingImportNotification(wasUpdate);
-                _openOsfInOsmAnd(filePath);
-              },
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton.icon(
+                  onPressed: _launchWebsiteUrl,
+                  icon: const Icon(Icons.menu_book, size: 20, color: Colors.blue),
+                  label: Text(
+                    _locale == 'nl' ? 'Visuele Gids' : 'Visual Guide',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange[800],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _openOsfInOsmAnd(filePath);
+                  },
+                ),
+              ],
             ),
           ],
         );
