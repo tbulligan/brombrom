@@ -393,6 +393,19 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
+  Future<bool> _isOsmAndInstalled() async {
+    if (!Platform.isAndroid) return true;
+    try {
+      final bool isOsmAnd = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand'});
+      if (isOsmAnd) return true;
+      final bool isOsmAndPlus = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand.plus'});
+      return isOsmAndPlus;
+    } catch (e) {
+      _log("Error checking package: $e");
+      return false;
+    }
+  }
+
   Future<void> _checkOnboardingRequirements() async {
     final osmandInstalled = await _isOsmAndInstalled();
     final notificationGranted = await Permission.notification.isGranted;
