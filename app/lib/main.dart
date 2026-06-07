@@ -664,168 +664,96 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   Future<void> _showOsfInstructionsDialog(String filePath, bool wasUpdate) async {
     if (!mounted) return;
-
-    final List<String> steps = wasUpdate
-        ? [
-            _t('osf_dialog_step1_update'),
-            _t('osf_dialog_step2_update'),
-            _t('osf_dialog_step3_update'),
-          ]
-        : [
-            _t('osf_dialog_step1'),
-            _t('osf_dialog_step2'),
-            _t('osf_dialog_step3'),
-            _t('osf_dialog_step4'),
-            _t('osf_dialog_step5'),
-            _t('osf_dialog_step6'),
-          ];
-
-    final String titleText = wasUpdate 
-        ? _t('osf_dialog_title_update') 
-        : _t('osf_dialog_title');
-
-    int currentStep = 0;
-
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final isLast = currentStep == steps.length - 1;
-            final isFirst = currentStep == 0;
-
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Row(
-                children: [
-                  Icon(
-                    wasUpdate ? Icons.update : Icons.cloud_download,
-                    color: Colors.orange[800],
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      titleText,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[850],
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                ],
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(
+                wasUpdate ? Icons.update : Icons.cloud_download,
+                color: Colors.orange[800],
               ),
-              content: SizedBox(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.orange[50],
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.orange[100]!),
-                      ),
-                      child: Text(
-                        _locale == 'nl'
-                            ? 'Stap ${currentStep + 1} van ${steps.length}'
-                            : 'Step ${currentStep + 1} of ${steps.length}',
-                        style: TextStyle(
-                          color: Colors.orange[800],
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Container(
-                      constraints: const BoxConstraints(minHeight: 120),
-                      alignment: Alignment.center,
-                      child: Text(
-                        steps[currentStep],
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[800],
-                          height: 1.5,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    if (!wasUpdate && currentStep >= 3)
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.orange[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.orange[200]!),
-                        ),
-                        child: Text(
-                          _t('osf_dialog_warning'),
-                          style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                  ],
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  wasUpdate ? _t('osf_dialog_title_update') : _t('osf_dialog_title'),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[850],
+                    fontSize: 20,
+                  ),
                 ),
               ),
-              actionsPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-              actions: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Opacity(
-                      opacity: isFirst ? 0.0 : 1.0,
-                      child: TextButton(
-                        onPressed: isFirst
-                            ? null
-                            : () {
-                                setDialogState(() {
-                                  currentStep--;
-                                });
-                              },
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.grey[600],
+            ],
+          ),
+          content: Scrollbar(
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(right: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: wasUpdate
+                    ? <Widget>[
+                        Text(_t('osf_dialog_p1_update'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
+                        const SizedBox(height: 12),
+                        Text(_t('osf_dialog_step1_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step2_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step3_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                      ]
+                    : <Widget>[
+                        Text(_t('osf_dialog_p1'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
+                        const SizedBox(height: 12),
+                        Text(_t('osf_dialog_step1'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step2'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step3'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step4'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step5'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 6),
+                        Text(_t('osf_dialog_step6'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange[200]!),
+                          ),
+                          child: Text(
+                            _t('osf_dialog_warning'),
+                            style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
+                          ),
                         ),
-                        child: Text(
-                          _locale == 'nl' ? 'Terug' : 'Back',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange[800],
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      onPressed: () {
-                        if (isLast) {
-                          Navigator.of(context).pop();
-                          _showOngoingImportNotification(wasUpdate);
-                          _openOsfInOsmAnd(filePath);
-                        } else {
-                          setDialogState(() {
-                            currentStep++;
-                          });
-                        }
-                      },
-                      child: Text(
-                        isLast
-                            ? _t('osf_dialog_btn')
-                            : (_locale == 'nl' ? 'Volgende' : 'Next'),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+                      ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange[800],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showOngoingImportNotification(wasUpdate);
+                _openOsfInOsmAnd(filePath);
+              },
+            ),
+          ],
         );
       },
     );

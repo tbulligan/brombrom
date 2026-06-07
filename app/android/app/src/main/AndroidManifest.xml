@@ -44,16 +44,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-        <!-- BroadcastReceiver for PACKAGE_ADDED to automatically return from Play Store -->
-        <receiver
-            android:name=".PackageInstallReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED" />
-                <data android:scheme="package" />
-            </intent-filter>
-        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
