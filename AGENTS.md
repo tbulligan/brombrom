@@ -46,5 +46,6 @@ BromBrom is a **multi-component system**:
     ```bash
     micromamba run -n brombrom pytest
     ```
+    *Note: Skip Python test runs for pure app or website UI/text modifications to save time.*
 *   **Graph Drills**: Use `scripts/validate_results.py` to verify map sanity and OSF artifact existence.
 *   **App Testing**: Push app changes to `develop`. Build results can be downloaded as APK artifacts from GitHub Actions before merging to `main`.
