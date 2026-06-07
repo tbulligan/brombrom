@@ -150,6 +150,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   double _progress = 0.0;
   bool _isChecking = true;
   String? _checkError;
+  String? _pendingImportFilePath;
+  bool _pendingImportWasUpdate = false;
   
   // VERSION INFO
   DateTime? _latestReleaseDate;
@@ -223,6 +225,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_install_osmand_required': 'Installeer OsmAnd om verder te gaan',
       'ob_notification_permission_required': 'Verleen meldingstoestemming om te voltooien',
       'ob_osmand_installed_checkmark': 'OsmAnd geïnstalleerd ✓',
+      'install_osmand': 'Installeer OsmAnd',
+      'osmand_required_desc': 'OsmAnd is vereist om BromBrom te gebruiken.',
     },
     'en': {
       'app_name': 'BromBrom Manager',
@@ -274,6 +278,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_install_osmand_required': 'Install OsmAnd to continue',
       'ob_notification_permission_required': 'Grant notification permission to finish',
       'ob_osmand_installed_checkmark': 'OsmAnd is installed ✓',
+      'install_osmand': 'Install OsmAnd',
+      'osmand_required_desc': 'OsmAnd is required to use BromBrom.',
     }
   };
 
@@ -410,10 +416,17 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     final osmandInstalled = await _isOsmAndInstalled();
     final notificationGranted = await Permission.notification.isGranted;
     if (mounted) {
+      final bool wasNotInstalled = !_osmandInstalled;
       setState(() {
         _osmandInstalled = osmandInstalled;
         _notificationPermissionGranted = notificationGranted;
       });
+      if (wasNotInstalled && osmandInstalled && _showOnboarding && _onboardingCurrentPage == 1) {
+        _onboardingPageController.nextPage(
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 
@@ -552,6 +565,13 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
             : _t('status_uptodate_brief');
       });
 
+      if (_osfUpdateAvailable && _osmandInstalled && !_isDownloading) {
+        _log("Auto-starting download of $OSF_FILENAME");
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _downloadFile(OSF_FILENAME);
+        });
+      }
+
     } catch (e) {
       _log("Check Error: $e");
       setState(() {
@@ -619,7 +639,13 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
         });
 
         if (fileName.endsWith(".osf")) {
-          _showOsfInstructionsDialog(file.path, wasUpdate);
+          if (_showOnboarding) {
+            _pendingImportFilePath = file.path;
+            _pendingImportWasUpdate = wasUpdate;
+            _log("Onboarding is active, deferred OSF instructions dialog show.");
+          } else {
+            _showOsfInstructionsDialog(file.path, wasUpdate);
+          }
         }
       } else {
         throw Exception("Download failed with status: ${result.status}");
@@ -638,79 +664,168 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   Future<void> _showOsfInstructionsDialog(String filePath, bool wasUpdate) async {
     if (!mounted) return;
+
+    final List<String> steps = wasUpdate
+        ? [
+            _t('osf_dialog_step1_update'),
+            _t('osf_dialog_step2_update'),
+            _t('osf_dialog_step3_update'),
+          ]
+        : [
+            _t('osf_dialog_step1'),
+            _t('osf_dialog_step2'),
+            _t('osf_dialog_step3'),
+            _t('osf_dialog_step4'),
+            _t('osf_dialog_step5'),
+            _t('osf_dialog_step6'),
+          ];
+
+    final String titleText = wasUpdate 
+        ? _t('osf_dialog_title_update') 
+        : _t('osf_dialog_title');
+
+    int currentStep = 0;
+
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            wasUpdate ? _t('osf_dialog_title_update') : _t('osf_dialog_title'),
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          content: Scrollbar(
-            thumbVisibility: true,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(right: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: wasUpdate
-                    ? <Widget>[
-                        Text(_t('osf_dialog_p1_update'), style: const TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 12),
-                        Text(_t('osf_dialog_step1_update'), style: const TextStyle(fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Text(_t('osf_dialog_step2_update'), style: const TextStyle(fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Text(_t('osf_dialog_step3_update'), style: const TextStyle(fontSize: 14)),
-                      ]
-                    : <Widget>[
-                        Text(_t('osf_dialog_p1'), style: const TextStyle(fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 12),
-                        Text(_t('osf_dialog_step1'), style: const TextStyle(fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Text(_t('osf_dialog_step2'), style: const TextStyle(fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Text(_t('osf_dialog_step3'), style: const TextStyle(fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Text(_t('osf_dialog_step4'), style: const TextStyle(fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Text(_t('osf_dialog_step5'), style: const TextStyle(fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Text(_t('osf_dialog_step6'), style: const TextStyle(fontSize: 14)),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.orange[50],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.orange[300]!),
-                          ),
-                          child: Text(
-                            _t('osf_dialog_warning'),
-                            style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
-                          ),
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final isLast = currentStep == steps.length - 1;
+            final isFirst = currentStep == 0;
+
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  Icon(
+                    wasUpdate ? Icons.update : Icons.cloud_download,
+                    color: Colors.orange[800],
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      titleText,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[850],
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.orange[50],
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.orange[100]!),
+                      ),
+                      child: Text(
+                        _locale == 'nl'
+                            ? 'Stap ${currentStep + 1} van ${steps.length}'
+                            : 'Step ${currentStep + 1} of ${steps.length}',
+                        style: TextStyle(
+                          color: Colors.orange[800],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
                         ),
-                      ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      constraints: const BoxConstraints(minHeight: 120),
+                      alignment: Alignment.center,
+                      child: Text(
+                        steps[currentStep],
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[800],
+                          height: 1.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    if (!wasUpdate && currentStep >= 3)
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.orange[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange[200]!),
+                        ),
+                        child: Text(
+                          _t('osf_dialog_warning'),
+                          style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.orange[800],
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-              child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold)),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showOngoingImportNotification(wasUpdate);
-                _openOsfInOsmAnd(filePath);
-              },
-            ),
-          ],
+              actionsPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+              actions: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Opacity(
+                      opacity: isFirst ? 0.0 : 1.0,
+                      child: TextButton(
+                        onPressed: isFirst
+                            ? null
+                            : () {
+                                setDialogState(() {
+                                  currentStep--;
+                                });
+                              },
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.grey[600],
+                        ),
+                        child: Text(
+                          _locale == 'nl' ? 'Terug' : 'Back',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange[800],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: () {
+                        if (isLast) {
+                          Navigator.of(context).pop();
+                          _showOngoingImportNotification(wasUpdate);
+                          _openOsfInOsmAnd(filePath);
+                        } else {
+                          setDialogState(() {
+                            currentStep++;
+                          });
+                        }
+                      },
+                      child: Text(
+                        isLast
+                            ? _t('osf_dialog_btn')
+                            : (_locale == 'nl' ? 'Volgende' : 'Next'),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -810,10 +925,82 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
+  Widget _buildInstallOsmAndAction() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            backgroundColor: Colors.orange[800],
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 4,
+          ),
+          onPressed: () async {
+            try {
+              final AndroidIntent intent = AndroidIntent(
+                action: 'action_view',
+                data: 'https://play.google.com/store/apps/details?id=net.osmand',
+              );
+              await intent.launch();
+            } catch (e) {
+              _log("Could not launch Play Store: $e");
+            }
+          },
+          icon: const Icon(Icons.download_outlined, size: 24),
+          label: Text(
+            _t('install_osmand'),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          color: Colors.orange[50],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.orange[200]!, width: 1.5),
+          ),
+          elevation: 0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.orange[800]),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _t('osmand_required_desc'),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.orange[900],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _dismissOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefOnboardingSeen, true);
-    if (mounted) setState(() => _showOnboarding = false);
+    if (mounted) {
+      setState(() => _showOnboarding = false);
+      if (_pendingImportFilePath != null) {
+        final path = _pendingImportFilePath!;
+        final wasUpdate = _pendingImportWasUpdate;
+        _pendingImportFilePath = null;
+        Future.delayed(const Duration(milliseconds: 300), () {
+          _showOsfInstructionsDialog(path, wasUpdate);
+        });
+      }
+    }
   }
 
   Widget _buildOnboardingCarousel() {
@@ -1136,6 +1323,10 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         textAlign: TextAlign.center,
                       ),
                     );
+                  }
+
+                  if (!_osmandInstalled) {
+                    return _buildInstallOsmAndAction();
                   }
 
                   if (_osfUpdateAvailable) {
