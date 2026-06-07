@@ -325,6 +325,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Touch swipe support for the visual setup guide carousel
+  const carouselLayout = document.querySelector('.carousel-layout');
+  if (carouselLayout) {
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    carouselLayout.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    carouselLayout.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      const threshold = 50; // minimum distance in pixels
+      if (touchStartX - touchEndX > threshold) {
+        // Swipe left -> Next slide
+        const activeSubset = visibleIndices[carouselMode];
+        activeIndex = (activeIndex + 1) % activeSubset.length;
+        updateCarousel();
+      } else if (touchEndX - touchStartX > threshold) {
+        // Swipe right -> Previous slide
+        const activeSubset = visibleIndices[carouselMode];
+        activeIndex = (activeIndex - 1 + activeSubset.length) % activeSubset.length;
+        updateCarousel();
+      }
+    }, { passive: true });
+  }
+
   updateLanguage('nl');
   initCarousel();
   fetchLatestVersion();

@@ -198,7 +198,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'osf_dialog_step5': '5. Scroll naar beneden naar "BromBrom" en zet de schakelaar AAN',
       'osf_dialog_step6': '6. Je kunt BromBrom nu selecteren in het Navigatiemenu (oranje auto-icoon)',
       'osf_dialog_warning': '⚠️ Sla stap 4–6 niet over — OsmAnd verbergt en activeert nieuwe profielen niet automatisch.',
-      'osf_dialog_btn': 'BEGREPEN, OPEN OSMAND',
+      'osf_dialog_btn': 'OPEN OSMAND',
       'osf_dialog_title_update': 'BromBrom Kaart Bijwerken',
       'osf_dialog_p1_update': 'OsmAnd opent zo direct om de kaart bij te werken. Volg deze stappen:',
       'osf_dialog_step1_update': '1. Tik op "Alle instellingen en bronnen" → "Doorgaan"',
@@ -251,7 +251,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'osf_dialog_step5': '5. Scroll down to "BromBrom" and toggle it ON',
       'osf_dialog_step6': '6. You can now select BromBrom from the Navigation menu (orange car icon)',
       'osf_dialog_warning': '⚠️ Do not skip steps 4–6 — OsmAnd does not enable or activate new profiles automatically.',
-      'osf_dialog_btn': 'UNDERSTOOD, OPEN OSMAND',
+      'osf_dialog_btn': 'OPEN OSMAND',
       'osf_dialog_title_update': 'Update BromBrom Map',
       'osf_dialog_p1_update': 'OsmAnd will open now to update the map. Follow these steps:',
       'osf_dialog_step1_update': '1. Tap "All Settings and Resources" → "Continue"',
@@ -685,29 +685,32 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
             ),
           ),
           actions: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                TextButton.icon(
-                  onPressed: _launchWebsiteUrl,
-                  icon: const Icon(Icons.menu_book, size: 20, color: Colors.blue),
-                  label: Text(
-                    _locale == 'nl' ? 'Visuele Gids' : 'Visual Guide',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-                  ),
-                ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange[800],
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 2,
                   ),
-                  child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   onPressed: () {
                     Navigator.of(context).pop();
                     _openOsfInOsmAnd(filePath);
                   },
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: _launchWebsiteUrl,
+                  icon: const Icon(Icons.menu_book, size: 18, color: Colors.blue),
+                  label: Text(
+                    _locale == 'nl' ? 'Visuele Gids' : 'Visual Guide',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                  ),
                 ),
               ],
             ),
