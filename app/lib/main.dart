@@ -210,7 +210,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'osf_dialog_step4_update': '4. Tik op "Sluiten" zodra de import is voltooid.',
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
-      'visit_website': 'Website bezoeken (Visuele Handleiding)',
+      'visit_website': 'Visuele handleiding',
       'show_logs': 'Logboeken tonen',
       'hide_logs': 'Logboeken verbergen',
       'ob_slide1_title': 'Navigeer veilig met je Brommobiel',
@@ -268,7 +268,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'osf_dialog_step4_update': '4. Tap "Close" once the import is complete.',
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
-      'visit_website': 'Visit website (Visual Setup Guide)',
+      'visit_website': 'Visual Setup Guide',
       'show_logs': 'Show Debug Logs',
       'hide_logs': 'Hide Debug Logs',
       'ob_slide1_title': 'Navigate Safely in Your Microcar',
@@ -1253,36 +1253,21 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     return _buildInstallOsmAndAction();
                   }
 
-                  // Show single Navigate button with the reinstall option below it
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          backgroundColor: Colors.orange[800],
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 4,
-                        ),
-                        onPressed: () => _openOsmAnd(),
-                        icon: const Icon(Icons.navigation_outlined, size: 24),
-                        label: Text(
-                          _t('btn_navigate'), // "Navigeren" / "Navigate"
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextButton.icon(
-                        onPressed: _forceReinstall,
-                        icon: const Icon(Icons.build_outlined, size: 16, color: Colors.grey),
-                        label: Text(
-                          _t('btn_reinstall_help'),
-                          style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ],
+                  // Show single Navigate button
+                  return ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      backgroundColor: Colors.orange[800],
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 4,
+                    ),
+                    onPressed: () => _openOsmAnd(),
+                    icon: const Icon(Icons.navigation_outlined, size: 24),
+                    label: Text(
+                      _t('btn_navigate'), // "Navigeren" / "Navigate"
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                   );
                 })(),
                 const SizedBox(height: 24),
@@ -1290,6 +1275,28 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    if (_osmandInstalled) ...[
+                      TextButton(
+                        onPressed: _forceReinstall,
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              const WidgetSpan(
+                                alignment: PlaceholderAlignment.middle,
+                                child: Icon(Icons.build_outlined, color: Colors.grey, size: 20),
+                              ),
+                              const WidgetSpan(child: SizedBox(width: 8)),
+                              TextSpan(
+                                text: _t('btn_reinstall_help'),
+                                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     TextButton(
                       onPressed: _launchWebsiteUrl,
                       child: Text.rich(
@@ -1323,26 +1330,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                             TextSpan(
                               text: _t('buy_coffee'),
                               style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () => setState(() => _showLogs = !_showLogs),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            const WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: Icon(Icons.bug_report_outlined, color: Colors.grey, size: 20),
-                            ),
-                            const WidgetSpan(child: SizedBox(width: 8)),
-                            TextSpan(
-                              text: _showLogs ? _t('hide_logs') : _t('show_logs'),
-                              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
