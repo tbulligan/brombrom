@@ -222,6 +222,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_next': 'Volgende',
       'ob_finish': 'Aan de slag!',
       'btn_navigate': 'Navigeren',
+      'btn_reinstall_help': 'Kaart niet zichtbaar? Opnieuw installeren',
       'ob_install_osmand_required': 'Installeer OsmAnd om verder te gaan',
       'ob_notification_permission_required': 'Verleen meldingstoestemming om te voltooien',
       'ob_osmand_installed_checkmark': 'OsmAnd geïnstalleerd ✓',
@@ -275,6 +276,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'ob_next': 'Next',
       'ob_finish': 'Let\'s go!',
       'btn_navigate': 'Navigate',
+      'btn_reinstall_help': 'Map not showing? Re-install',
       'ob_install_osmand_required': 'Install OsmAnd to continue',
       'ob_notification_permission_required': 'Grant notification permission to finish',
       'ob_osmand_installed_checkmark': 'OsmAnd is installed ✓',
@@ -764,6 +766,23 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       _log("Could not open OsmAnd: $e");
     }
   }
+
+  Future<void> _forceReinstall() async {
+    try {
+      final File osfFile = File('$_targetDir/$OSF_FILENAME');
+      if (await osfFile.exists()) {
+        await osfFile.delete();
+        _log("Local OSF file deleted for force reinstall.");
+      }
+      setState(() {
+        _localOsfDate = null;
+        _osfUpdateAvailable = true;
+      });
+      await _checkVersions();
+    } catch (e) {
+      _log("Error during force reinstall: $e");
+    }
+  }
   
   void _handleTitleTap() {
     final now = DateTime.now();
@@ -1235,21 +1254,36 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     );
                   }
 
-                  // Up to date -> Show single Navigate button in theme orange
-                  return ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      backgroundColor: Colors.orange[800],
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 4,
-                    ),
-                    onPressed: () => _openOsmAnd(),
-                    icon: const Icon(Icons.navigation_outlined, size: 24),
-                    label: Text(
-                      _t('btn_navigate'), // "Navigeren" / "Navigate"
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
+                  // Up to date -> Show single Navigate button with the reinstall option below it
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          backgroundColor: Colors.orange[800],
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 4,
+                        ),
+                        onPressed: () => _openOsmAnd(),
+                        icon: const Icon(Icons.navigation_outlined, size: 24),
+                        label: Text(
+                          _t('btn_navigate'), // "Navigeren" / "Navigate"
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton.icon(
+                        onPressed: _forceReinstall,
+                        icon: const Icon(Icons.build_outlined, size: 16, color: Colors.grey),
+                        label: Text(
+                          _t('btn_reinstall_help'),
+                          style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
                   );
                 })(),
                 const SizedBox(height: 24),
