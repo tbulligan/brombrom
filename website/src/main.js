@@ -397,27 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Auto-open visual guide details if targeted by hash or hash changes
-  const visualGuideDetails = document.getElementById('visual-guide');
-  const openVisualGuide = () => {
-    if (visualGuideDetails) visualGuideDetails.open = true;
-  };
-  
-  if (window.location.hash === '#visual-guide') {
-    openVisualGuide();
-  }
-  
-  window.addEventListener('hashchange', () => {
-    if (window.location.hash === '#visual-guide') {
-      openVisualGuide();
-    }
-  });
-
-  // Intercept clicks on links pointing to #visual-guide
-  document.querySelectorAll('a[href="#visual-guide"]').forEach(link => {
-    link.addEventListener('click', openVisualGuide);
-  });
-
   updateLanguage('nl');
   initCarousel();
   fetchLatestVersion();

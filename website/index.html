@@ -178,92 +178,57 @@
         <p class="fade-in" data-i18n="install_desc">De makkelijkste manier om te installeren en kaarten up-to-date te
           houden is via de <strong>BromBrom Manager</strong> voor Android.</p>
 
-        <div class="steps margin-top-lg">
-
-          <div class="step-item fade-in">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <h4 data-i18n="step_1_title">Download de App</h4>
-              <p><span data-i18n="step_1_desc">Download de BromBrom.apk van de releases pagina.</span></p>
-            </div>
-          </div>
-
-          <div class="step-item fade-in">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h4 data-i18n="step_2_title">Installeer & Geef Toestemming</h4>
-              <p data-i18n="step_2_desc">Open de APK om te installeren. Je moet "Alle Bestanden Toegang" geven zodat de
-                manager je OsmAnd kaartenmap kan bijwerken.</p>
-            </div>
-          </div>
-
-          <div class="step-item fade-in">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h4 data-i18n="step_3_title">Eén-klik Update</h4>
-              <p data-i18n="step_3_desc">Open BromBrom Manager en tik op <strong>Update Kaart</strong> en <strong>Update
-                  Routing</strong>. Je bent klaar om te rijden!</p>
-            </div>
-          </div>
-
-        </div>
-
         <!-- Interactive Screenshot Walkthrough -->
-        <details class="visual-guide-collapsible fade-in" id="visual-guide">
-          <summary class="visual-guide-summary">
-            <span data-i18n="carousel_section_title">Visuele Handleiding</span>
-            <i class="ph ph-caret-down"></i>
-          </summary>
+        <div class="carousel-container fade-in" id="visual-guide">
+          <h3 class="carousel-section-title" data-i18n="carousel_section_title">Visuele Handleiding</h3>
 
-          <div class="carousel-container">
-            <!-- Mode Selector Toggle -->
-            <div class="carousel-mode-selector">
-              <button class="btn btn-secondary active" id="mode-first-time" data-mode="first-time" data-i18n="carousel_mode_first_time">Eerste Installatie</button>
-              <button class="btn btn-secondary" id="mode-update" data-mode="update" data-i18n="carousel_mode_update">Updates</button>
+          <!-- Mode Selector Toggle -->
+          <div class="carousel-mode-selector">
+            <button class="btn btn-secondary active" id="mode-first-time" data-mode="first-time" data-i18n="carousel_mode_first_time">Eerste Installatie</button>
+            <button class="btn btn-secondary" id="mode-update" data-mode="update" data-i18n="carousel_mode_update">Updates</button>
+          </div>
+
+          <div class="carousel-layout">
+            <!-- Phone Mockup Frame -->
+            <div class="phone-mockup">
+              <div class="phone-speaker"></div>
+              <div class="phone-screen">
+                <div class="phone-status-bar">
+                  <span class="time">12:30</span>
+                  <div class="phone-status-icons">
+                    <i class="ph ph-wifi-high"></i>
+                    <i class="ph ph-battery-full"></i>
+                  </div>
+                </div>
+                <div class="carousel-slides">
+                  <img id="carousel-img" src="" alt="BromBrom Setup Walkthrough" />
+                </div>
+                <div class="phone-home-indicator"></div>
+              </div>
             </div>
 
-            <div class="carousel-layout">
-              <!-- Phone Mockup Frame -->
-              <div class="phone-mockup">
-                <div class="phone-speaker"></div>
-                <div class="phone-screen">
-                  <div class="phone-status-bar">
-                    <span class="time">12:30</span>
-                    <div class="phone-status-icons">
-                      <i class="ph ph-wifi-high"></i>
-                      <i class="ph ph-battery-full"></i>
-                    </div>
-                  </div>
-                  <div class="carousel-slides">
-                    <img id="carousel-img" src="" alt="BromBrom Setup Walkthrough" />
-                  </div>
-                  <div class="phone-home-indicator"></div>
-                </div>
+            <!-- Carousel Info & Controls -->
+            <div class="carousel-info">
+              <div class="carousel-step-badge">
+                <span id="carousel-step-counter">1 / 11</span>
+              </div>
+              <h4 id="carousel-step-title">Stap 1</h4>
+              <p id="carousel-step-description">Laad de instructies...</p>
+              
+              <div class="carousel-controls">
+                <button class="btn btn-secondary btn-icon" id="prev-slide-btn" aria-label="Vorige stap">
+                  <i class="ph ph-arrow-left"></i>
+                </button>
+                <button class="btn btn-primary btn-icon" id="next-slide-btn" aria-label="Volgende stap">
+                  <i class="ph ph-arrow-right"></i>
+                </button>
               </div>
 
-              <!-- Carousel Info & Controls -->
-              <div class="carousel-info">
-                <div class="carousel-step-badge">
-                  <span id="carousel-step-counter">1 / 11</span>
-                </div>
-                <h4 id="carousel-step-title">Stap 1</h4>
-                <p id="carousel-step-description">Laad de instructies...</p>
-                
-                <div class="carousel-controls">
-                  <button class="btn btn-secondary btn-icon" id="prev-slide-btn" aria-label="Vorige stap">
-                    <i class="ph ph-arrow-left"></i>
-                  </button>
-                  <button class="btn btn-primary btn-icon" id="next-slide-btn" aria-label="Volgende stap">
-                    <i class="ph ph-arrow-right"></i>
-                  </button>
-                </div>
-
-                <!-- Indicators / Dots -->
-                <div class="carousel-dots" id="carousel-dots"></div>
-              </div>
+              <!-- Indicators / Dots -->
+              <div class="carousel-dots" id="carousel-dots"></div>
             </div>
           </div>
-        </details>
+        </div>
 
         <!-- Pro Tip Card -->
         <div class="tip-card fade-in" id="ios-guide">
