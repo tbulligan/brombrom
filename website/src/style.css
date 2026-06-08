@@ -837,3 +837,31 @@ footer {
   color: #4ade80 !important;
   background: rgba(15, 23, 42, 0.95) !important;
 }
+
+/* Warning / Alpha Banner */
+.alpha-banner {
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.25rem;
+  margin: 1.5rem 0 0.5rem 0;
+  max-width: 600px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.alpha-banner i {
+  color: #eab308;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.alpha-banner p {
+  color: #fef08a;
+  font-size: 0.95rem;
+  margin: 0;
+  max-width: none;
+}
