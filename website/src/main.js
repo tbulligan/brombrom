@@ -5,7 +5,6 @@ const translations = {
   nl: {
     hero_title: "Navigeer met <br/> Vertrouwen.",
     hero_desc: "Het enige offline OsmAnd navigatiepakket specifiek ontworpen voor <strong>Brommobielen</strong> in Nederland. Vermijd snelwegen, respecteer C9 borden en rijd veilig.",
-    alpha_warning: "Ben je uitgenodigd voor de gesloten testfase (Alpha) van de app? Download de app dan uitsluitend via de Google Play-link die je hebt ontvangen.",
     btn_download_android: "Download BromBrom Manager (Android)",
     btn_visual_guide: "Visuele Handleiding",
     btn_download_ios: "iOS / Handmatige Installatie",
@@ -82,7 +81,6 @@ const translations = {
   en: {
     hero_title: "Navigate <br/> with Confidence.",
     hero_desc: "The only offline OsmAnd navigation package designed specifically for <strong>L6e microcars (Brommobielen)</strong> in the Netherlands. Avoid highways, respect C9 signs, and drive safely.",
-    alpha_warning: "Have you been invited to the closed testing (Alpha) of the app? Please only download the app from the Google Play link you've been provided.",
     btn_download_android: "Download BromBrom Manager (Android)",
     btn_visual_guide: "Visual Setup Guide",
     btn_download_ios: "iOS / Manual Installation",
