@@ -10,12 +10,15 @@ const translations = {
     btn_visual_guide: "Visuele Handleiding",
     btn_download_ios: "Download BromBrom.osf (iOS)",
     badge_label: "Nu Beschikbaar",
+    hero_prereq: "Vereist de gratis OsmAnd app op je telefoon.",
     feat_1_title: "C9 Handhaving",
     feat_1_desc: "Vermijdt automatisch wegen gemarkeerd met het C9 verkeersbord (gesloten voor langzaam motorverkeer), zodat je legaal en veilig blijft.",
     feat_2_title: "Snelwegen Verbod",
     feat_2_desc: "Routeert nooit over snelwegen en autowegen waar brommobielen niet zijn toegestaan, en kiest slimme alternatieven via service-wegen.",
     feat_3_title: "100% Offline",
     feat_3_desc: "Gebouwd op OsmAnd. Navigeer overal in Nederland zonder internetverbinding. Geen dataverbruik nodig.",
+    feat_4_title: "Android Auto",
+    feat_4_desc: "Ondersteunt Android Auto en Apple CarPlay (via OsmAnd Pro), zodat je routes direct op het dashboard van je brommobiel ziet.",
     install_title: "Start binnen enkele minuten",
     install_desc: "De makkelijkste manier om te installeren en kaarten up-to-date te houden is via de <strong>BromBrom Manager</strong> voor Android.",
     step_1_title: "Download de App",
@@ -25,12 +28,27 @@ const translations = {
     step_3_title: "Importeer & Activeer",
     step_3_desc: "Open BromBrom Manager en tik op <strong>INSTALLEREN / BIJWERKEN</strong>. OsmAnd opent: vink zowel <em>Instellingen</em> als <em>Bronnen</em> aan, tik op <em>Doorgaan</em> en kies <em>Alles vervangen</em>. Tik na de import op <em>Sluiten</em>, ga naar de OsmAnd-instellingen en activeer het BromBrom-profiel.",
     tip_title: "iOS / Apple Gebruikers",
-    tip_desc: "Geen app nodig! Download BromBrom.osf en open het in OsmAnd. Vink zowel <em>Instellingen</em> als <em>Bronnen</em> aan, tik op <em>Doorgaan</em> en kies <em>Toepassen</em>. Na de import: Instellingen → schakel <strong>BromBrom</strong> in → selecteer BromBrom vervolgens in het <strong>Navigatiemenu</strong> (oranje auto-icoon).",
+    tip_desc: "Geen app nodig! Voor iOS (iPhone) kun je het BromBrom.osf-bestand direct downloaden en openen in OsmAnd. Let op: handmatige installaties worden <strong>niet automatisch bijgewerkt</strong>; je zult elke maand de nieuwste versie zelf moeten downloaden. Bekijk de <a href='https://github.com/tbulligan/brombrom#-installation--setup' target='_blank' class='link-subtle' style='text-decoration: underline;'>Manual Installation Guide</a> (Engels) op GitHub voor alle details.",
     tip_btn: "Download BromBrom.osf",
     footer_copy: "&copy; 2026 BromBrom Project.",
     footer_sub: "Open source en gratis. Data gebaseerd op OpenStreetMap & NDW.",
     support_title: "Steun het Project",
     coffee: "Trakteer mee op een koffie",
+    faq_title: "Veelgestelde Vragen",
+    faq_q1: "Ik krijg de melding dat de app niet beschikbaar is voor mijn account. Wat nu?",
+    faq_a1: "Dit betekent dat het e-mailadres waarmee je bent ingelogd in de Google Play Store niet overeenkomt met het adres dat in ons testsysteem staat. Google geeft dan een foutmelding.<br/><br/><strong>De oplossing:</strong> Open de <strong>Google Play Store</strong> op je telefoon en tik rechtsboven op je profielfoto of initiaal. Het e-mailadres dat je daar ziet staan, moet exact worden doorgegeven. Stuur dit adres door via een privébericht, dan voegen we je account toe aan de testlijst!<br/><br/><em>Let op:</em> Heb je meerdere Google-accounts op je telefoon? Zorg er dan voor dat je in de Play Store-app rechtsboven naar het juiste (aangemelde) account wisselt voordat je op de uitnodigingslink tikt.",
+    faq_q2: "Ik zie alleen een grijs raster (leeg scherm) of de routeberekening mislukt. Wat is er mis?",
+    faq_a2: "BromBrom levert de specifieke brommobiel-routes en -regels, maar bevat zelf geen landkaart. OsmAnd heeft eerst de basiskaart van Nederland nodig om wegen te kunnen tonen en routes te berekenen.<br/><br/><strong>De oplossing:</strong> Download de offline kaart van Nederland in OsmAnd:<br/>1. Open <strong>OsmAnd</strong>.<br/>2. Open het menu (drie streepjes links- of rechtsonder).<br/>3. Tik op <strong>Kaarten downloaden</strong>.<br/>4. Zoek naar <strong>Nederland</strong> en download de kaart.<br/><em>Zodra de download klaar is, kleurt het scherm groen/wit met alle wegen en kan er een route gepland worden.</em>",
+    faq_q3: "Ik zie het BromBrom-profiel helemaal niet in de lijst van OsmAnd staan.",
+    faq_a3: "Als het profiel niet zichtbaar is, is de koppeling tussen de BromBrom Manager en OsmAnd nog niet voltooid, of staat het profiel verborgen.<br/><br/><strong>De oplossing:</strong><br/>1. Controleer eerst of het profiel verborgen staat: Ga in OsmAnd naar <strong>Instellingen</strong> → <strong>Profielen configureren</strong> en controleer of de schuifregelaar naast <strong>BromBrom</strong> aan staat.<br/>2. Staat het er helemaal niet tussen? Open de BromBrom Manager en tik op de knop <strong>\"BromBrom opnieuw installeren in OsmAnd\"</strong>. Volg de instructies op het scherm nauwkeurig.<br/><br/><em>Tip:</em> Vind je het lastig vanaf je telefoonscherm? Open de visuele handleiding op <a href=\"https://brombrom.bulligan.com/#visual-guide\" class=\"link-subtle\" style=\"text-decoration: underline;\">brombrom.bulligan.com/#visual-guide</a> op een laptop of tablet, zodat je rustig kunt meelezen tijdens het uitvoeren van de stappen op je telefoon.",
+    faq_q4: "Help, de navigatie stuurt me alsnog de snelweg of autoweg (N-weg) op!",
+    faq_a4: "Als dit gebeurt, staat in OsmAnd het verkeerde rijprofiel actief. De app denkt op dat moment dat je een gewone auto bent.<br/><br/><strong>De oplossing:</strong> Kijk in het navigatiescherm van OsmAnd. Zie je daar bovenaan of in de route-instellingen een <strong>standaard auto-icoontje</strong> (vooraanzicht)? Tik daarop en wissel het profiel naar het specifieke BromBrom-profiel. Dit herken je aan het <strong>oranje autootje van de zijkant gezien</strong>. Zodra het juiste profiel actief is, worden snelwegen, autowegen en C9-wegen automatisch vermeden.",
+    faq_q5: "Werkt de app ook op een iPhone (Apple iOS)?",
+    faq_a5: "Nee, op dit moment is de BromBrom Manager <strong>alleen beschikbaar voor Android-telefoons</strong>. Er is momenteel nog geen versie voor iPhones beschikbaar in de Apple App Store.<br/><br/>Voor de echte avonturiers is het wel mogelijk om de kaarten handmatig op iOS te installeren. Download hiervoor het <strong>BromBrom.osf</strong> bestand onderaan onze homepage en open dit direct in de OsmAnd app op je iPhone.<br/><br/><em>Belangrijke opmerking:</em> Bij deze handmatige methode worden kaarten en routes <strong>niet automatisch bijgewerkt</strong>. Je zult elke maand zelf de nieuwste `BromBrom.osf` van onze website moeten downloaden en importeren.",
+    faq_q6: "Is de app ook geschikt voor een scootmobiel, Canta of andere voertuigen?",
+    faq_a6: "<strong>Nee, de app is specifiek en uitsluitend ingeregeld voor brommobielen (45 km/u voertuigen).</strong> De routeplanner houdt rekening met de wegen waar je met een brommobiel mag en moet rijden. Voor een scootmobiel of een Canta gelden heel andere verkeersregels (zoals het mogen rijden op het fietspad of de stoep). Je moet de app daarvoor dus <strong>niet gebruiken</strong>.",
+    faq_q7: "Kan ik de app ook in België of Duitsland gebruiken?",
+    faq_a7: "De app is momenteel specifiek ontwikkeld en getest voor de <strong>Nederlandse wetgeving en weginfrastructuur</strong> (inclusief het correct vermijden van de Nederlandse C9-wegen). Het navigeren over de grens in België of Duitsland is <strong>niet ondersteund</strong>.",
     carousel_section_title: "Visuele Handleiding",
     carousel_mode_first_time: "Eerste Installatie",
     carousel_mode_update: "Updates",
@@ -66,12 +84,15 @@ const translations = {
     btn_download_android: "Download BromBrom Manager (Android)",
     btn_visual_guide: "Visual Setup Guide",
     btn_download_ios: "Download BromBrom.osf (iOS)",
+    hero_prereq: "Requires the free OsmAnd app on your device.",
     feat_1_title: "C9 Enforcement",
     feat_1_desc: "Automatically avoids roads marked with the C9 traffic sign (closed to slow motor vehicles), keeping you legal and safe.",
     feat_2_title: "No Motorways",
     feat_2_desc: "Strictly prohibits routing on motorways and expressways where microcars are not allowed, prioritizing service roads.",
     feat_3_title: "100% Offline",
     feat_3_desc: "Built on OsmAnd. Navigate anywhere in the Netherlands without an internet connection. No data usage required.",
+    feat_4_title: "Android Auto",
+    feat_4_desc: "Supports Android Auto and Apple CarPlay (via OsmAnd Pro), displaying routes directly on your microcar's dashboard.",
     install_title: "Get Started in Minutes",
     install_desc: "The easiest way to install and keep your maps updated is via the <strong>BromBrom Manager</strong> for Android.",
     step_1_title: "Download the App",
@@ -81,13 +102,28 @@ const translations = {
     step_3_title: "Import & Activate",
     step_3_desc: "Open BromBrom Manager and tap <strong>INSTALL / UPDATE</strong>. OsmAnd will open: check both <em>Settings</em> and <em>Resources</em>, tap <em>Continue</em>, and choose <em>Replace all</em>. After import, tap <em>Close</em>, open OsmAnd Settings, and configure the BromBrom navigation profile.",
     tip_title: "iOS / Apple Users",
-    tip_desc: "No app needed! Download BromBrom.osf and open it in OsmAnd. Check both <em>Settings</em> and <em>Resources</em>, tap <em>Continue</em>, and choose <em>Apply</em>. After import: Settings → enable <strong>BromBrom</strong> → select BromBrom from the <strong>Navigation menu</strong> (orange car icon).",
+    tip_desc: "No app needed! For iOS (iPhone), you can download the BromBrom.osf file directly and open it in OsmAnd. Note: manual installations <strong>do not update automatically</strong>; you will need to manually download the latest version each month. Check the <a href='https://github.com/tbulligan/brombrom#-installation--setup' target='_blank' class='link-subtle' style='text-decoration: underline;'>Manual Installation Guide</a> on GitHub for detailed steps.",
     tip_btn: "Download BromBrom.osf",
     footer_copy: "&copy; 2026 BromBrom Project.",
     footer_sub: "Open source and free. Data based on OpenStreetMap & NDW.",
     badge_label: "Available Now",
     support_title: "Support the Project",
     coffee: "Buy me a coffee",
+    faq_title: "Frequently Asked Questions",
+    faq_q1: "I get a message saying the app is not available for my account. What now?",
+    faq_a1: "This means the email address logged into your Google Play Store does not match the one registered in our testing system. Google will display an error.<br/><br/><strong>The solution:</strong> Open the <strong>Google Play Store</strong> on your phone and tap your profile picture or initial in the top right. Send us that exact email address via direct message, and we'll add your account to the test list!<br/><br/><em>Note:</em> Do you have multiple Google accounts logged into your phone? Make sure to switch to the correct registered account in the Play Store app before clicking the invite link.",
+    faq_q2: "I only see a grey grid (empty screen) or route calculation fails. What is wrong?",
+    faq_a2: "BromBrom provides custom microcar routing rules, but does not bundle the map database. OsmAnd requires the offline map of the Netherlands to show roads and calculate routes.<br/><br/><strong>The solution:</strong> Download the offline map of the Netherlands in OsmAnd:<br/>1. Open <strong>OsmAnd</strong>.<br/>2. Open the menu (three lines in the bottom corner).<br/>3. Tap <strong>Download maps</strong>.<br/>4. Search for <strong>Netherlands</strong> and download the map.<br/><em>Once downloaded, the screen will display roads and routes can be calculated.</em>",
+    faq_q3: "I can't find the BromBrom profile in OsmAnd.",
+    faq_a3: "If the profile is missing, the import process from the BromBrom Manager was not completed, or the profile is hidden.<br/><br/><strong>The solution:</strong><br/>1. First check if it is hidden: Go to OsmAnd **Settings** → **Configure profiles** and ensure the toggle next to **BromBrom** is enabled.<br/>2. If it is completely missing: Open BromBrom Manager and tap **\"Reinstall BromBrom in OsmAnd\"**. Follow the step-by-step instructions carefully.<br/><br/><em>Tip:</em> Finding it hard on your mobile screen? Open the visual guide at <a href=\"https://brombrom.bulligan.com/#visual-guide\" class=\"link-subtle\" style=\"text-decoration: underline;\">brombrom.bulligan.com/#visual-guide</a> on a laptop or tablet to read along easily.",
+    faq_q4: "Help, the navigation is sending me onto motorways or expressways!",
+    faq_a4: "This happens when the wrong navigation profile is active. OsmAnd thinks you are driving a standard car.<br/><br/><strong>The solution:</strong> Look at your navigation screen. Do you see a **standard car icon** (front view)? Tap it and switch to the **BromBrom** profile, which is represented by an **orange microcar icon (side view)**. Once selected, motorways and C9 roads will be avoided automatically.",
+    faq_q5: "Does the app work on iPhone (Apple iOS)?",
+    faq_a5: "No, the BromBrom Manager is currently **Android-only**. There is no iOS app available in the Apple App Store.<br/><br/>For advanced users, you can manually import the maps to iOS. Download the **BromBrom.osf** file at the bottom of our homepage and open it directly with OsmAnd on your iPhone.<br/><br/><em>Important note:</em> Manual installations **do not update automatically**. You will need to manually download and import the latest `BromBrom.osf` file each month.",
+    faq_q6: "Is the app suitable for mobility scooters, Cantas, or other vehicles?",
+    faq_a6: "**No, the app is strictly and exclusively tailored for microcars (45 km/u vehicles).** The route planner calculates paths where microcars are legally allowed and supposed to drive. Mobility scooters and Cantas have different traffic rules (e.g., driving on cycle lanes or pavements) and should **not use** this app.",
+    faq_q7: "Can I use the app in Belgium or Germany?",
+    faq_a7: "The app is specifically built and tested for **Dutch traffic regulations and road infrastructure** (including the correct snapping of Dutch C9 signs). International navigation is **not supported**.",
     carousel_section_title: "Visual Setup Guide",
     carousel_mode_first_time: "First-Time Setup",
     carousel_mode_update: "Updates",
@@ -353,6 +389,36 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, { passive: true });
   }
+
+  // FAQ Accordion
+  const faqQuestions = document.querySelectorAll('.faq-question');
+  faqQuestions.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.parentElement;
+      item.classList.toggle('active');
+    });
+  });
+
+  // Auto-open visual guide details if targeted by hash or hash changes
+  const visualGuideDetails = document.getElementById('visual-guide');
+  const openVisualGuide = () => {
+    if (visualGuideDetails) visualGuideDetails.open = true;
+  };
+  
+  if (window.location.hash === '#visual-guide') {
+    openVisualGuide();
+  }
+  
+  window.addEventListener('hashchange', () => {
+    if (window.location.hash === '#visual-guide') {
+      openVisualGuide();
+    }
+  });
+
+  // Intercept clicks on links pointing to #visual-guide
+  document.querySelectorAll('a[href="#visual-guide"]').forEach(link => {
+    link.addEventListener('click', openVisualGuide);
+  });
 
   updateLanguage('nl');
   initCarousel();

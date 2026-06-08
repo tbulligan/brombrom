@@ -82,11 +82,12 @@
             </a>
           </div>
           <div class="hero-actions-row">
-            <a href="https://github.com/tbulligan/brombrom/releases/latest/download/BromBrom.osf" class="btn btn-secondary">
+            <a href="#ios-guide" class="btn btn-secondary">
               <i class="ph-bold ph-apple-logo"></i>
               <span data-i18n="btn_download_ios">Download BromBrom.osf (iOS)</span>
             </a>
           </div>
+          <p class="hero-prereq" data-i18n="hero_prereq">Vereist de gratis OsmAnd app op je telefoon.</p>
         </div>
 
         <!-- Hero Banner Image -->
@@ -124,6 +125,14 @@
             <h3 data-i18n="feat_3_title">100% Offline</h3>
             <p data-i18n="feat_3_desc">Gebouwd op OsmAnd. Navigeer overal in Nederland zonder internetverbinding. Geen
               dataverbruik nodig.</p>
+          </div>
+
+          <div class="card fade-in">
+            <div class="card-icon">
+              <i class="ph-duotone ph-devices"></i>
+            </div>
+            <h3 data-i18n="feat_4_title">Android Auto</h3>
+            <p data-i18n="feat_4_desc">Ondersteunt Android Auto en Apple CarPlay (via OsmAnd Pro), zodat je routes direct op het dashboard van je brommobiel ziet.</p>
           </div>
         </div>
       </section>
@@ -211,59 +220,64 @@
         </div>
 
         <!-- Interactive Screenshot Walkthrough -->
-        <div class="carousel-container fade-in" id="visual-guide">
-          <h3 class="carousel-section-title" data-i18n="carousel_section_title">Visuele Handleiding</h3>
-          
-          <!-- Mode Selector Toggle -->
-          <div class="carousel-mode-selector">
-            <button class="btn btn-secondary active" id="mode-first-time" data-mode="first-time" data-i18n="carousel_mode_first_time">Eerste Installatie</button>
-            <button class="btn btn-secondary" id="mode-update" data-mode="update" data-i18n="carousel_mode_update">Updates</button>
-          </div>
+        <details class="visual-guide-collapsible fade-in" id="visual-guide">
+          <summary class="visual-guide-summary">
+            <span data-i18n="carousel_section_title">Visuele Handleiding</span>
+            <i class="ph ph-caret-down"></i>
+          </summary>
 
-          <div class="carousel-layout">
-            <!-- Phone Mockup Frame -->
-            <div class="phone-mockup">
-              <div class="phone-speaker"></div>
-              <div class="phone-screen">
-                <div class="phone-status-bar">
-                  <span class="time">12:30</span>
-                  <div class="phone-status-icons">
-                    <i class="ph ph-wifi-high"></i>
-                    <i class="ph ph-battery-full"></i>
+          <div class="carousel-container">
+            <!-- Mode Selector Toggle -->
+            <div class="carousel-mode-selector">
+              <button class="btn btn-secondary active" id="mode-first-time" data-mode="first-time" data-i18n="carousel_mode_first_time">Eerste Installatie</button>
+              <button class="btn btn-secondary" id="mode-update" data-mode="update" data-i18n="carousel_mode_update">Updates</button>
+            </div>
+
+            <div class="carousel-layout">
+              <!-- Phone Mockup Frame -->
+              <div class="phone-mockup">
+                <div class="phone-speaker"></div>
+                <div class="phone-screen">
+                  <div class="phone-status-bar">
+                    <span class="time">12:30</span>
+                    <div class="phone-status-icons">
+                      <i class="ph ph-wifi-high"></i>
+                      <i class="ph ph-battery-full"></i>
+                    </div>
                   </div>
+                  <div class="carousel-slides">
+                    <img id="carousel-img" src="" alt="BromBrom Setup Walkthrough" />
+                  </div>
+                  <div class="phone-home-indicator"></div>
                 </div>
-                <div class="carousel-slides">
-                  <img id="carousel-img" src="" alt="BromBrom Setup Walkthrough" />
-                </div>
-                <div class="phone-home-indicator"></div>
-              </div>
-            </div>
-
-            <!-- Carousel Info & Controls -->
-            <div class="carousel-info">
-              <div class="carousel-step-badge">
-                <span id="carousel-step-counter">1 / 11</span>
-              </div>
-              <h4 id="carousel-step-title">Stap 1</h4>
-              <p id="carousel-step-description">Laad de instructies...</p>
-              
-              <div class="carousel-controls">
-                <button class="btn btn-secondary btn-icon" id="prev-slide-btn" aria-label="Vorige stap">
-                  <i class="ph ph-arrow-left"></i>
-                </button>
-                <button class="btn btn-primary btn-icon" id="next-slide-btn" aria-label="Volgende stap">
-                  <i class="ph ph-arrow-right"></i>
-                </button>
               </div>
 
-              <!-- Indicators / Dots -->
-              <div class="carousel-dots" id="carousel-dots"></div>
+              <!-- Carousel Info & Controls -->
+              <div class="carousel-info">
+                <div class="carousel-step-badge">
+                  <span id="carousel-step-counter">1 / 11</span>
+                </div>
+                <h4 id="carousel-step-title">Stap 1</h4>
+                <p id="carousel-step-description">Laad de instructies...</p>
+                
+                <div class="carousel-controls">
+                  <button class="btn btn-secondary btn-icon" id="prev-slide-btn" aria-label="Vorige stap">
+                    <i class="ph ph-arrow-left"></i>
+                  </button>
+                  <button class="btn btn-primary btn-icon" id="next-slide-btn" aria-label="Volgende stap">
+                    <i class="ph ph-arrow-right"></i>
+                  </button>
+                </div>
+
+                <!-- Indicators / Dots -->
+                <div class="carousel-dots" id="carousel-dots"></div>
+              </div>
             </div>
           </div>
-        </div>
+        </details>
 
         <!-- Pro Tip Card -->
-        <div class="tip-card fade-in">
+        <div class="tip-card fade-in" id="ios-guide">
           <h3 data-i18n="tip_title">iOS of Handmatige Installatie?</h3>
           <p data-i18n="tip_desc">Voor iPhone-gebruikers of geavanceerde gebruikers die liever handmatig bestanden
             kopiëren.</p>
@@ -271,6 +285,113 @@
             class="btn btn-secondary btn-sm" data-i18n="tip_btn">
             Download BromBrom.osf
           </a>
+        </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section id="faq" class="fade-in">
+        <h2 class="faq-title" data-i18n="faq_title">Veelgestelde Vragen</h2>
+        <div class="faq-accordion">
+          
+          <div class="faq-item">
+            <button class="faq-question">
+              <span data-i18n="faq_q1">Ik krijg de melding dat de app niet beschikbaar is voor mijn account. Wat nu?</span>
+              <i class="ph ph-caret-down"></i>
+            </button>
+            <div class="faq-answer">
+              <p data-i18n="faq_a1">
+                Dit betekent dat het e-mailadres waarmee je bent ingelogd in de Google Play Store niet overeenkomt met het adres dat in ons testsysteem staat. Google geeft dan een foutmelding.<br/><br/>
+                <strong>De oplossing:</strong> Open de <strong>Google Play Store</strong> op je telefoon en tik rechtsboven op je profielfoto of initiaal. Het e-mailadres dat je daar ziet staan, moet exact worden doorgegeven. Stuur dit adres door via een privébericht, dan voegen we je account toe aan de testlijst!<br/><br/>
+                <em>Let op:</em> Heb je meerdere Google-accounts op je telefoon? Zorg er dan voor dat je in de Play Store-app rechtsboven naar het juiste (aangemelde) account wisselt voordat je op de uitnodigingslink tikt.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span data-i18n="faq_q2">Ik zie alleen een grijs raster (leeg scherm) of de routeberekening mislukt. Wat is er mis?</span>
+              <i class="ph ph-caret-down"></i>
+            </button>
+            <div class="faq-answer">
+              <p data-i18n="faq_a2">
+                BromBrom levert de specifieke brommobiel-routes en -regels, maar bevat zelf geen landkaart. OsmAnd heeft eerst de basiskaart van Nederland nodig om wegen te kunnen tonen en routes te berekenen.<br/><br/>
+                <strong>De oplossing:</strong> Download de offline kaart van Nederland in OsmAnd:<br/>
+                1. Open <strong>OsmAnd</strong>.<br/>
+                2. Open het menu (drie streepjes links- of rechtsonder).<br/>
+                3. Tik op <strong>Kaarten downloaden</strong>.<br/>
+                4. Zoek naar <strong>Nederland</strong> en download de kaart.<br/>
+                <em>Zodra de download klaar is, kleurt het scherm groen/wit met alle wegen en kan er een route gepland worden.</em>
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span data-i18n="faq_q3">Ik zie het BromBrom-profiel helemaal niet in de lijst van OsmAnd staan.</span>
+              <i class="ph ph-caret-down"></i>
+            </button>
+            <div class="faq-answer">
+              <p data-i18n="faq_a3">
+                Als het profiel niet zichtbaar is, is de koppeling tussen de BromBrom Manager en OsmAnd nog niet voltooid, of staat het profiel verborgen.<br/><br/>
+                <strong>De oplossing:</strong><br/>
+                1. Controleer eerst of het profiel verborgen staat: Ga in OsmAnd naar <strong>Instellingen</strong> → <strong>Profielen configureren</strong> en controleer of de schuifregelaar naast <strong>BromBrom</strong> aan staat.<br/>
+                2. Staat het er helemaal niet tussen? Open de BromBrom Manager en tik op de knop <strong>"BromBrom opnieuw installeren in OsmAnd"</strong>. Volg de instructies op het scherm nauwkeurig.<br/><br/>
+                <em>Tip:</em> Vind je het lastig vanaf je telefoonscherm? Open de visuele handleiding op <a href="https://brombrom.bulligan.com/#visual-guide" class="link-subtle" style="text-decoration: underline;">brombrom.bulligan.com/#visual-guide</a> op een laptop of tablet, zodat je rustig kunt meelezen tijdens het uitvoeren van de stappen op je telefoon.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span data-i18n="faq_q4">Help, de navigatie stuurt me alsnog de snelweg of autoweg (N-weg) op!</span>
+              <i class="ph ph-caret-down"></i>
+            </button>
+            <div class="faq-answer">
+              <p data-i18n="faq_a4">
+                Als dit gebeurt, staat in OsmAnd het verkeerde rijprofiel actief. De app denkt op dat moment dat je een gewone auto bent.<br/><br/>
+                <strong>De oplossing:</strong> Kijk in het navigatiescherm van OsmAnd. Zie je daar bovenaan of in de route-instellingen een <strong>standaard auto-icoontje</strong> (vooraanzicht)? Tik daarop en wissel het profiel naar het specifieke BromBrom-profiel. Dit herken je aan het <strong>oranje autootje van de zijkant gezien</strong>. Zodra het juiste profiel actief is, worden snelwegen, autowegen en C9-wegen automatisch vermeden.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span data-i18n="faq_q5">Werkt de app ook op een iPhone (Apple iOS)?</span>
+              <i class="ph ph-caret-down"></i>
+            </button>
+            <div class="faq-answer">
+              <p data-i18n="faq_a5">
+                Nee, op dit moment is de BromBrom Manager <strong>alleen beschikbaar voor Android-telefoons</strong>. Er is momenteel nog geen versie voor iPhones beschikbaar in de Apple App Store.<br/><br/>
+                Voor de echte avonturiers is het wel mogelijk om de kaarten handmatig op iOS te installeren. Download hiervoor het <strong>BromBrom.osf</strong> bestand onderaan onze homepage en open dit direct in de OsmAnd app op je iPhone.<br/><br/>
+                <em>Belangrijke opmerking:</em> Bij deze handmatige methode worden kaarten en routes <strong>niet automatisch bijgewerkt</strong>. Je zult elke maand zelf de nieuwste `BromBrom.osf` van onze website moeten downloaden en importeren.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span data-i18n="faq_q6">Is de app ook geschikt voor een scootmobiel, Canta of andere voertuigen?</span>
+              <i class="ph ph-caret-down"></i>
+            </button>
+            <div class="faq-answer">
+              <p data-i18n="faq_a6">
+                <strong>Nee, de app is specifiek en uitsluitend ingeregeld voor brommobielen (45 km/u voertuigen).</strong> De routeplanner houdt rekening met de wegen waar je met een brommobiel mag en moet rijden. Voor een scootmobiel of een Canta gelden heel andere verkeersregels (zoals het mogen rijden op het fietspad of de stoep). Je moet de app daarvoor dus <strong>niet gebruiken</strong>.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
+              <span data-i18n="faq_q7">Kan ik de app ook in België of Duitsland gebruiken?</span>
+              <i class="ph ph-caret-down"></i>
+            </button>
+            <div class="faq-answer">
+              <p data-i18n="faq_a7">
+                De app is momenteel specifiek ontwikkeld en getest voor de <strong>Nederlandse wetgeving en weginfrastructuur</strong> (inclusief het correct vermijden van de Nederlandse C9-wegen). Het navigeren over de grens in België of Duitsland is <strong>niet ondersteund</strong>.
+              </p>
+            </div>
+          </div>
+
         </div>
       </section>
       <!-- Support Section -->
