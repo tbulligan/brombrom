@@ -624,115 +624,117 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return Dialog(
           backgroundColor: Colors.white,
+          clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: [
-              Icon(
-                wasUpdate ? Icons.update : Icons.cloud_download,
-                color: Colors.orange[800],
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  wasUpdate ? _t('osf_dialog_title_update') : _t('osf_dialog_title'),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[850],
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Scrollbar(
-            thumbVisibility: true,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(right: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: wasUpdate
-                    ? <Widget>[
-                        Text(_t('osf_dialog_p1_update'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
-                        const SizedBox(height: 12),
-                        Text(_t('osf_dialog_step1_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step2_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step3_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step4_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                      ]
-                    : <Widget>[
-                        Text(_t('osf_dialog_p1'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
-                        const SizedBox(height: 12),
-                        Text(_t('osf_dialog_step1'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step2'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step3'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step4'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step5'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step6'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step7'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step8'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 6),
-                        Text(_t('osf_dialog_step9'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.orange[50],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.orange[200]!),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Scrollbar(
+              thumbVisibility: true,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            wasUpdate ? Icons.update : Icons.cloud_download,
+                            color: Colors.orange[800],
                           ),
-                          child: Text(
-                            _t('osf_dialog_warning'),
-                            style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              wasUpdate ? _t('osf_dialog_title_update') : _t('osf_dialog_title'),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[850],
+                                fontSize: 20,
+                              ),
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      ...(wasUpdate
+                          ? <Widget>[
+                              Text(_t('osf_dialog_p1_update'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
+                              const SizedBox(height: 12),
+                              Text(_t('osf_dialog_step1_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step2_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step3_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step4_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                            ]
+                          : <Widget>[
+                              Text(_t('osf_dialog_p1'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
+                              const SizedBox(height: 12),
+                              Text(_t('osf_dialog_step1'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step2'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step3'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step4'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step5'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step6'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step7'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step8'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 6),
+                              Text(_t('osf_dialog_step9'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.orange[200]!),
+                                ),
+                                child: Text(
+                                  _t('osf_dialog_warning'),
+                                  style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ]),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange[800],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 2,
                         ),
-                      ],
+                        child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _openOsfInOsmAnd(filePath);
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton.icon(
+                        onPressed: _launchWebsiteUrl,
+                        icon: const Icon(Icons.menu_book, size: 18, color: Colors.blue),
+                        label: Text(
+                          _locale == 'nl' ? 'Visuele Gids' : 'Visual Guide',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-          actions: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange[800],
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    elevation: 2,
-                  ),
-                  child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _openOsfInOsmAnd(filePath);
-                  },
-                ),
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  onPressed: _launchWebsiteUrl,
-                  icon: const Icon(Icons.menu_book, size: 18, color: Colors.blue),
-                  label: Text(
-                    _locale == 'nl' ? 'Visuele Gids' : 'Visual Guide',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-                  ),
-                ),
-              ],
-            ),
-          ],
         );
       },
     );
