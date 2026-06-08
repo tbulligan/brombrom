@@ -457,6 +457,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       _checkOnboardingRequirements().then((_) {
         _checkVersions();
       });
+      _onboardingPageChanged(_onboardingCurrentPage);
     }
   }
 
@@ -956,222 +957,213 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   Widget _buildOnboardingCarousel() {
     final Color orange = Colors.orange[800]!;
 
-    return StatefulBuilder(
-      builder: (context, setPageState) {
-        // Slides evaluated inside the builder so _t() re-reads _locale on every rebuild.
-        final List<Map<String, String>> slides = [
-          {
-            'icon': '\ud83d\ude97',
-            'title': _t('ob_slide1_title'),
-            'body': _t('ob_slide1_body'),
-          },
-          {
-            'icon': '\ud83d\uddfa\ufe0f',
-            'title': _t('ob_slide2_title'),
-            'body': _t('ob_slide2_body'),
-            'btn': _t('ob_slide2_btn'),
-          },
-          {
-            'icon': '\ud83d\udd14',
-            'title': _t('ob_slide3_title'),
-            'body': _t('ob_slide3_body'),
-            'btn': _t('ob_slide3_btn'),
-          },
-        ];
+    // Slides evaluated inside the builder so _t() re-reads _locale on every rebuild.
+    final List<Map<String, String>> slides = [
+      {
+        'icon': '\ud83d\ude97',
+        'title': _t('ob_slide1_title'),
+        'body': _t('ob_slide1_body'),
+      },
+      {
+        'icon': '\ud83d\uddfa\ufe0f',
+        'title': _t('ob_slide2_title'),
+        'body': _t('ob_slide2_body'),
+        'btn': _t('ob_slide2_btn'),
+      },
+      {
+        'icon': '\ud83d\udd14',
+        'title': _t('ob_slide3_title'),
+        'body': _t('ob_slide3_body'),
+        'btn': _t('ob_slide3_btn'),
+      },
+    ];
 
-        void toggleLanguage() {
-          final newLang = _locale == 'nl' ? 'en' : 'nl';
-          // Update parent locale state so _t() returns new language immediately.
-          setState(() => _locale = newLang);
-          // Rebuild the carousel subtree.
-          setPageState(() {});
-          // Persist so main app inherits the choice after onboarding is dismissed.
-          SharedPreferences.getInstance().then((p) => p.setString('language_code', newLang));
-        }
+    void toggleLanguage() {
+      final newLang = _locale == 'nl' ? 'en' : 'nl';
+      setState(() => _locale = newLang);
+      SharedPreferences.getInstance().then((p) => p.setString('language_code', newLang));
+    }
 
-        return Material(
-          color: Colors.black.withOpacity(0.92),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: Column(
+    return Material(
+      color: Colors.black.withOpacity(0.92),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            children: [
+              // Top bar: language toggle (left)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Top bar: language toggle (left)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: toggleLanguage,
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Colors.white12,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        ),
-                        child: Text(
-                          _locale == 'nl' ? '🇬🇧  EN' : '🇳🇱  NL',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                      // Skip ("Not now") button removed to make onboarding compulsory
-                    ],
-                  ),
-                  Expanded(
-                    child: PageView.builder(
-                      controller: _onboardingPageController,
-                      physics: LockForwardScrollPhysics(
-                        lockForward: !_osmandInstalled,
-                        parent: const PageScrollPhysics(),
-                      ),
-                      itemCount: slides.length,
-                      onPageChanged: (i) {
-                        setPageState(() => _onboardingCurrentPage = i);
-                        _onboardingPageChanged(i);
-                      },
-                      itemBuilder: (context, index) {
-                        final slide = slides[index];
-                        return Center(
-                          child: SingleChildScrollView(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(slide['icon']!, style: const TextStyle(fontSize: 64)),
-                                  const SizedBox(height: 32),
-                                  Text(
-                                    slide['title']!,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    slide['body']!,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(fontSize: 16, color: Colors.white70, height: 1.5),
-                                  ),
-                                  if (slide.containsKey('btn')) ...[
-                                    const SizedBox(height: 28),
-                                    (() {
-                                      if (index == 1) {
-                                        final bool isInstalled = _osmandInstalled;
-                                        return OutlinedButton(
-                                          onPressed: isInstalled ? null : () async {
-                                            AndroidIntent(
-                                              action: 'action_view',
-                                              data: 'https://play.google.com/store/apps/details?id=net.osmand',
-                                            ).launch();
-                                          },
-                                          style: OutlinedButton.styleFrom(
-                                            foregroundColor: Colors.white,
-                                            disabledForegroundColor: Colors.greenAccent,
-                                            side: BorderSide(color: isInstalled ? Colors.greenAccent : Colors.white54),
-                                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                          ),
-                                          child: Text(isInstalled ? _t('ob_osmand_installed_checkmark') : slide['btn']!),
-                                        );
-                                      } else if (index == 2) {
-                                        final bool isGranted = _notificationPermissionGranted;
-                                        return OutlinedButton(
-                                          onPressed: isGranted ? null : () async {
-                                            await _requestNotificationPermission();
-                                            await _checkOnboardingRequirements();
-                                            setPageState(() {});
-                                          },
-                                          style: OutlinedButton.styleFrom(
-                                            foregroundColor: Colors.white,
-                                            disabledForegroundColor: Colors.greenAccent,
-                                            side: BorderSide(color: isGranted ? Colors.greenAccent : Colors.white54),
-                                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                          ),
-                                          child: Text(isGranted ? _t('ob_notifications_enabled') : slide['btn']!),
-                                        );
-                                      }
-                                      return const SizedBox.shrink();
-                                    })(),
-                                  ]
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                  TextButton(
+                    onPressed: toggleLanguage,
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.white12,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                    child: Text(
+                      _locale == 'nl' ? '🇬🇧  EN' : '🇳🇱  NL',
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
                   ),
-                  // Dot indicators
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(slides.length, (i) {
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: _onboardingCurrentPage == i ? 20 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: _onboardingCurrentPage == i ? orange : Colors.white38,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: orange,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: Colors.white24,
-                        disabledForegroundColor: Colors.white54,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: (() {
-                        if (_onboardingCurrentPage == 0) {
-                          return () {
-                            _onboardingPageController.nextPage(
-                              duration: const Duration(milliseconds: 350),
-                              curve: Curves.easeInOut,
-                            );
-                          };
-                        } else if (_onboardingCurrentPage == 1) {
-                          return _osmandInstalled ? () {
-                            _onboardingPageController.nextPage(
-                              duration: const Duration(milliseconds: 350),
-                              curve: Curves.easeInOut,
-                            );
-                          } : null;
-                        } else if (_onboardingCurrentPage == 2) {
-                          return _notificationPermissionGranted ? () {
-                            _dismissOnboarding();
-                          } : null;
-                        }
-                        return null;
-                      })(),
-                      child: Text(
-                        (() {
-                          if (_onboardingCurrentPage == 2) {
-                            return _notificationPermissionGranted 
-                                ? _t('ob_finish') 
-                                : _t('ob_notification_permission_required');
-                          } else if (_onboardingCurrentPage == 1) {
-                            return _osmandInstalled 
-                                ? _t('ob_next') 
-                                : _t('ob_install_osmand_required');
-                          }
-                          return _t('ob_next');
-                        })(),
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
+                  // Skip ("Not now") button removed to make onboarding compulsory
                 ],
               ),
-            ),
+              Expanded(
+                child: PageView.builder(
+                  controller: _onboardingPageController,
+                  physics: LockForwardScrollPhysics(
+                    lockForward: !_osmandInstalled,
+                    parent: const PageScrollPhysics(),
+                  ),
+                  itemCount: slides.length,
+                  onPageChanged: (i) {
+                    setState(() => _onboardingCurrentPage = i);
+                    _onboardingPageChanged(i);
+                  },
+                  itemBuilder: (context, index) {
+                    final slide = slides[index];
+                    return Center(
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(slide['icon']!, style: const TextStyle(fontSize: 64)),
+                              const SizedBox(height: 32),
+                              Text(
+                                slide['title']!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                slide['body']!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 16, color: Colors.white70, height: 1.5),
+                              ),
+                              if (slide.containsKey('btn')) ...[
+                                const SizedBox(height: 28),
+                                (() {
+                                  if (index == 1) {
+                                    final bool isInstalled = _osmandInstalled;
+                                    return OutlinedButton(
+                                      onPressed: isInstalled ? null : () async {
+                                        AndroidIntent(
+                                          action: 'action_view',
+                                          data: 'https://play.google.com/store/apps/details?id=net.osmand',
+                                        ).launch();
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        disabledForegroundColor: Colors.greenAccent,
+                                        side: BorderSide(color: isInstalled ? Colors.greenAccent : Colors.white54),
+                                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                      ),
+                                      child: Text(isInstalled ? _t('ob_osmand_installed_checkmark') : slide['btn']!),
+                                    );
+                                  } else if (index == 2) {
+                                    final bool isGranted = _notificationPermissionGranted;
+                                    return OutlinedButton(
+                                      onPressed: isGranted ? null : () async {
+                                        await _requestNotificationPermission();
+                                        await _checkOnboardingRequirements();
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        disabledForegroundColor: Colors.greenAccent,
+                                        side: BorderSide(color: isGranted ? Colors.greenAccent : Colors.white54),
+                                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                      ),
+                                      child: Text(isGranted ? _t('ob_notifications_enabled') : slide['btn']!),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                })(),
+                              ]
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              // Dot indicators
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(slides.length, (i) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _onboardingCurrentPage == i ? 20 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _onboardingCurrentPage == i ? orange : Colors.white38,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: orange,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.white24,
+                    disabledForegroundColor: Colors.white54,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: (() {
+                    if (_onboardingCurrentPage == 0) {
+                      return () {
+                        _onboardingPageController.nextPage(
+                          duration: const Duration(milliseconds: 350),
+                          curve: Curves.easeInOut,
+                        );
+                      };
+                    } else if (_onboardingCurrentPage == 1) {
+                      return _osmandInstalled ? () {
+                        _onboardingPageController.nextPage(
+                          duration: const Duration(milliseconds: 350),
+                          curve: Curves.easeInOut,
+                        );
+                      } : null;
+                    } else if (_onboardingCurrentPage == 2) {
+                      return _notificationPermissionGranted ? () {
+                        _dismissOnboarding();
+                      } : null;
+                    }
+                    return null;
+                  })(),
+                  child: Text(
+                    (() {
+                      if (_onboardingCurrentPage == 2) {
+                        return _notificationPermissionGranted 
+                            ? _t('ob_finish') 
+                            : _t('ob_notification_permission_required');
+                      } else if (_onboardingCurrentPage == 1) {
+                        return _osmandInstalled 
+                            ? _t('ob_next') 
+                            : _t('ob_install_osmand_required');
+                      }
+                      return _t('ob_next');
+                    })(),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -1470,4 +1462,14 @@ class LockForwardScrollPhysics extends ScrollPhysics {
     }
     return super.applyBoundaryConditions(position, value);
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! LockForwardScrollPhysics) return false;
+    return lockForward == other.lockForward && parent == other.parent;
+  }
+
+  @override
+  int get hashCode => Object.hash(lockForward, parent);
 }
