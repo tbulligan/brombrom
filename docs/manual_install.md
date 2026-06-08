@@ -83,4 +83,8 @@ Refer to these screenshots to verify your setup steps.
 
 To update next month, simply download the newest `BromBrom.osf` and tap it. When OsmAnd prompts you during the import, check both **"Settings"** and **"Resources"**, then tap **"Continue"** → **"Replace all"**. It will automatically overwrite the old map and routing rules with the fresh data.
 
+> [!TIP]
+> **Troubleshooting Import/Open Failures**: If nothing happens or the import dialog fails to appear when opening the file, ensure that **OsmAnd is completely closed** (swiped away from your phone's recent/background apps) before trying again. This ensures OsmAnd starts fresh and processes the file import intent immediately.
+
+
 
