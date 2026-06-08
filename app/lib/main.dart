@@ -1014,11 +1014,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
               Expanded(
                 child: PageView.builder(
                   controller: _onboardingPageController,
-                  physics: LockForwardScrollPhysics(
-                    lockForward: !_osmandInstalled,
-                    parent: const PageScrollPhysics(),
-                  ),
-                  itemCount: slides.length,
+                  physics: const PageScrollPhysics(),
+                  itemCount: _osmandInstalled ? slides.length : 2,
                   onPageChanged: (i) {
                     setState(() => _onboardingCurrentPage = i);
                     _onboardingPageChanged(i);
@@ -1440,36 +1437,4 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     ),
   );
 }
-}
-
-class LockForwardScrollPhysics extends ScrollPhysics {
-  final bool lockForward;
-
-  const LockForwardScrollPhysics({required this.lockForward, super.parent});
-
-  @override
-  LockForwardScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return LockForwardScrollPhysics(
-      lockForward: lockForward,
-      parent: buildParent(ancestor),
-    );
-  }
-
-  @override
-  double applyBoundaryConditions(ScrollMetrics position, double value) {
-    if (lockForward && value > position.pixels && position.pixels >= position.viewportDimension) {
-      return value - position.pixels;
-    }
-    return super.applyBoundaryConditions(position, value);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other is! LockForwardScrollPhysics) return false;
-    return lockForward == other.lockForward && parent == other.parent;
-  }
-
-  @override
-  int get hashCode => Object.hash(lockForward, parent);
 }

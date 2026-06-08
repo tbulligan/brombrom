@@ -36,7 +36,7 @@ class MainActivity : FlutterActivity() {
 
     private fun isPackageInstalled(packageName: String): Boolean {
         return try {
-            packageManager.getPackageInfo(packageName, 0)
+            applicationContext.packageManager.getPackageInfo(packageName, 0)
             true
         } catch (e: PackageManager.NameNotFoundException) {
             false
