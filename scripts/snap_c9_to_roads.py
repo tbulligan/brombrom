@@ -275,6 +275,16 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     if len(candidates) == 0:
         return None, None
 
+    # Check if any candidate road matches the NDW sign roadName
+    ndw_name = row.get("roadName")
+    any_name_matched = False
+    for idx in candidates:
+        road_row = roads_gdf.iloc[idx]
+        osm_name = road_row.get("name")
+        if check_name_match(ndw_name, osm_name):
+            any_name_matched = True
+            break
+
     best_idx, best_score = None, float("inf")
     best_snap_pt = None
 
@@ -334,6 +344,13 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
         name_matched = check_name_match(ndw_name, osm_name)
         name_penalty = 0.0 if name_matched else 30.0
 
+        # Conditional Intersection Warning Bonus:
+        # If no candidate matched the name, allow a bonus for high-priority roads
+        # (priority <= 2) within 50m whose bearing matches within 30 degrees.
+        if not name_matched and not any_name_matched:
+            if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0:
+                name_penalty = 0.0
+
         # Score formulation: Distance is king, but orientation/side/priority refine it.
         # Use a larger weight (0.15) for angle difference to prevent perpendicular false snaps
         score = dist * 0.7 + angle_diff * 0.15 + side_penalty + priority_penalty + name_penalty
@@ -363,6 +380,23 @@ def main():
     c9_gdf = c9_gdf[~pre_warning_mask]
     
     roads_gdf = gpd.read_file("nl_roads.gpkg").to_crs(epsg=28992)
+
+    # Filter out minor roads (priority >= 4: residential, unclassified, service, living_street) and roundabouts
+    priority_series = roads_gdf["highway"].map(HIGHWAY_PRIORITY).fillna(99)
+    is_minor_mask = priority_series >= 4
+
+    other_tags_series = roads_gdf['other_tags'].fillna("").astype(str)
+    highway_series = roads_gdf['highway'].fillna("").astype(str)
+    junction_series = (roads_gdf['junction'].fillna("").astype(str) if 'junction' in roads_gdf.columns else pd.Series("", index=roads_gdf.index))
+
+    is_roundabout_mask = (
+        other_tags_series.str.contains('"junction"=>"roundabout"', regex=False) |
+        highway_series.str.contains('roundabout', regex=False) |
+        (junction_series == 'roundabout')
+    )
+
+    print(f"Filtering roads: excluding {is_minor_mask.sum()} minor segments and {is_roundabout_mask.sum()} roundabout segments...")
+    roads_gdf = roads_gdf[~is_minor_mask & ~is_roundabout_mask].copy()
 
     # Build spatial index
     spatial_index = roads_gdf.sindex

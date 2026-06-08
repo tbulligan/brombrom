@@ -10,6 +10,11 @@ To map C9 sign points to OSM linestrings, BromBrom uses a two-tier spatial query
 
 Using a larger fallback tolerance of 60 meters accommodates NDW GPS inaccuracies while name-matching constraints prevent incorrect snaps to adjacent roads.
 
+### Candidate Exclusions & Filtering
+To prevent false-positive road closures on local paths and intersections:
+- **Minor Roads**: Road segments with highway classes mapping to priority >= 4 (such as `residential`, `unclassified`, `service`, and `living_street`) are excluded from snapping candidates entirely. C9 signs placed at junctions will instead snap to the major high-priority road they are intended to restrict.
+- **Roundabouts**: Roundabouts (`junction=roundabout` or roundabout highway classes) are excluded from the snapping candidate pool to avoid blocking general intersection routing for microcars.
+
 ## Snapping Score Formulation
 When multiple candidate road segments are found, they are scored using a weighted formulation. The road with the lowest score is selected:
 
@@ -36,6 +41,7 @@ To prevent signs from snapping to minor parallel roads (like residential streets
 To prevent snaps onto crossing roads or parallel routes of a different road:
 - The normalized NDW road name is matched against the normalized OSM road name (stripping suffixes like *straatweg*, *weg*, *dijk*, etc.).
 - **Name Penalty**: If the names do not match, a penalty of `+30.0` is applied (equivalent to being ~43m further away). This ensures that name-matching segments are strongly preferred.
+- **Intersection Warning Bonus (Conditional)**: If no candidate road matches the NDW sign's road name (e.g., because matching minor roads were excluded), the name penalty is reduced to `0.0` for any high-priority road (`priority <= 2`) within 50 meters whose bearing matches the sign's bearing within 30 degrees. This allows intersection pre-warnings on side streets to correctly snap to the main restricted highway instead of other local crossing roads.
 
 ## Pre-Warning Filtering & Validation
 Pre-warning signs (voorwaarschuwingsborden) warn drivers about a downstream restriction. They do not represent active restrictions and must be ignored to prevent false closures.

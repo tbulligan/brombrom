@@ -119,3 +119,93 @@ def test_get_road_speed():
     assert snap_c9_to_roads.get_road_speed(None) is None
     assert snap_c9_to_roads.get_road_speed({}) is None
 
+
+def test_road_filtering():
+    import pandas as pd
+    # Mock roads data
+    df = pd.DataFrame([
+        # Minor roads (priority >= 4)
+        {"highway": "residential", "other_tags": None, "junction": None},
+        {"highway": "unclassified", "other_tags": None, "junction": None},
+        {"highway": "service", "other_tags": None, "junction": None},
+        {"highway": "living_street", "other_tags": None, "junction": None},
+        
+        # Roundabouts
+        {"highway": "primary", "other_tags": '"junction"=>"roundabout"', "junction": None},
+        {"highway": "secondary", "other_tags": None, "junction": "roundabout"},
+        {"highway": "roundabout", "other_tags": None, "junction": None},
+        
+        # Valid roads
+        {"highway": "primary", "other_tags": None, "junction": None},
+        {"highway": "secondary", "other_tags": None, "junction": None},
+        {"highway": "tertiary", "other_tags": None, "junction": None},
+    ])
+    
+    # Priority mapping
+    priority_series = df["highway"].map(snap_c9_to_roads.HIGHWAY_PRIORITY).fillna(99)
+    is_minor = priority_series >= 4
+    
+    # Roundabout checks
+    other_tags_series = df['other_tags'].fillna("").astype(str)
+    highway_series = df['highway'].fillna("").astype(str)
+    junction_series = df['junction'].fillna("").astype(str)
+    
+    is_roundabout = (
+        other_tags_series.str.contains('"junction"=>"roundabout"', regex=False) |
+        highway_series.str.contains('roundabout', regex=False) |
+        (junction_series == 'roundabout')
+    )
+    
+    # Assertions
+    # First 4 should be classified as minor (priority >= 4)
+    assert list(is_minor[:4]) == [True, True, True, True]
+    # Rest should not be minor except highway=roundabout which maps to priority 99
+    assert list(is_minor[4:]) == [False, False, True, False, False, False]
+    
+    # Index 4, 5, 6 should be roundabouts
+    assert list(is_roundabout[4:7]) == [True, True, True]
+    # Rest should not be roundabouts
+    assert list(is_roundabout[:4]) == [False, False, False, False]
+    assert list(is_roundabout[7:]) == [False, False, False]
+
+
+def test_intersection_bonus():
+    import geopandas as gpd
+    import pandas as pd
+    from shapely.geometry import Point, LineString
+    
+    # Sign on a side street (De Dors) approaching primary highway (Kolkweg)
+    # Coords: sign is at (0, 0), facing North (bearing 90)
+    sign = pd.Series({
+        'roadName': 'De Dors',
+        'bearing': 90.0,
+        'side': 'R',
+        'geometry': Point(0, 0)
+    })
+    
+    # Roads in filtered database
+    # Road 1: Kolkweg (primary, priority 1, heading North) -> 10m away
+    # Road 2: Zuideinde (tertiary, priority 3, heading North) -> 8m away
+    roads = gpd.GeoDataFrame([
+        {
+            'osm_id': 101, 'name': 'Kolkweg', 'highway': 'primary', 'priority': 1,
+            'geometry': LineString([(10, -50), (10, 50)]), 'other_tags': ''
+        },
+        {
+            'osm_id': 102, 'name': 'Zuideinde', 'highway': 'tertiary', 'priority': 3,
+            'geometry': LineString([(-8, -50), (-8, 50)]), 'other_tags': ''
+        }
+    ], crs="EPSG:28992")
+    
+    # Run directional snap
+    spatial_index = roads.sindex
+    geoms = roads.geometry.values
+    
+    best_idx, snap_pt = snap_c9_to_roads.directional_snap(sign, roads, spatial_index, geoms, {})
+    
+    # Kolkweg (primary) should win due to the conditional warning bonus
+    assert best_idx == 0
+    assert roads.loc[best_idx]['name'] == 'Kolkweg'
+
+
+
