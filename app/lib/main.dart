@@ -995,9 +995,10 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                   Expanded(
                     child: PageView.builder(
                       controller: _onboardingPageController,
-                      physics: (_onboardingCurrentPage == 1 && !_osmandInstalled)
-                          ? const LockForwardScrollPhysics(parent: PageScrollPhysics())
-                          : const PageScrollPhysics(),
+                      physics: LockForwardScrollPhysics(
+                        lockForward: !_osmandInstalled,
+                        parent: const PageScrollPhysics(),
+                      ),
                       itemCount: slides.length,
                       onPageChanged: (i) => setPageState(() => _onboardingCurrentPage = i),
                       itemBuilder: (context, index) {
@@ -1423,16 +1424,21 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 }
 
 class LockForwardScrollPhysics extends ScrollPhysics {
-  const LockForwardScrollPhysics({super.parent});
+  final bool lockForward;
+
+  const LockForwardScrollPhysics({required this.lockForward, super.parent});
 
   @override
   LockForwardScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return LockForwardScrollPhysics(parent: buildParent(ancestor));
+    return LockForwardScrollPhysics(
+      lockForward: lockForward,
+      parent: buildParent(ancestor),
+    );
   }
 
   @override
   double applyBoundaryConditions(ScrollMetrics position, double value) {
-    if (value > position.pixels) {
+    if (lockForward && value > position.pixels && position.pixels >= position.viewportDimension) {
       return value - position.pixels;
     }
     return super.applyBoundaryConditions(position, value);
