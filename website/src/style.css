@@ -338,49 +338,25 @@ h3,
 }
 
 /* Installation */
-.steps {
-  counter-reset: step;
-  margin-top: 3rem;
-}
-
-.step-item {
+#install {
   display: flex;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-  background: var(--bg-card);
-  padding: 1.5rem;
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  align-items: flex-start;
-}
-
-.step-number {
-  counter-increment: step;
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: var(--primary);
-  color: white;
-  border-radius: 50%;
-  font-weight: bold;
-  flex-shrink: 0;
-  margin-top: 0.25rem;
 }
 
-.step-content {
-  flex: 1;
+#install h2 {
+  text-align: center;
+  background: linear-gradient(to right, #fff, #cbd5e1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.step-content h4 a {
-  color: #fff;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.3);
-}
-
-.step-content h4 a:hover {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
+#install > p {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 3rem;
 }
 
 code {
