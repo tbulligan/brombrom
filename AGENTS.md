@@ -32,6 +32,7 @@ BromBrom is a **multi-component system**:
 ## 🚀 Release Strategy
 *   **Schedule**: Automated builds trigger on the **2nd of every month**.
 *   **Zero-Downtime**: We use `gh release upload --clobber` to overwrite artifacts in-place on the `latest` tag. This prevents 404 errors for users during the update window.
+*   **App Versioning**: Always increase the version number in `app/pubspec.yaml` whenever you update the app (both the version name `n.n.n` and the build number after the `+`). Decide which component of the version number (`major.minor.patch`) to increase based on the nature of the changes (e.g., bump patch for bug fixes, minor for new backward-compatible features, major for breaking changes).
 *   **Commit Messages**: Never use generic or auto-generated commit messages (e.g., "Merge branch 'develop'"). All commit messages—especially merge commits—must be descriptive, follow the conventional commits style, and represent the feature/fix scope rather than the action of merging itself.
     *   **Merge Commits**: Do not use generic messages like `chore(merge): merge develop` or `chore(merge): merge optimized scripts`. Instead, use the appropriate conventional commit type for the combined changes, describing the feature scope (e.g., `perf(etl): integrate optimized road snapping and C9 tagging scripts` or `chore(release): integrate version check fix into main`).
 
