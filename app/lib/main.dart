@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
@@ -170,6 +172,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   static const platform = MethodChannel('com.brombrom.app/package_check');
   bool _osmandInstalled = false;
   bool _notificationPermissionGranted = false;
+  Timer? _onboardingTimer;
   
   // CACHED URLs
   final Map<String, String> _downloadUrls = {};
@@ -442,6 +445,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   @override
   void dispose() {
+    _onboardingTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _onboardingPageController.dispose();
     super.dispose();
@@ -914,6 +918,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   }
 
   Future<void> _dismissOnboarding() async {
+    _onboardingTimer?.cancel();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefOnboardingSeen, true);
     if (mounted) {
@@ -926,6 +931,25 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
           _showOsfInstructionsDialog(path, wasUpdate);
         });
       }
+    }
+  }
+
+  void _onboardingPageChanged(int page) {
+    _onboardingTimer?.cancel();
+    if (page == 1 && !_osmandInstalled) {
+      _onboardingTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+        final installed = await _isOsmAndInstalled();
+        if (installed && mounted) {
+          timer.cancel();
+          setState(() {
+            _osmandInstalled = true;
+          });
+          _onboardingPageController.nextPage(
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
     }
   }
 
@@ -1000,7 +1024,10 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         parent: const PageScrollPhysics(),
                       ),
                       itemCount: slides.length,
-                      onPageChanged: (i) => setPageState(() => _onboardingCurrentPage = i),
+                      onPageChanged: (i) {
+                        setPageState(() => _onboardingCurrentPage = i);
+                        _onboardingPageChanged(i);
+                      },
                       itemBuilder: (context, index) {
                         final slide = slides[index];
                         return Center(
