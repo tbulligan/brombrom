@@ -52,20 +52,14 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          # The Play Store has already used version code 130.
-          # To avoid collision, we add an offset of 100 to the github.run_number.
-          OFFSET=100
-          VERSION_CODE=$(( ${{ github.run_number }} + OFFSET ))
-          echo "Building with version code: $VERSION_CODE"
-
           if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
-            flutter build apk --release --build-number=$VERSION_CODE
-            flutter build appbundle --release --build-number=$VERSION_CODE
+            flutter build apk --release --build-number=${{ github.run_number }}
+            flutter build appbundle --release --build-number=${{ github.run_number }}
           else
             echo "Signing secrets missing, building unsigned/debug-signed APK and AAB"
-            flutter build apk --release --build-number=$VERSION_CODE
-            flutter build appbundle --release --build-number=$VERSION_CODE
+            flutter build apk --release --build-number=${{ github.run_number }}
+            flutter build appbundle --release --build-number=${{ github.run_number }}
           fi
 
       - name: Rename Build Artifacts
