@@ -66,7 +66,9 @@ def create_osmand_deploy_package():
       "prouting_height": "1.6",
       "prouting_length": "3.0",
       "prouting_width": "1.5",
-      "prouting_motor_type": "2.0"
+      "prouting_motor_type": "2.0",
+      "auto_follow_route": "5000",
+      "routing_recalc_distance": "30"
     }
 
     # Exact replication of OsmAnd's native items.json manifest
