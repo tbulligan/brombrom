@@ -32,7 +32,7 @@ See the difference: standard car navigation would route you onto expressways or 
 
 | Car Routing (Forbidden) | BromBrom Routing (Legal & Safe) |
 | :---: | :---: |
-| ![Car Routing](assets/bbm-screenshots/bbm-9.1-vs-car.png) | ![BromBrom Routing](assets/bbm-screenshots/bbm-9.2-vs-microcar.png) |
+| ![Car Routing](assets/bbm-screenshots/bbm-8.1-vs-car.png) | ![BromBrom Routing](assets/bbm-screenshots/bbm-8.2-vs-microcar.png) |
 
 ---
 
@@ -73,20 +73,19 @@ If this is your first time installing BromBrom, you must activate the profile:
 
 7.  Open the OsmAnd menu (three lines button in the corner).
 8.  Go to **Settings** -> **Configure profiles**.
-9.  Scroll down, find **BromBrom** and toggle it **ON**. Then tap **Edit profile list** to manage profiles.
-10. Drag the **BromBrom** profile to the top to make it quickly selectable.
-11. Tap the navigation icon and select the **BromBrom** profile (orange microcar icon).
+9.  **Enable BromBrom** — Scroll down to the profiles list, find **BromBrom** and toggle it **ON**.
+10. Tap the navigation icon and select the **BromBrom** profile (orange microcar icon).
 
 <details>
-  <summary>📸 Step-by-Step Screenshots: Phase 2 (Profile Activation & Ordering)</summary>
+  <summary>📸 Step-by-Step Screenshots: Phase 2 (Profile Activation)</summary>
 
   | 1. Open Menu | 2. Open Settings |
   | :---: | :---: |
   | ![Open Menu](assets/bbm-screenshots/bbm-4-open-menu.png) | ![Open Settings](assets/bbm-screenshots/bbm-5-open-settings.png) |
 
-  | 3. Enable BromBrom & Edit Profile List | 4. Position / Order Profile | 5. Select BromBrom Profile |
-  | :---: | :---: | :---: |
-  | ![Enable BromBrom](assets/bbm-screenshots/bbm-6-enable-brombrom.png) | ![Position Profile](assets/bbm-screenshots/bbm-7-drag-first.png) | ![Select BromBrom](assets/bbm-screenshots/bbm-8-set-brombrom.png) |
+  | 3. Enable BromBrom | 4. Select BromBrom Profile |
+  | :---: | :---: |
+  | ![Enable BromBrom](assets/bbm-screenshots/bbm-6-enable-brombrom.png) | ![Select BromBrom](assets/bbm-screenshots/bbm-7-set-brombrom.png) |
 </details>
 
 
@@ -103,11 +102,10 @@ Because the entire BromBrom profile is packaged into a Smart Folder (`.osf`), ma
 5. Tap **"Replace all"** (update) or **"Apply"** (first time) and wait for the import to finish.
 6. On the **"Import complete"** screen, tap **"Close"**.
 7. Open the OsmAnd menu (three lines in the corner) and go to **Settings**.
-8. Scroll down, find **BromBrom** and toggle it **ON**.
-9. Tap **Edit profile list** and drag **BromBrom** to the top.
-10. In the navigation menu, select the **BromBrom** profile (orange microcar icon).
+8.  **Enable BromBrom** — Scroll down to the profiles list, find **BromBrom** and toggle it **ON**.
+9.  In the navigation menu, select the **BromBrom** profile (orange microcar icon).
 
-> ⚠️ Do not skip steps 6–10. OsmAnd does not enable or activate new profiles automatically.
+> ⚠️ Do not skip steps 6–8. OsmAnd does not enable or activate new profiles automatically.
 
 See the [Manual Install Guide](docs/manual_install.md) for deeper troubleshooting.
 
