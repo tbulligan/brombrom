@@ -67,7 +67,7 @@ def create_osmand_deploy_package():
       "prouting_length": "3.0",
       "prouting_width": "1.5",
       "prouting_motor_type": "2.0",
-      "auto_follow_route": "5000",
+      "auto_follow_route": "5",
       "routing_recalc_distance": "30"
     }
 
