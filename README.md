@@ -51,7 +51,7 @@ The fastest way to install and keep your navigation updated automatically.
 #### Phase 1: Installation & Import (Required Every Month)
 1.  **Download** the **BromBrom Manager App** from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
 2.  **Install** and **Open** the app.
-3.  **Install/Update**: Tap the big orange **"INSTALL / UPDATE BromBrom Navigation"** button.
+3.  **Download & Import**: The app automatically checks for and downloads the update. Once downloaded, review the popup instructions and tap **"OPEN OSMAND"**.
 4.  OsmAnd will open. Check both **"Settings"** and **"Resources"**, then tap **"Continue"**.
 5.  Tap **"Replace all"** (overwrite) or **"Apply"** (first time) and wait for the import to finish.
 6.  On the **"Import complete"** screen, tap **"Close"**.

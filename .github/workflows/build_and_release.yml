@@ -91,24 +91,8 @@ jobs:
           gh release edit stable --title "Latest BromBrom Build" --notes "$NOTES" || \
           gh release create stable --title "Latest BromBrom Build" --notes "$NOTES"
 
-          # 4. Upload raw files for legacy app backwards compatibility
-          # We upload directly from source since dist/ now contains the .osf package
-          gh release download stable -p "routing.xml" -O existing_routing.xml --clobber 2>/dev/null || touch existing_routing.xml
-          
-          if cmp -s existing_routing.xml config/routing.xml; then
-            echo "routing.xml is unchanged, uploading map and OSF only."
-            gh release upload stable \
-              config/routing.xml \
-              OsmAndMapCreator/NL_BromBrom_tagged.obf \
-              dist/BromBrom.osf \
-              --clobber
-          else
-            echo "routing.xml changed, uploading all artifacts."
-            gh release upload stable \
-              config/routing.xml \
-              OsmAndMapCreator/NL_BromBrom_tagged.obf \
-              dist/BromBrom.osf \
-              --clobber
-          fi
+          # 4. Upload unified OSF package
+          echo "Uploading BromBrom.osf to stable release..."
+          gh release upload stable dist/BromBrom.osf --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
