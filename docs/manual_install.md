@@ -23,9 +23,8 @@ The iOS version of OsmAnd natively supports OsmAnd Smart Folders (`.osf`).
 #### Phase 2: Profile Activation (First-Time Installation Only)
 7. Open the OsmAnd menu (three lines button in the corner).
 8. Go to **Settings** -> **Configure profiles**.
-9. Scroll down, find **BromBrom** and toggle it **ON**. Then tap **Edit profile list** to manage profiles.
-10. Drag the **BromBrom** profile to the top to make it quickly selectable.
-11. Tap the navigation icon and select the **BromBrom** profile (orange microcar icon).
+9. **Enable BromBrom** — Scroll down to the profiles list, find the BromBrom profile, and toggle the switch to **ON**.
+10. Tap the navigation icon and select the **BromBrom** profile (orange microcar icon).
 
 ## 🤖 Android Devices (Without Manager App)
 
@@ -46,9 +45,8 @@ If you prefer not to use the BromBrom Manager app, you can achieve the exact sam
 #### Phase 2: Profile Activation (First-Time Installation Only)
 8. Open the OsmAnd menu (three lines button in the corner).
 9. Go to **Settings** -> **Configure profiles**.
-10. Scroll down, find **BromBrom** and toggle it **ON**. Then tap **Edit profile list** to manage profiles.
-11. Drag the **BromBrom** profile to the top to make it quickly selectable.
-12. Tap the navigation icon and select the **BromBrom** profile (orange microcar icon).
+10. **Enable BromBrom** — Scroll down to the profiles list, find the BromBrom profile, and toggle the switch to **ON**.
+11. Tap the navigation icon and select the **BromBrom** profile (orange microcar icon).
 
 ## 📸 Visual Setup Guide
 
@@ -73,9 +71,9 @@ Refer to these screenshots to verify your setup steps.
   | :---: | :---: |
   | ![Open Menu](../assets/bbm-screenshots/bbm-4-open-menu.png) | ![Open Settings](../assets/bbm-screenshots/bbm-5-open-settings.png) |
 
-  | 3. Enable BromBrom & Edit Profile List | 4. Position / Order Profile | 5. Select BromBrom Profile |
-  | :---: | :---: | :---: |
-  | ![Enable BromBrom](../assets/bbm-screenshots/bbm-6-enable-brombrom.png) | ![Position Profile](../assets/bbm-screenshots/bbm-7-drag-first.png) | ![Select BromBrom](../assets/bbm-screenshots/bbm-8-set-brombrom.png) |
+  | 3. Enable BromBrom | 4. Select BromBrom Profile |
+  | :---: | :---: |
+  | ![Enable BromBrom](../assets/bbm-screenshots/bbm-6-enable-brombrom.png) | ![Select BromBrom](../assets/bbm-screenshots/bbm-7-set-brombrom.png) |
 </details>
 
 
