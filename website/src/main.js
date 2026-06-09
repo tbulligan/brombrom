@@ -70,11 +70,9 @@ const translations = {
     carousel_step_7_title: "Navigeer naar Instellingen",
     carousel_step_7_desc: "Ga naar <strong>Instellingen</strong> om je actieve profielen te beheren.",
     carousel_step_8_title: "Activeer BromBrom",
-    carousel_step_8_desc: "Scroll omlaag naar de lijst met profielen, zoek het <strong>BromBrom</strong> profiel en schakel de schuifregelaar in (ON). Tik daarna op <strong>Profielenlijst bewerken</strong>.",
-    carousel_step_9_title: "Sorteer Profielen",
-    carousel_step_9_desc: "Sleep het BromBrom profiel naar boven om het sneller selecteerbaar te maken in het menu.",
-    carousel_step_10_title: "Selecteer BromBrom-profiel",
-    carousel_step_10_desc: "Tik in het navigatiemenu op het profiel-icoon en selecteer het <strong>BromBrom</strong>-profiel (oranje brommobiel-icoon) om het te activeren.",
+    carousel_step_8_desc: "Scroll omlaag naar de lijst met profielen, zoek het <strong>BromBrom</strong> profiel en schakel de schuifregelaar in (ON).",
+    carousel_step_9_title: "Selecteer BromBrom-profiel",
+    carousel_step_9_desc: "Tik in het navigatiemenu op het profiel-icoon en selecteer het <strong>BromBrom</strong>-profiel (oranje brommobiel-icoon) om het te activeren.",
     comparison_title: "Auto vs. Brommobiel Route",
     comparison_desc: "Zie het verschil: standaard autonavigatie stuurt je over verboden snelwegen en C9-wegen (links), terwijl BromBrom je over veilige en legale service-wegen routeert (rechts)."
   },
@@ -144,11 +142,9 @@ const translations = {
     carousel_step_7_title: "Go to Settings",
     carousel_step_7_desc: "Go to <strong>Settings</strong> to manage your active navigation profiles.",
     carousel_step_8_title: "Enable BromBrom",
-    carousel_step_8_desc: "Scroll down to the profiles list, find the <strong>BromBrom</strong> profile, and toggle the switch to ON. Then tap <strong>Edit profile list</strong>.",
-    carousel_step_9_title: "Profile Ordering",
-    carousel_step_9_desc: "Drag the BromBrom profile to the top to make it quickly selectable from the main navigation menu.",
-    carousel_step_10_title: "Select BromBrom Profile",
-    carousel_step_10_desc: "Tap the navigation profile icon in the routing menu and select the <strong>BromBrom</strong> profile (orange microcar icon) to activate it.",
+    carousel_step_8_desc: "Scroll down to the profiles list, find the <strong>BromBrom</strong> profile, and toggle the switch to ON.",
+    carousel_step_9_title: "Select BromBrom Profile",
+    carousel_step_9_desc: "Tap the navigation profile icon in the routing menu and select the <strong>BromBrom</strong> profile (orange microcar icon) to activate it.",
     comparison_title: "Car vs. Microcar Routing",
     comparison_desc: "See the difference: standard car navigation routes you onto forbidden motorways and C9 roads (left), whereas BromBrom routes you over safe and legal service roads (right)."
   }
@@ -163,8 +159,7 @@ const screenshots = [
   'bbm-4-open-menu.png',
   'bbm-5-open-settings.png',
   'bbm-6-enable-brombrom.png',
-  'bbm-7-drag-first.png',
-  'bbm-8-set-brombrom.png'
+  'bbm-7-set-brombrom.png'
 ].map(name => `/assets/bbm-screenshots/${name}`);
 
 // Language Matcher & Carousel State
@@ -173,7 +168,7 @@ let carouselMode = 'first-time';
 let activeIndex = 0; // active index inside visibleIndices[carouselMode]
 
 const visibleIndices = {
-  'first-time': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  'first-time': [0, 1, 2, 3, 4, 5, 6, 7, 8],
   'update': [0, 1, 2, 3, 4]
 };
 
