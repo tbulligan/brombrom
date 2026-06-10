@@ -44,7 +44,6 @@ def create_osmand_deploy_package():
       "last_known_map_rotation": "-0.0",
       "last_known_map_elevation": "90.0",
       "renderer": "Touring-view_(more-contrast-and-details)",
-      "map_magnifier": "1.25",
       "nrenderer_appMode": "car",
       "osmand_theme": "2",
       "nrenderer_baseAppMode": "car",
