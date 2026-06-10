@@ -54,4 +54,6 @@ BromBrom is a **multi-component system**:
 ## ⏱️ Agent Execution Rules
 *   **Sensible Timers**: When launching long-running background tasks (such as map compilation or downloads), set schedule timers for a sensible duration (e.g. 3–5 minutes) rather than polling frequently, to prevent excessive wakeups and optimize token usage.
 *   **Request Reformulation**: If a user request is ambiguous or needs clarification, explicitly reformulate the goal in your response to confirm alignment before proceeding to make codebase edits.
+*   **No Ad-hoc Overrides**: Do not implement local configuration files, custom data layers, or other ad-hoc overrides to correct missing or incorrect traffic signs or roads. The official NDW and OSM datasets must remain the authoritative source of truth. Any data discrepancies must be resolved upstream with NDW/OSM rather than via custom workarounds in this codebase.
+
 
