@@ -16,7 +16,7 @@ BromBrom is a **multi-component system**:
 ### 1. Map Generation Pipeline (.osf Compilation)
 *   **Python ETL**: `scripts/snap_c9_to_roads.py` is the algorithmic core. It decides which roads are "unsafe" based on spatial proximity to C9 signs.
 *   **Java/OsmAnd Compilation**: Ingests tagged data and creates an `.obf` map.
-*   **OSF Packager**: `scripts/generate_osmand_deploy.py` statically bundles the `.obf`, `routing.xml`, and a reverse-engineered **Smart Profile (.json)** into a pristine `BromBrom.osf` package.
+*   **OSF Packager**: `scripts/generate_osmand_deploy.py` statically bundles the `.obf`, `routing.xml`, and a customized **Smart Profile (.json)** into a pristine `BromBrom.osf` package.
 
 ### 2. BromBrom Manager (Installer App)
 *   **Flutter Android App**: Located in `app/`. 
@@ -25,7 +25,7 @@ BromBrom is a **multi-component system**:
 ## 📂 Key Files & Context
 *   `app/lib/main.dart`: Core logic for the Android installer and AppLifecycle state machine.
 *   `.github/workflows/build_and_release.yml`: The automation engine. Uploads the final OSF.
-*   `scripts/generate_osmand_deploy.py`: Master compiler for `.osf`. The `profile_brombrom.json` contained here is hardcoded from a pristine native OsmAnd export.
+*   `scripts/generate_osmand_deploy.py`: Master compiler for `.osf`. The `profile_brombrom.json` generated here is custom-configured for optimized microcar navigation.
 *   `scripts/snap_c9_to_roads.py`: Algorithmic core affecting user safety.
 *   `docs/snapping_logic.md`: Algorithmic documentation for spatial snapping and exemptions. Must be kept up to date whenever the snapping logic is modified.
 

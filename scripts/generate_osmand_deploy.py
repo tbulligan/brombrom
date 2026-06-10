@@ -19,7 +19,7 @@ def create_osmand_deploy_package():
     if osf_path.exists():
         osf_path.unlink()
 
-    # Exact replication of OsmAnd's native PROFILE JSON
+    # Custom OsmAnd profile JSON tailored for microcar navigation
     osmand_profile_json = {
       "force_private_access_routing": "false",
       "default_driving_region": "EUROPE_ASIA",
@@ -44,6 +44,7 @@ def create_osmand_deploy_package():
       "last_known_map_rotation": "-0.0",
       "last_known_map_elevation": "90.0",
       "renderer": "Touring-view_(more-contrast-and-details)",
+      "map_magnifier": "1.25",
       "nrenderer_appMode": "car",
       "osmand_theme": "2",
       "nrenderer_baseAppMode": "car",
@@ -57,7 +58,7 @@ def create_osmand_deploy_package():
       "OsmAnd (online tiles)_param_max": "0.0",
       "OsmAnd (online tiles)_param_step": "0.0",
       "nrenderer_depthContours": "true",
-      "show_next_turn_info": "false",
+      "show_next_turn_info": "true",
       "simple_widget_sizeroute_info": "MEDIUM",
       "route_info_widget_display_mode": "ARRIVAL_TIME",
       "route_info_widget_display_priority": "DESTINATION_FIRST",
@@ -71,7 +72,7 @@ def create_osmand_deploy_package():
       "routing_recalc_distance": "30"
     }
 
-    # Exact replication of OsmAnd's native items.json manifest
+    # OsmAnd items.json manifest
     items_manifest = {
       "version": 3,
       "items": [
