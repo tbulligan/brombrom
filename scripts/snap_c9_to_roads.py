@@ -31,6 +31,9 @@ NEGATIVE_GUARDS_PATTERN = re.compile(r'geen|verboden|ook voor')
 # 4. Pre-warnings (Must NOT have)
 # Matches NDW voorwaarschuwingsborden with type "VOOR"
 PRE_WARNING_PATTERN = re.compile(r"['\"]type['\"]\s*:\s*['\"]VOOR['\"]", re.IGNORECASE)
+
+# 5. Speed limit parsing pattern
+MAXSPEED_PATTERN = re.compile(r'"maxspeed"=>"([^"]+)"')
 def normalize_name(name):
     if not name or pd.isna(name):
         return ""
@@ -110,7 +113,7 @@ def get_road_speed(road_row):
         return None
     if not tags_str or pd.isna(tags_str):
         return None
-    match = re.search(r'"maxspeed"=>"([^"]+)"', tags_str)
+    match = MAXSPEED_PATTERN.search(tags_str)
     if match:
         val = match.group(1).strip()
         if val in ['50', '30', '15', '5', 'walk', 'NL:15', 'NL:30', 'NL:50']:
@@ -275,15 +278,14 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     if len(candidates) == 0:
         return None, None
 
+    candidates_df = roads_gdf.iloc[candidates]
+
     # Check if any candidate road matches the NDW sign roadName
     ndw_name = row.get("roadName")
     any_name_matched = False
-    for idx in candidates:
-        road_row = roads_gdf.iloc[idx]
-        osm_name = road_row.get("name")
-        if check_name_match(ndw_name, osm_name):
-            any_name_matched = True
-            break
+    names_series = candidates_df.get("name")
+    if names_series is not None:
+        any_name_matched = any(check_name_match(ndw_name, name) for name in names_series)
 
     best_idx, best_score = None, float("inf")
     best_snap_pt = None
@@ -291,8 +293,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     # Optimization: Access geometries directly
     candidate_geoms = roads_geoms[candidates]
 
-    for idx, line in zip(candidates, candidate_geoms):
-        road_row = roads_gdf.iloc[idx]
+    for (label, road_row), line in zip(candidates_df.iterrows(), candidate_geoms):
         proj_dist = line.project(point)
         proj_pt = line.interpolate(proj_dist)
 
@@ -357,7 +358,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
 
         if score < best_score:
             best_score = score
-            best_idx = roads_gdf.index[idx] # Label index
+            best_idx = label
             best_snap_pt = proj_pt
 
     return best_idx, best_snap_pt
@@ -426,16 +427,13 @@ def main():
     if not snapped_signs.empty:
         snapped_signs['norm_name'] = snapped_signs['roadName'].apply(normalize_name)
         
-        speeds = []
-        highways = []
-        for r_idx in snapped_signs['road_index']:
-            road_row = roads_gdf.loc[r_idx]
-            speeds.append(get_road_speed(road_row))
-            highways.append(road_row.get('highway', ''))
-        snapped_signs['road_speed'] = speeds
-        snapped_signs['road_highway'] = highways
+        snapped_roads = roads_gdf.loc[snapped_signs['road_index']]
+        snapped_signs['road_speed'] = snapped_roads.apply(get_road_speed, axis=1).values
+        snapped_signs['road_highway'] = snapped_roads['highway'].fillna('').values
         
         pre_warnings = set()
+        snapped_sindex = snapped_signs.sindex
+        
         for idx_A, row_A in snapped_signs.iterrows():
             speed_A = row_A['road_speed']
             highway_A = row_A['road_highway']
@@ -452,10 +450,17 @@ def main():
                 
             geom_A = row_A.geometry
             
-            for idx_B, row_B in snapped_signs.iterrows():
+            # Query spatial index for signs within 1.5 km bounding box
+            bbox = box(geom_A.x - 1500.0, geom_A.y - 1500.0, geom_A.x + 1500.0, geom_A.y + 1500.0)
+            candidate_pos_indices = snapped_sindex.query(bbox)
+            
+            for pos_B in candidate_pos_indices:
+                idx_B = snapped_signs.index[pos_B]
                 if idx_A == idx_B:
                     continue
                     
+                row_B = snapped_signs.iloc[pos_B]
+                
                 # Must be the same road
                 if not name_A or name_A != row_B['norm_name']:
                     continue
