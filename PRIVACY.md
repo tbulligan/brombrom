@@ -31,5 +31,5 @@ We may update our Privacy Policy from time to time. We will notify you of any ch
 ## 5. Contact Us
 
 If you have any questions about this Privacy Policy, you can contact us:
-* By email: brombrom@bulligan.com
+* Via the contact form: https://brombrom.bulligan.com/#contact
 * Via GitHub: https://github.com/tbulligan/brombrom/issues

@@ -501,6 +501,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Handle URL hash to open contact modal directly
+  const handleHashContact = () => {
+    if (window.location.hash === '#contact') {
+      if (contactModal) {
+        contactModal.classList.add('active');
+        if (window.turnstile) {
+          window.turnstile.reset();
+        }
+      }
+    }
+  };
+
+  // Run on page load and hash change
+  handleHashContact();
+  window.addEventListener('hashchange', handleHashContact);
+
   updateLanguage('nl');
   initCarousel();
   fetchLatestVersion();
