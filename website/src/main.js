@@ -423,7 +423,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', (e) => {
     if (e.target && e.target.id === 'open-contact-btn') {
       e.preventDefault();
-      if (contactModal) contactModal.classList.add('active');
+      if (contactModal) {
+        contactModal.classList.add('active');
+        if (window.turnstile) {
+          window.turnstile.reset();
+        }
+      }
     }
   });
 
@@ -442,8 +447,12 @@ document.addEventListener('DOMContentLoaded', () => {
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const submitBtn = contactForm.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+
       const formData = new FormData(contactForm);
       if (formData.get('confirm_email')) {
+        if (submitBtn) submitBtn.disabled = false;
         return; // Honeypot triggered
       }
 
@@ -483,6 +492,11 @@ document.addEventListener('DOMContentLoaded', () => {
             : 'Sending failed. Please try again later.';
           contactStatus.className = 'contact-status error';
         }
+        if (window.turnstile) {
+          window.turnstile.reset();
+        }
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
       }
     });
   }
