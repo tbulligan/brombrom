@@ -213,6 +213,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'help': 'Help',
       'buy_coffee': 'Trakteer me op een koffie',
       'visit_website': 'Visuele handleiding',
+      'faq_title': 'Veelgestelde Vragen',
       'show_logs': 'Logboeken tonen',
       'hide_logs': 'Logboeken verbergen',
       'ob_slide1_title': 'Navigeer veilig met je Brommobiel',
@@ -270,6 +271,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       'help': 'Help',
       'buy_coffee': 'Buy me a coffee',
       'visit_website': 'Visual Setup Guide',
+      'faq_title': 'Frequently Asked Questions',
       'show_logs': 'Show Debug Logs',
       'hide_logs': 'Hide Debug Logs',
       'ob_slide1_title': 'Navigate Safely in Your Microcar',
@@ -852,6 +854,19 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
+  void _launchFaqUrl() async {
+    const url = "https://brombrom.bulligan.com/#faq";
+    try {
+      final AndroidIntent intent = AndroidIntent(
+        action: 'action_view',
+        data: url,
+      );
+      await intent.launch();
+    } catch (e) {
+      _log("Could not launch FAQ link: $e");
+    }
+  }
+
   Widget _buildInstallOsmAndAction() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1337,6 +1352,26 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                             const WidgetSpan(child: SizedBox(width: 8)),
                             TextSpan(
                               text: _t('visit_website'),
+                              style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: _launchFaqUrl,
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            const WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: Icon(Icons.help_outline, color: Colors.blue, size: 20),
+                            ),
+                            const WidgetSpan(child: SizedBox(width: 8)),
+                            TextSpan(
+                              text: _t('faq_title'),
                               style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
                             ),
                           ],
