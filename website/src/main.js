@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const response = await fetch('https://brombrom-mailer.tomaso-bulligan.workers.dev', {
+        const response = await fetch('https://bulligan-form-mailer.tomaso-bulligan.workers.dev', {
           method: 'POST',
           body: JSON.stringify(Object.fromEntries(formData)),
           headers: {
