@@ -53,7 +53,13 @@ const translations = {
     faq_q8: "Er gebeurt niets of de import mislukt nadat ik op \"OPEN OSMAND\" tik in de Manager app. Wat kan ik doen?",
     faq_a8: "Dit kan gebeuren als OsmAnd al op de achtergrond actief is of in een ander menu staat, waardoor Android de bestanden niet correct kan doorsturen.<br/><br/><strong>De oplossing:</strong> Sluit OsmAnd volledig af voordat je de update start. Swipe OsmAnd weg uit het scherm met 'recente apps' op je telefoon. Open daarna de BromBrom Manager opnieuw en tik op de knop om de installatie te starten. OsmAnd start dan schoon op en zal het bestand direct succesvol importeren.",
     faq_q9: "Is BromBrom gratis? Mag ik de app commercieel gebruiken?",
-    faq_a9: "BromBrom is volledig gratis voor <strong>persoonlijk en niet-commercieel gebruik</strong> onder de bijbehorende licentie. Commercieel gebruik, herdistributie of modificatie is niet toegestaan zonder voorafgaande schriftelijke toestemming.<br/><br/>Voor vragen over commerciële licenties of samenwerkingen kun je direct contact met mij opnemen.",
+    faq_a9: "BromBrom is volledig gratis voor <strong>persoonlijk en niet-commercieel gebruik</strong> onder de bijbehorende licentie. Commercieel gebruik, herdistributie of modificatie is niet toegestaan zonder voorafgaande schriftelijke toestemming.<br/><br/>Voor vragen over commerciële licenties of samenwerkingen kun je <a href=\"#\" id=\"open-contact-btn\" class=\"link-subtle\" style=\"text-decoration: underline;\">direct contact met mij opnemen</a>.",
+    contact_title: "Contact Opnemen",
+    contact_desc: "Heb je vragen over commercieel gebruik of samenwerkingen? Stuur direct een bericht.",
+    contact_label_name: "Naam",
+    contact_label_email: "E-mailadres",
+    contact_label_msg: "Bericht",
+    contact_btn_send: "Verstuur Bericht",
     carousel_section_title: "Visuele Handleiding",
     carousel_mode_first_time: "Eerste Installatie",
     carousel_mode_update: "Updates",
@@ -129,7 +135,13 @@ const translations = {
     faq_q8: "Nothing happens or the import fails after I tap \"OPEN OSMAND\" in the Manager app. What should I do?",
     faq_a8: "This can happen if OsmAnd is already running in the background or open in another menu, which can cause Android to fail to deliver the files correctly.<br/><br/><strong>The solution:</strong> Completely close OsmAnd before starting the update. Swipe OsmAnd away from your phone's 'recent apps' screen. Then, open BromBrom Manager again and tap the update button. OsmAnd will start clean and import the file successfully.",
     faq_q9: "Is BromBrom free? Can I use it commercially?",
-    faq_a9: "BromBrom is completely free for <strong>personal, non-commercial use</strong> under its license. Commercial use, redistribution, or modification is prohibited without prior written consent.<br/><br/>For commercial inquiries or partnerships, please contact me directly.",
+    faq_a9: "BromBrom is completely free for <strong>personal, non-commercial use</strong> under its license. Commercial use, redistribution, or modification is prohibited without prior written consent.<br/><br/>For commercial inquiries or partnerships, please <a href=\"#\" id=\"open-contact-btn\" class=\"link-subtle\" style=\"text-decoration: underline;\">contact me directly</a>.",
+    contact_title: "Get in Touch",
+    contact_desc: "Have questions about commercial use or partnerships? Send a message directly.",
+    contact_label_name: "Name",
+    contact_label_email: "Email Address",
+    contact_label_msg: "Message",
+    contact_btn_send: "Send Message",
     carousel_section_title: "Visual Setup Guide",
     carousel_mode_first_time: "First-Time Setup",
     carousel_mode_update: "Updates",
@@ -401,6 +413,79 @@ document.addEventListener('DOMContentLoaded', () => {
       item.classList.toggle('active');
     });
   });
+
+  // Contact Modal Logic
+  const contactModal = document.getElementById('contact-modal');
+  const closeContactBtn = document.getElementById('close-contact-btn');
+  const contactForm = document.getElementById('contact-form');
+  const contactStatus = document.getElementById('contact-status');
+
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'open-contact-btn') {
+      e.preventDefault();
+      if (contactModal) contactModal.classList.add('active');
+    }
+  });
+
+  if (closeContactBtn && contactModal) {
+    closeContactBtn.addEventListener('click', () => {
+      contactModal.classList.remove('active');
+      if (contactForm) contactForm.reset();
+      if (contactStatus) {
+        contactStatus.textContent = '';
+        contactStatus.className = 'contact-status';
+      }
+    });
+  }
+
+  if (contactForm) {
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(contactForm);
+      if (formData.get('confirm_email')) {
+        return; // Honeypot triggered
+      }
+
+      if (contactStatus) {
+        contactStatus.textContent = currentLang === 'nl' ? 'Verzenden...' : 'Sending...';
+        contactStatus.className = 'contact-status';
+      }
+
+      try {
+        const response = await fetch('https://brombrom-mailer.tomaso-bulligan.workers.dev', {
+          method: 'POST',
+          body: JSON.stringify(Object.fromEntries(formData)),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          if (contactStatus) {
+            contactStatus.textContent = currentLang === 'nl' ? 'Bericht succesvol verzonden!' : 'Message sent successfully!';
+            contactStatus.className = 'contact-status success';
+          }
+          contactForm.reset();
+          if (window.turnstile) {
+            window.turnstile.reset();
+          }
+        } else {
+          throw new Error(result.error || 'Submission failed');
+        }
+      } catch (err) {
+        console.error('Contact Form Error:', err);
+        if (contactStatus) {
+          contactStatus.textContent = currentLang === 'nl' 
+            ? 'Verzenden mislukt. Probeer het later opnieuw.' 
+            : 'Sending failed. Please try again later.';
+          contactStatus.className = 'contact-status error';
+        }
+      }
+    });
+  }
 
   updateLanguage('nl');
   initCarousel();
