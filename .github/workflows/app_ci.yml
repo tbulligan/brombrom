@@ -12,6 +12,10 @@ on:
       - 'app/**'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test_and_build:
     runs-on: ubuntu-latest
