@@ -56,4 +56,11 @@ BromBrom is a **multi-component system**:
 *   **Request Reformulation**: If a user request is ambiguous or needs clarification, explicitly reformulate the goal in your response to confirm alignment before proceeding to make codebase edits.
 *   **No Ad-hoc Overrides**: Do not implement local configuration files, custom data layers, or other ad-hoc overrides to correct missing or incorrect traffic signs or roads. The official NDW and OSM datasets must remain the authoritative source of truth. Any data discrepancies must be resolved upstream with NDW/OSM rather than via custom workarounds in this codebase.
 
+## 🦄 Coding Philosophy (Ponytail Dev Mode)
+AI agents working on this repository MUST adhere to the "lazy senior dev" philosophy defined in [.agents/ponytail.md](file:///home/tomaso/projects/brombrom/.agents/ponytail.md). Key principles:
+*   **YAGNI**: Question if a feature needs to be built at all. Prefer deletion over addition, and boring over clever.
+*   **No Over-engineering**: Do not introduce unrequested abstractions, boilerplate, or new dependencies if they can be avoided.
+*   **Leverage Platform & Stdlib**: Prioritize native platform features and standard library functions before writing custom code.
+*   **Quality over Haste**: While code should be minimal, do not compromise on security, input validation, or error handling. Ensure non-trivial logic includes a simple test check.
+
 

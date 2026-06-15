@@ -546,7 +546,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // ponytail: loop over step keys instead of manual repetition
                       ...(() {
                         final stepStyle = TextStyle(fontSize: 14, color: Colors.grey[800]);
                         final steps = wasUpdate
@@ -696,7 +695,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     await Share.shareXFiles([xFile]);
   }
 
-  // ponytail: single method replaces three identical _launch*Url methods
   void _launchUrl(String url) async {
     try {
       await AndroidIntent(action: 'action_view', data: url).launch();
