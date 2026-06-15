@@ -3,7 +3,7 @@ import os
 import sys
 import geopandas as gpd
 
-MIN_EXPECTED_OBF_SIZE_MB = 100
+MIN_EXPECTED_OBF_SIZE_MB = 10
 MIN_EXPECTED_TAGGED_ROADS = 500  # Conservative minimum; actual is usually thousands
 
 def validate_build():

@@ -44,7 +44,7 @@ else
     fi
 
     # Run OsmAndMapCreator
-    JAVA_OPTS="-Xmx6G -Xms2G"
+    JAVA_OPTS="-Xmx4800m -Xms2000m -XX:+UseG1GC -XX:+UseStringDeduplication"
     java -Djava.util.logging.config.file="$OMC_DIR/logging.properties" \
         $JAVA_OPTS \
         -cp "$OMC_DIR/OsmAndMapCreator.jar:$OMC_DIR/lib/*" \
