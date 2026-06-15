@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # --- Stage 1: Build BRouter ---
-FROM eclipse-temurin:17-jdk AS brouter-builder
+FROM eclipse-temurin:17-jdk-noble AS brouter-builder
 RUN apt-get update && apt-get install -y git
 RUN git clone --depth 1 https://github.com/abrensch/brouter.git /src
 WORKDIR /src
