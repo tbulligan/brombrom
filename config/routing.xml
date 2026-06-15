@@ -31,6 +31,8 @@
 		<parameter id="motor_type" name="Motor type" description="For CO2 computation" type="numeric" values="0,1,2,3,4,5,6" valueDescriptions="-,Petrol,Diesel,Lpg,Gas,Electric,Hybrid"/>
 
 		<way attribute="access">
+			<select value="-1" t="microcar" v="no"/>
+			<select value="1" t="microcar" v="yes"/>
 			<select value="-1" t="osmand_change" v="delete"/>
 			<select value="-1" t="highway" v="proposed"/>
 			<select value="-1" t="highway" v="construction"/>
@@ -154,7 +156,6 @@
 			<select value="-1" t="highway" v="motorway"/>
 			<select value="-1" t="highway" v="motorway_link"/>
 			<select value="-1" t="motorroad" v="yes"/>
-			<select value="-1" t="microcar" v="no"/>
 			<select value="1" t="junction" v="roundabout"/>
 			<select value="-1" t="highway" v="trunk"/>
 			<select value="-1" t="highway" v="trunk_link"/>
