@@ -15,6 +15,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'translations.dart';
 
 // ── Background Task Constants ──
 const String _bgTaskName = "com.brombrom.updateCheck";
@@ -177,126 +178,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   // CACHED URLs
   final Map<String, String> _downloadUrls = {};
 
-  final Map<String, Map<String, String>> _translations = {
-    'nl': {
-      'app_name': 'BromBrom Manager',
-      'access_required': 'Toegang Vereist',
-      'access_desc': 'Om bestanden te downloaden naar je Downloads-map en versies te controleren, hebben we \'Toegang tot alle bestanden\' nodig.',
-      'allow_access': 'TOEGANG TOEGESTAAN',
-      'status_permissions': 'Permissies controleren...',
-      'status_checking': 'GitHub & lokale bestanden controleren...',
-      'status_error': 'Verbindings-/API-fout',
-      'status_dl': 'Bezig met downloaden van {file}...',
-      'status_dl_done': 'Download voltooid!',
-      'status_dl_error': 'Fout: {error}',
-      'latest_release': 'Laatste release',
-      'btn_osf_update': 'Bijwerken',
-      'on_disk': 'Lokaal aanwezig',
-      'osf_dialog_title': 'BromBrom instellen',
-      'osf_dialog_p1': 'OsmAnd opent zo direct. Volg deze stappen nauwkeurig:',
-      'osf_dialog_step1': '1. Open het bestand met OsmAnd.',
-      'osf_dialog_step2': '2. Vink zowel "Instellingen" als "Bronnen" aan en tik op "Doorgaan".',
-      'osf_dialog_step3': '3. Kies "Alles vervangen" indien gevraagd.',
-      'osf_dialog_step4': '4. Tik op "Sluiten" zodra de import is voltooid.',
-      'osf_dialog_step5': '5. Open het OsmAnd-hoofdmenu (drie streepjes).',
-      'osf_dialog_step6': '6. Ga naar Instellingen.',
-      'osf_dialog_step7': '7. Zoek "BromBrom" en schakel de schuifregelaar in (ON).',
-      'osf_dialog_step8': '8. Tik op het profiel-icoon in het navigatiemenu en selecteer BromBrom.',
-      'osf_dialog_warning': '⚠️ Sla stap 5–7 niet over — OsmAnd activeert nieuwe profielen niet automatisch.',
-      'osf_dialog_btn': 'OPEN OSMAND',
-      'osf_dialog_title_update': 'BromBrom bijwerken',
-      'osf_dialog_p1_update': 'OsmAnd opent zo direct om de kaart bij te werken. Volg deze stappen:',
-      'osf_dialog_step1_update': '1. Open het bestand met OsmAnd.',
-      'osf_dialog_step2_update': '2. Vink zowel "Instellingen" als "Bronnen" aan en tik op "Doorgaan".',
-      'osf_dialog_step3_update': '3. Kies "Alles vervangen" indien gevraagd.',
-      'osf_dialog_step4_update': '4. Tik op "Sluiten" zodra de import is voltooid.',
-      'help': 'Help',
-      'buy_coffee': 'Trakteer me op een koffie',
-      'visit_website': 'Visuele handleiding',
-      'faq_title': 'Veelgestelde Vragen',
-      'show_logs': 'Logboeken tonen',
-      'hide_logs': 'Logboeken verbergen',
-      'ob_slide1_title': 'Navigeer veilig met je Brommobiel',
-      'ob_slide1_body': 'BromBrom voegt een speciaal navigatieprofiel toe aan OsmAnd. Je vermijdt automatisch snelwegen en C9-wegen.',
-      'ob_slide2_title': 'Je hebt OsmAnd nodig',
-      'ob_slide2_body': 'BromBrom werkt binnen de gratis OsmAnd app. Als je OsmAnd nog niet hebt, download het dan nu vóórdat je verdergaat.',
-      'ob_slide2_btn': 'Download OsmAnd',
-      'ob_slide3_title': 'Altijd de nieuwste kaart',
-      'ob_slide3_body': 'BromBrom controleert elke dag op nieuwe kaarten. Zet meldingen aan en je krijgt automatisch een seintje wanneer er een update klaarstaat.',
-      'ob_slide3_btn': 'Meldingen inschakelen',
-      'ob_notifications_enabled': 'Meldingen aan ✓',
-      'ob_skip': 'Niet nu',
-      'ob_next': 'Volgende',
-      'ob_finish': 'Aan de slag!',
-      'btn_navigate': 'Navigeren',
-      'btn_reinstall_help': 'BromBrom opnieuw installeren in OsmAnd',
-      'ob_install_osmand_required': 'Installeer OsmAnd om verder te gaan',
-      'ob_notification_permission_required': 'Verleen meldingstoestemming om te voltooien',
-      'ob_osmand_installed_checkmark': 'OsmAnd geïnstalleerd ✓',
-      'install_osmand': 'Installeer OsmAnd',
-      'osmand_required_desc': 'OsmAnd is vereist om BromBrom te gebruiken.',
-    },
-    'en': {
-      'app_name': 'BromBrom Manager',
-      'access_required': 'Access Required',
-      'access_desc': 'To download files to your Downloads folder and check versions, we need \'All Files Access\'.',
-      'allow_access': 'ALLOW ACCESS',
-      'status_permissions': 'Checking permissions...',
-      'status_checking': 'Checking GitHub & Local files...',
-      'status_error': 'Connection/API Error',
-      'status_dl': 'Downloading {file}...',
-      'status_dl_done': 'Download Complete!',
-      'status_dl_error': 'Error: {error}',
-      'latest_release': 'Latest Release',
-      'btn_osf_update': 'Update',
-      'on_disk': 'On device',
-      'osf_dialog_title': 'Set up BromBrom',
-      'osf_dialog_p1': 'OsmAnd will open now. Follow these steps exactly:',
-      'osf_dialog_step1': '1. Open the file with OsmAnd.',
-      'osf_dialog_step2': '2. Check both "Settings" and "Resources" and tap "Continue".',
-      'osf_dialog_step3': '3. Select "Replace all" if prompted.',
-      'osf_dialog_step4': '4. Tap "Close" once the import is complete.',
-      'osf_dialog_step5': '5. Open the OsmAnd main menu (three lines).',
-      'osf_dialog_step6': '6. Go to Settings.',
-      'osf_dialog_step7': '7. Find "BromBrom" and switch the toggle to ON.',
-      'osf_dialog_step8': '8. Tap the navigation profile icon and select BromBrom.',
-      'osf_dialog_warning': '⚠️ Do not skip steps 5–7 — OsmAnd does not enable or activate new profiles automatically.',
-      'osf_dialog_btn': 'OPEN OSMAND',
-      'osf_dialog_title_update': 'Update BromBrom',
-      'osf_dialog_p1_update': 'OsmAnd will open now to update the map. Follow these steps:',
-      'osf_dialog_step1_update': '1. Open the file with OsmAnd.',
-      'osf_dialog_step2_update': '2. Check both "Settings" and "Resources" and tap "Continue".',
-      'osf_dialog_step3_update': '3. Select "Replace all" if prompted.',
-      'osf_dialog_step4_update': '4. Tap "Close" once the import is complete.',
-      'help': 'Help',
-      'buy_coffee': 'Buy me a coffee',
-      'visit_website': 'Visual Setup Guide',
-      'faq_title': 'Frequently Asked Questions',
-      'show_logs': 'Show Debug Logs',
-      'hide_logs': 'Hide Debug Logs',
-      'ob_slide1_title': 'Navigate Safely in Your Microcar',
-      'ob_slide1_body': 'BromBrom adds a dedicated navigation profile to OsmAnd that automatically avoids motorways and C9-restricted roads.',
-      'ob_slide2_title': 'You need OsmAnd',
-      'ob_slide2_body': 'BromBrom works inside the free OsmAnd app. If you don\'t have OsmAnd yet, download it now before continuing.',
-      'ob_slide2_btn': 'Download OsmAnd',
-      'ob_slide3_title': 'Always the Latest Map',
-      'ob_slide3_body': 'BromBrom checks daily for new maps. Enable notifications and you\'ll automatically be notified when an update is ready.',
-      'ob_slide3_btn': 'Enable Notifications',
-      'ob_notifications_enabled': 'Notifications enabled ✓',
-      'ob_skip': 'Not now',
-      'ob_next': 'Next',
-      'ob_finish': 'Let\'s go!',
-      'btn_navigate': 'Navigate',
-      'btn_reinstall_help': 'Re-install BromBrom in OsmAnd',
-      'ob_install_osmand_required': 'Install OsmAnd to continue',
-      'ob_notification_permission_required': 'Grant notification permission to finish',
-      'ob_osmand_installed_checkmark': 'OsmAnd is installed ✓',
-      'install_osmand': 'Install OsmAnd',
-      'osmand_required_desc': 'OsmAnd is required to use BromBrom.',
-    }
-  };
-
-  String _t(String key) => _translations[_locale]?[key] ?? key;
+  String _t(String key) => translations[_locale]?[key] ?? key;
 
   Future<void> _loadLocale() async {
     final prefs = await SharedPreferences.getInstance();
@@ -664,50 +546,36 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         ],
                       ),
                       const SizedBox(height: 16),
-                      ...(wasUpdate
-                          ? <Widget>[
-                              Text(_t('osf_dialog_p1_update'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
-                              const SizedBox(height: 12),
-                              Text(_t('osf_dialog_step1_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 6),
-                              Text(_t('osf_dialog_step2_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 6),
-                              Text(_t('osf_dialog_step3_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 6),
-                              Text(_t('osf_dialog_step4_update'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                            ]
-                          : <Widget>[
-                              Text(_t('osf_dialog_p1'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
-                              const SizedBox(height: 12),
-                              Text(_t('osf_dialog_step1'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 6),
-                              Text(_t('osf_dialog_step2'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 6),
-                              Text(_t('osf_dialog_step3'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 6),
-                              Text(_t('osf_dialog_step4'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 6),
-                              Text(_t('osf_dialog_step5'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 6),
-                              Text(_t('osf_dialog_step6'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 6),
-                              Text(_t('osf_dialog_step7'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 6),
-                              Text(_t('osf_dialog_step8'), style: TextStyle(fontSize: 14, color: Colors.grey[800])),
-                              const SizedBox(height: 16),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange[50],
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.orange[200]!),
-                                ),
-                                child: Text(
-                                  _t('osf_dialog_warning'),
-                                  style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
-                                ),
+                      // ponytail: loop over step keys instead of manual repetition
+                      ...(() {
+                        final stepStyle = TextStyle(fontSize: 14, color: Colors.grey[800]);
+                        final steps = wasUpdate
+                            ? ['osf_dialog_step1_update', 'osf_dialog_step2_update', 'osf_dialog_step3_update', 'osf_dialog_step4_update']
+                            : ['osf_dialog_step1', 'osf_dialog_step2', 'osf_dialog_step3', 'osf_dialog_step4', 'osf_dialog_step5', 'osf_dialog_step6', 'osf_dialog_step7', 'osf_dialog_step8'];
+                        return <Widget>[
+                          Text(_t(wasUpdate ? 'osf_dialog_p1_update' : 'osf_dialog_p1'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
+                          const SizedBox(height: 12),
+                          for (final key in steps) ...[
+                            Text(_t(key), style: stepStyle),
+                            const SizedBox(height: 6),
+                          ],
+                          if (!wasUpdate) ...[
+                            const SizedBox(height: 10),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.orange[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.orange[200]!),
                               ),
-                            ]),
+                              child: Text(
+                                _t('osf_dialog_warning'),
+                                style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ];
+                      })(),
                       const SizedBox(height: 24),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -725,7 +593,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       ),
                       const SizedBox(height: 8),
                       TextButton.icon(
-                        onPressed: _launchWebsiteUrl,
+                        onPressed: () => _launchUrl('https://brombrom.bulligan.com/#visual-guide'),
                         icon: const Icon(Icons.menu_book, size: 18, color: Colors.blue),
                         label: Text(
                           _locale == 'nl' ? 'Visuele Gids' : 'Visual Guide',
@@ -828,42 +696,12 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     await Share.shareXFiles([xFile]);
   }
 
-  void _launchCoffeeUrl() async {
-    const url = "https://buymeacoffee.com/brombrom";
+  // ponytail: single method replaces three identical _launch*Url methods
+  void _launchUrl(String url) async {
     try {
-      final AndroidIntent intent = AndroidIntent(
-        action: 'action_view',
-        data: url,
-      );
-      await intent.launch();
+      await AndroidIntent(action: 'action_view', data: url).launch();
     } catch (e) {
-      _log("Could not launch coffee link: $e");
-    }
-  }
-
-  void _launchWebsiteUrl() async {
-    const url = "https://brombrom.bulligan.com/#visual-guide";
-    try {
-      final AndroidIntent intent = AndroidIntent(
-        action: 'action_view',
-        data: url,
-      );
-      await intent.launch();
-    } catch (e) {
-      _log("Could not launch website link: $e");
-    }
-  }
-
-  void _launchFaqUrl() async {
-    const url = "https://brombrom.bulligan.com/#faq";
-    try {
-      final AndroidIntent intent = AndroidIntent(
-        action: 'action_view',
-        data: url,
-      );
-      await intent.launch();
-    } catch (e) {
-      _log("Could not launch FAQ link: $e");
+      _log("Could not launch $url: $e");
     }
   }
 
@@ -1341,7 +1179,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       const SizedBox(height: 8),
                     ],
                     TextButton(
-                      onPressed: _launchWebsiteUrl,
+                      onPressed: () => _launchUrl('https://brombrom.bulligan.com/#visual-guide'),
                       child: Text.rich(
                         TextSpan(
                           children: [
@@ -1361,7 +1199,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: _launchFaqUrl,
+                      onPressed: () => _launchUrl('https://brombrom.bulligan.com/#faq'),
                       child: Text.rich(
                         TextSpan(
                           children: [
@@ -1381,7 +1219,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: _launchCoffeeUrl,
+                      onPressed: () => _launchUrl('https://buymeacoffee.com/brombrom'),
                       child: Text.rich(
                         TextSpan(
                           children: [

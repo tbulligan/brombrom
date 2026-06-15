@@ -34,6 +34,12 @@ PRE_WARNING_PATTERN = re.compile(r"['\"]type['\"]\s*:\s*['\"]VOOR['\"]", re.IGNO
 
 # 5. Speed limit parsing pattern
 MAXSPEED_PATTERN = re.compile(r'"maxspeed"=>"([^"]+)"')
+# ponytail: pre-sorted once at import time; was rebuilt+sorted per call in hot loop
+_NAME_SUFFIXES = tuple(sorted(
+    ['straatweg', 'straat', 'weg', 'wei', 'dijk', 'dyk', 'laan', 'leane', 'singel', 'polder', 'pad', 'plein', 'steeg'],
+    key=len, reverse=True
+))
+
 def normalize_name(name):
     if not name or pd.isna(name):
         return ""
@@ -41,9 +47,7 @@ def normalize_name(name):
     name = re.sub(r'[^a-z0-9\s]', '', name)
     name = name.replace(" ", "")
     
-    suffixes = ['straatweg', 'straat', 'weg', 'wei', 'dijk', 'dyk', 'laan', 'leane', 'singel', 'polder', 'pad', 'plein', 'steeg']
-    suffixes.sort(key=len, reverse=True)
-    for suffix in suffixes:
+    for suffix in _NAME_SUFFIXES:
         if name.endswith(suffix) and len(name) > len(suffix):
             name = name[:-len(suffix)]
             break
@@ -268,7 +272,6 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
 
     # If still no bearing, pure distance ONLY if we also lack side info
     # This allows signs with Side='R' but Bearing=NaN to use the smart logic below
-    side = str(row.get('side', '')).upper()
     has_side = side in ['L', 'R']
     
     if pd.isna(bearing) and not has_side:
@@ -318,11 +321,10 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
         
         # Side Matching Logic
         side_penalty = 0.0
-        row_side = str(row.get('side', '')).upper()
-        if row_side in ['L', 'R']:
+        if has_side:
             geom_side = get_geometric_side(point, line, proj_dist)
             
-            if geom_side == row_side:
+            if geom_side == side:
                 side_penalty = -2.0 # Bonus for matching side
             # No penalty for mismatch: rely on Angle (for opposing) and Bonus (for parallel)
             # This handles 'Breukelerwaard' where side data conflicts with OneWay geometry
@@ -340,7 +342,6 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
             
         dist = proj_pt.distance(point)
         # Name match penalty
-        ndw_name = row.get("roadName")
         osm_name = road_row.get("name")
         name_matched = check_name_match(ndw_name, osm_name)
         name_penalty = 0.0 if name_matched else 30.0
@@ -533,11 +534,7 @@ def main():
     forbidden_roads["microcar"] = "no"
 
     # Identify the OSM ID field name dynamically
-    id_field = None
-    for field in ['osm_id', 'id', 'OSM_ID']:
-        if field in roads_gdf.columns:
-            id_field = field
-            break
+    id_field = config.find_osm_id_field(roads_gdf)
     if id_field is None:
         raise ValueError("No OSM ID column found in roads_gdf")
 

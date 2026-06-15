@@ -6,9 +6,12 @@ import math
 import json
 from shapely.geometry import Point
 
-def bearing_between(p1, p2):
-    dx, dy = p2.x - p1.x, p2.y - p1.y
-    return (math.degrees(math.atan2(dy, dx)) + 360) % 360
+try:
+    from snap_c9_to_roads import bearing_between
+    import build_config as config
+except ImportError:
+    from scripts.snap_c9_to_roads import bearing_between
+    from scripts import build_config as config
 
 def distance_meters(lon1, lat1, lon2, lat2):
     lat_avg = math.radians((lat1 + lat2) / 2.0)
@@ -156,14 +159,10 @@ def main():
     print(f"Loaded {len(gdf)} C9-forbidden roads")
 
     forbidden_ways = set()
-    id_field = None
-    id_fields = ['osm_id', 'id', 'OSM_ID']
-    for field in id_fields:
-        if field in gdf.columns:
-            id_field = field
-            forbidden_ways = set(gdf[field].dropna().astype(int).unique())
-            print(f"Using '{field}' with {len(forbidden_ways)} unique ways")
-            break
+    id_field = config.find_osm_id_field(gdf)
+    if id_field:
+        forbidden_ways = set(gdf[id_field].dropna().astype(int).unique())
+        print(f"Using '{id_field}' with {len(forbidden_ways)} unique ways")
 
     if not forbidden_ways:
         raise ValueError("No valid OSM ID field found")
