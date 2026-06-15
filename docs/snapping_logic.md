@@ -59,3 +59,9 @@ Beyond spatial snapping, BromBrom accurately parses "onderborden" (sub-plates) t
 - **Official Codes**: Recognizes standard Dutch exemption codes like `OB65`.
 - **Fuzzy Text Matching**: Handles complex Dutch text (e.g., `uitgezonderd brommobielen`) and is resilient to OCR-prone typos (e.g., `brommoblelen`).
 - **Negative Guards**: Prevents false exemptions by identifying explicit prohibitions like *"Geldt ook voor brommobiel"* (Also applies to microcars).
+
+## Custom OSM Tagging & Routing Overrides
+During the PBF tagging pipeline (`tag_c9_roads.py`), custom translation rules are applied to the OSM data to ensure OsmAnd's routing engine respects microcar accessibility correctly:
+- **Microcar Prohibitions (`microcar=no`)**: Promoted to `motor_vehicle=no` (if `motor_vehicle` is not already restricted) to enforce C9 restrictions inside OsmAnd.
+- **Microcar Allowances (`microcar=yes`)**: Bypasses general motorized restrictions. If a road is tagged with `microcar=yes` but has general motorized restrictions (`motor_vehicle=no`, `vehicle=no`, `access=no`, or `motorcar=no`), the pipeline overrides these tags to `yes` to restore microcar routing access.
+
