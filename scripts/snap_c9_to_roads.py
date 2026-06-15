@@ -32,9 +32,8 @@ NEGATIVE_GUARDS_PATTERN = re.compile(r'geen|verboden|ook voor')
 # Matches NDW voorwaarschuwingsborden with type "VOOR"
 PRE_WARNING_PATTERN = re.compile(r"['\"]type['\"]\s*:\s*['\"]VOOR['\"]", re.IGNORECASE)
 
-# 5. Speed limit parsing pattern
 MAXSPEED_PATTERN = re.compile(r'"maxspeed"=>"([^"]+)"')
-# ponytail: pre-sorted once at import time; was rebuilt+sorted per call in hot loop
+# Pre-sorted once at import time to avoid rebuilding in the hot loop
 _NAME_SUFFIXES = tuple(sorted(
     ['straatweg', 'straat', 'weg', 'wei', 'dijk', 'dyk', 'laan', 'leane', 'singel', 'polder', 'pad', 'plein', 'steeg'],
     key=len, reverse=True

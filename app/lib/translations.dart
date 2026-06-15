@@ -1,4 +1,3 @@
-// ponytail: extracted from main.dart to reduce noise in the main file
 const Map<String, Map<String, String>> translations = {
   'nl': {
     'app_name': 'BromBrom Manager',
