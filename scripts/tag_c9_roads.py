@@ -79,16 +79,14 @@ class TagC9Handler(osmium.SimpleHandler):
                     bearing_sign = snap['bearing']
                     
                     # Find closest node
-                    min_dist = float('inf')
-                    split_idx = -1
                     cos_lat = math.cos(math.radians(snap_lat))
-                    for idx, (n_lon, n_lat) in enumerate(coords):
-                        dx = (n_lon - snap_lon) * 111320.0 * cos_lat
-                        dy = (n_lat - snap_lat) * 111320.0
-                        d2 = dx*dx + dy*dy
-                        if d2 < min_dist:
-                            min_dist = d2
-                            split_idx = idx
+                    factor_x = 111320.0 * cos_lat
+                    factor_y = 111320.0
+                    split_idx, (n_lon, n_lat) = min(
+                        enumerate(coords),
+                        key=lambda item: ((item[1][0] - snap_lon) * factor_x) ** 2 + ((item[1][1] - snap_lat) * factor_y) ** 2
+                    )
+                    min_dist = ((n_lon - snap_lon) * factor_x) ** 2 + ((n_lat - snap_lat) * factor_y) ** 2
                             
                     # Calculate distances from closest node to start/end
                     dist_to_start = distance_meters(coords[split_idx][0], coords[split_idx][1], coords[0][0], coords[0][1])
