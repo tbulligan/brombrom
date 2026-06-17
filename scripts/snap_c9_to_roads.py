@@ -434,46 +434,54 @@ def main():
         pre_warnings = set()
         snapped_sindex = snapped_signs.sindex
         
-        for idx_A, row_A in snapped_signs.iterrows():
-            speed_A = row_A['road_speed']
-            highway_A = row_A['road_highway']
-            
-            # We only consider low-speed roads as potential pre-warnings
-            is_low_speed = (speed_A is not None and speed_A <= 50) or highway_A in ['residential', 'living_street', 'service']
-            if not is_low_speed:
-                continue
-                
-            name_A = row_A['norm_name']
-            bearing_A = row_A['bearing']
-            if pd.isna(bearing_A):
-                bearing_A = get_bearing_from_side(row_A['side'])
-                
+        # Pre-extract all column values as numpy arrays/lists for fast O(1) memory lookup (Task 4 optimization)
+        indices = snapped_signs.index.values
+        geometries = snapped_signs.geometry.values
+        norm_names = snapped_signs['norm_name'].values
+        bearings = snapped_signs['bearing'].values
+        sides = snapped_signs['side'].values
+        speeds = snapped_signs['road_speed'].values
+        highways = snapped_signs['road_highway'].values
+        ids = snapped_signs['id'].values
+        road_names = snapped_signs['roadName'].values
+        
+        # Pre-filter low-speed signs to avoid iteration overhead (Task 2 optimization)
+        is_low_speed_mask = (snapped_signs['road_speed'].fillna(999) <= 50) | snapped_signs['road_highway'].isin(['residential', 'living_street', 'service'])
+        low_speed_signs = snapped_signs[is_low_speed_mask]
+        
+        for row_A in low_speed_signs.itertuples():
+            idx_A = row_A.Index
             geom_A = row_A.geometry
             
+            name_A = row_A.norm_name
+            bearing_A = row_A.bearing
+            if pd.isna(bearing_A):
+                bearing_A = get_bearing_from_side(row_A.side)
+                
             # Query spatial index for signs within 1.5 km bounding box
             bbox = box(geom_A.x - 1500.0, geom_A.y - 1500.0, geom_A.x + 1500.0, geom_A.y + 1500.0)
             candidate_pos_indices = snapped_sindex.query(bbox)
             
             for pos_B in candidate_pos_indices:
-                idx_B = snapped_signs.index[pos_B]
+                idx_B = indices[pos_B]
                 if idx_A == idx_B:
                     continue
                     
-                row_B = snapped_signs.iloc[pos_B]
-                
+                name_B = norm_names[pos_B]
                 # Must be the same road
-                if not name_A or name_A != row_B['norm_name']:
+                if not name_A or name_A != name_B:
                     continue
                     
+                geom_B = geometries[pos_B]
                 # Must be within 1.5 km
-                dist_m = geom_A.distance(row_B.geometry)
+                dist_m = geom_A.distance(geom_B)
                 if dist_m > 1500.0:
                     continue
                     
                 # Must have similar bearings
-                bearing_B = row_B['bearing']
+                bearing_B = bearings[pos_B]
                 if pd.isna(bearing_B):
-                    bearing_B = get_bearing_from_side(row_B['side'])
+                    bearing_B = get_bearing_from_side(sides[pos_B])
                     
                 if bearing_A is not None and bearing_B is not None:
                     angle_diff = min(abs(bearing_A - bearing_B), 360 - abs(bearing_A - bearing_B))
@@ -481,14 +489,14 @@ def main():
                         continue
                 
                 # Sign B must be on a high-speed road or trunk/motorway
-                speed_B = row_B['road_speed']
-                highway_B = row_B['road_highway']
+                speed_B = speeds[pos_B]
+                highway_B = highways[pos_B]
                 is_high_speed_B = (speed_B is not None and speed_B > 50) or highway_B in ['trunk', 'trunk_link', 'motorway', 'motorway_link']
                 
                 if is_high_speed_B:
                     # Sign A is a pre-warning!
                     pre_warnings.add(idx_A)
-                    print(f"Identified Sign {row_A.get('id')} on '{row_A.get('roadName')}' as pre-warning for Sign {row_B.get('id')} (distance {dist_m:.1f}m).")
+                    print(f"Identified Sign {row_A.id} on '{row_A.roadName}' as pre-warning for Sign {ids[pos_B]} (distance {dist_m:.1f}m).")
                     break
                     
         if pre_warnings:
