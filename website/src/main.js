@@ -58,6 +58,7 @@ const translations = {
     contact_desc: "Heb je vragen over commercieel gebruik of samenwerkingen? Stuur direct een bericht.",
     contact_label_name: "Naam",
     contact_label_email: "E-mailadres",
+    contact_label_company: "Bedrijf / Organisatie (Optioneel)",
     contact_label_msg: "Bericht",
     contact_btn_send: "Verstuur Bericht",
     carousel_section_title: "Visuele Handleiding",
@@ -140,6 +141,7 @@ const translations = {
     contact_desc: "Have questions about commercial use or partnerships? Send a message directly.",
     contact_label_name: "Name",
     contact_label_email: "Email Address",
+    contact_label_company: "Company / Organization (Optional)",
     contact_label_msg: "Message",
     contact_btn_send: "Send Message",
     carousel_section_title: "Visual Setup Guide",
@@ -461,10 +463,16 @@ document.addEventListener('DOMContentLoaded', () => {
         contactStatus.className = 'contact-status';
       }
 
+      const payload = Object.fromEntries(formData);
+      if (payload.company && payload.message) {
+        payload.message = `Company: ${payload.company}\n\n${payload.message}`;
+      }
+      delete payload.company;
+
       try {
         const response = await fetch('https://bulligan-form-mailer.tomaso-bulligan.workers.dev', {
           method: 'POST',
-          body: JSON.stringify(Object.fromEntries(formData)),
+          body: JSON.stringify(payload),
           headers: {
             'Content-Type': 'application/json'
           }
