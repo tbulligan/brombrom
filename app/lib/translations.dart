@@ -56,6 +56,9 @@ const Map<String, Map<String, String>> translations = {
     'ob_osmand_installed_checkmark': 'OsmAnd geïnstalleerd ✓',
     'install_osmand': 'Installeer OsmAnd',
     'osmand_required_desc': 'OsmAnd is vereist om BromBrom te gebruiken.',
+    'profile_screenshot_caption': 'Selecteer het "BromBrom" profiel in OsmAnd:',
+    'troubleshoot_title': 'Navigatie werkt niet goed?',
+    'troubleshoot_desc': 'Als OsmAnd je naar wegen stuurt die niet geschikt zijn voor brommobielen, controleer dan of het BromBrom-profiel is geselecteerd:',
   },
   'en': {
     'app_name': 'BromBrom Manager',
@@ -114,5 +117,8 @@ const Map<String, Map<String, String>> translations = {
     'ob_osmand_installed_checkmark': 'OsmAnd is installed ✓',
     'install_osmand': 'Install OsmAnd',
     'osmand_required_desc': 'OsmAnd is required to use BromBrom.',
+    'profile_screenshot_caption': 'Select the "BromBrom" profile in OsmAnd:',
+    'troubleshoot_title': 'Navigation not working properly?',
+    'troubleshoot_desc': 'If OsmAnd is sending you on roads that are not suitable for microcars, verify that the BromBrom profile is selected:',
   },
 };
