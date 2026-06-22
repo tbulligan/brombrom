@@ -572,6 +572,22 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                                 style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
                               ),
                             ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _t('profile_screenshot_caption'),
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[850], fontSize: 14),
+                            ),
+                            const SizedBox(height: 8),
+                            Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset(
+                                  'assets/images/brombrom_osmand_profile.webp',
+                                  fit: BoxFit.contain,
+                                  height: 220,
+                                ),
+                              ),
+                            ),
                           ],
                         ];
                       })(),
@@ -1150,6 +1166,53 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                   );
                 })(),
                 const SizedBox(height: 24),
+                if (_osmandInstalled) ...[
+                  Card(
+                    color: Colors.white,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Theme(
+                      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        leading: const Icon(Icons.help_outline, color: Colors.orange),
+                        title: Text(
+                          _t('troubleshoot_title'),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                  _t('troubleshoot_desc'),
+                                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                ),
+                                const SizedBox(height: 12),
+                                Center(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.asset(
+                                      'assets/images/brombrom_osmand_profile.webp',
+                                      fit: BoxFit.contain,
+                                      height: 220,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 // Support Project & Website Links
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
