@@ -89,14 +89,23 @@ jobs:
           gh release edit stable --title "Latest BromBrom Build" --notes "$NOTES" || \
           gh release create stable --title "Latest BromBrom Build" --notes "$NOTES"
           
-          # Get the underlying numeric Release ID for the stable tag
-          RELEASE_ID=$(gh release view stable --json id --jq .id)
+          # Pause for a brief moment to let GitHub's database index the update
+          sleep 2
+          
+          # Fetch the true numeric REST API ID (bypassing the GraphQL string ID)
+          RELEASE_ID=$(gh api repos/${{ github.repository }}/releases/tags/stable --jq .id)
+          echo "Found REST Release ID: $RELEASE_ID"
           
           # Fetch current UTC time in ISO 8601 format
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           
-          # Use GitHub API with the exact Release ID to update the timestamp to right now
-          gh api -X PATCH repos/${{ github.repository }}/releases/$RELEASE_ID -f published_at="$NOW"
+          # Use GitHub API to update the timestamp
+          if [ -n "$RELEASE_ID" ] && [ "$RELEASE_ID" != "null" ]; then
+            gh api -X PATCH "repos/${{ github.repository }}/releases/$RELEASE_ID" -f published_at="$NOW"
+          else
+            echo "Warning: Could not retrieve valid Release ID, skipping timestamp refresh."
+          fi
+          
           # 4. Upload unified OSF package
 
           echo "Uploading BromBrom.osf to stable release..."
