@@ -7,8 +7,9 @@
 > [!IMPORTANT]
 > BromBrom is a *planning aid* only. You are responsible for following traffic signs and Dutch law.
 
-[![Latest Release](https://badgen.net/github/release/tbulligan/brombrom?color=blue&icon=github&label=Latest%20Release)](https://github.com/tbulligan/brombrom/releases/latest)
+[![Latest Release](https://badgen.net/github/release/tbulligan/brombrom/stable?color=blue&icon=github&label=Latest%20Release)](https://github.com/tbulligan/brombrom/releases/tag/stable)
 [![Website](https://img.shields.io/badge/Website-Live-brightgreen?logo=google-chrome)](https://brombrom.bulligan.com/)
+[![Google Play](https://img.shields.io/badge/Google_Play-App-004D40?logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.brombrom.app)
 
 **BromBrom** creates a professional-grade **OsmAnd** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
 
@@ -44,6 +45,8 @@ See the difference: standard car navigation would route you onto expressways or 
 
 ### ✅ Option A: BromBrom Manager (Android Recommended)
 The fastest way to install and keep your navigation updated automatically.
+
+[![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=com.brombrom.app)
 
 > [!TIP]
 > **Already Configured?** If you have already set up the BromBrom profile in OsmAnd, you only need to perform **Phase 1: Installation & Import**. OsmAnd will automatically retain your settings and profile choice for updates!
