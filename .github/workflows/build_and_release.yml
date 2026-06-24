@@ -89,13 +89,16 @@ jobs:
           gh release edit stable --title "Latest BromBrom Build" --notes "$NOTES" || \
           gh release create stable --title "Latest BromBrom Build" --notes "$NOTES"
           
-          # Fetch current UTC time in ISO 8601 format (No escaping needed here)
+          # Get the underlying numeric Release ID for the stable tag
+          RELEASE_ID=$(gh release view stable --json id --jq .id)
+          
+          # Fetch current UTC time in ISO 8601 format
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           
-          # Use GitHub API to update the published timestamp to right now
-          gh api -X PATCH repos/${{ github.repository }}/releases/tags/stable -f published_at="$NOW"
-          
+          # Use GitHub API with the exact Release ID to update the timestamp to right now
+          gh api -X PATCH repos/${{ github.repository }}/releases/$RELEASE_ID -f published_at="$NOW"
           # 4. Upload unified OSF package
+
           echo "Uploading BromBrom.osf to stable release..."
           gh release upload stable dist/BromBrom.osf --clobber
         env:
