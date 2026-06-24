@@ -66,7 +66,7 @@ jobs:
           git tag -f stable
           git push origin stable -f
           
-          # 2. Define release notes (with backticks escaped for Bash safety)
+          # 2. Define release notes (backticks escaped because it's inside double quotes)
           NOTES="## Automated Monthly Build
           This release contains the latest map data and routing profiles for microcars in the Netherlands.
           
@@ -89,11 +89,11 @@ jobs:
           gh release edit stable --title "Latest BromBrom Build" --notes "$NOTES" || \
           gh release create stable --title "Latest BromBrom Build" --notes "$NOTES"
           
-          # Fetch current UTC time in ISO 8601 format
-          NOW=\$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          # Fetch current UTC time in ISO 8601 format (No escaping needed here)
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           
           # Use GitHub API to update the published timestamp to right now
-          gh api -X PATCH repos/${{ github.repository }}/releases/tags/stable -f published_at="\$NOW"
+          gh api -X PATCH repos/${{ github.repository }}/releases/tags/stable -f published_at="$NOW"
           
           # 4. Upload unified OSF package
           echo "Uploading BromBrom.osf to stable release..."
