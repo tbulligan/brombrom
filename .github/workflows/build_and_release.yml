@@ -66,35 +66,35 @@ jobs:
           git tag -f stable
           git push origin stable -f
           
-          # 2. Define release notes
+          # 2. Define release notes (with backticks escaped for Bash safety)
           NOTES="## Automated Monthly Build
           This release contains the latest map data and routing profiles for microcars in the Netherlands.
-
+          
           **Installation Instructions (Android - Recommended)**: 
           1. Download the **BromBrom Manager App** directly on the [Google Play Store](https://play.google.com/store/apps/details?id=com.brombrom.app).
           2. Open the app and follow the layout prompts to install or update the BromBrom logic and maps in OsmAnd.
-          *(Note: You can still download the standalone `BromBrom.apk` below if you prefer manual sideloading).*
-
+          *(Note: You can still download the standalone \`BromBrom.apk\` below if you prefer manual sideloading).*
+          
           **Installation Instructions (iOS / Manual)**:
           1. Ensure you have the free OsmAnd app installed.
           2. Download the **BromBrom.osf** package below.
-          3. Tap the downloaded file to open it in OsmAnd. Check both "Settings" and "Resources" on the prompt, then select Apply (or Replace All) to finish the import.
-
+          3. Tap the downloaded file to open it in OsmAnd. Check both \"Settings\" and \"Resources\" on the prompt, then select Apply (or Replace All) to finish the import.
+          
           [Full Installation Guide](https://github.com/tbulligan/brombrom/blob/main/docs/manual_install.md)
-
+          
           **Build Date**: ${{ steps.tag.outputs.TAG_NAME }}
           **Base Branch**: ${{ github.ref_name }}"
-
+          
           # 3. Update metadata and explicitly force-refresh the publication timestamp
           gh release edit stable --title "Latest BromBrom Build" --notes "$NOTES" || \
           gh release create stable --title "Latest BromBrom Build" --notes "$NOTES"
-
-          # Fetch current UTC time in ISO 8601 format (e.g., 2026-06-24T12:00:00Z)
-          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
+          
+          # Fetch current UTC time in ISO 8601 format
+          NOW=\$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
           # Use GitHub API to update the published timestamp to right now
-          gh api -X PATCH repos/${{ github.repository }}/releases/tags/stable -f published_at="$NOW"
-
+          gh api -X PATCH repos/${{ github.repository }}/releases/tags/stable -f published_at="\$NOW"
+          
           # 4. Upload unified OSF package
           echo "Uploading BromBrom.osf to stable release..."
           gh release upload stable dist/BromBrom.osf --clobber
