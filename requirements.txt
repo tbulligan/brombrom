@@ -3,5 +3,5 @@ tqdm
 geopandas
 shapely
 osmium
-fiona
+pyogrio
 pytest
