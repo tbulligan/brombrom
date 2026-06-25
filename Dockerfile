@@ -24,9 +24,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     gdal-bin \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python Packages
+# Create a venv that inherits system-level GDAL/GEOS bindings,
+# then install our packages into it cleanly.
+RUN python3 -m venv /opt/venv --system-site-packages
+ENV PATH="/opt/venv/bin:$PATH"
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip3 install --break-system-packages \
+    pip install \
     requests \
     tqdm \
     geopandas \
