@@ -348,8 +348,15 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
         # Conditional Intersection Warning Bonus:
         # If no candidate matched the name, allow a bonus for high-priority roads
         # (priority <= 2) within 50m whose bearing matches within 30 degrees.
+        # GUARD: Skip one-way roads to prevent false snaps to dual carriageways
+        # (e.g. N298 Daelderweg) where only one direction would get blocked.
+        # WARNING: This guard blocks the bonus for ALL one-way primaries, not just
+        # dual carriageways. A sign on an access road adjacent to a one-way arterial
+        # (non-divided) will now miss if its NDW road name doesn't match the OSM name.
+        # Upgrade path: detect a parallel opposing carriageway within ~20m to distinguish
+        # dual carriageways from single one-way roads, and only block in that case.
         if not name_matched and not any_name_matched:
-            if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0:
+            if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0 and not is_oneway:
                 name_penalty = 0.0
 
         # Score formulation: Distance is king, but orientation/side/priority refine it.

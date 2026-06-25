@@ -183,7 +183,7 @@ def test_intersection_bonus():
         'geometry': Point(0, 0)
     })
     
-    # Roads in filtered database
+    # Roads in filtered database (bidirectional — no oneway tag)
     # Road 1: Kolkweg (primary, priority 1, heading North) -> 10m away
     # Road 2: Zuideinde (tertiary, priority 3, heading North) -> 8m away
     roads = gpd.GeoDataFrame([
@@ -208,4 +208,75 @@ def test_intersection_bonus():
     assert roads.loc[best_idx]['name'] == 'Kolkweg'
 
 
+def test_intersection_bonus_blocked_for_oneway():
+    """The Intersection Warning Bonus must NOT fire for one-way roads.
 
+    Dual carriageways (e.g. N298 Daelderweg) are two parallel one-way roads.
+    Without this guard, a C9 sign from a side street can snap to one
+    carriageway but not the other, blocking microcars in only one direction.
+
+    Geometry note: directional_snap uses line.interpolate(ahead_frac) with
+    normalized=False (absolute metres), so seg_bearing depends on the
+    digitisation direction relative to proj_dist. To get a predictable
+    seg_bearing, roads are short (20m) and the sign projects near their start
+    so seg_end is clearly ahead in the digitisation direction.
+
+    Sign bearing=90 (north). Roads run north (from y=0 toward y=20).
+    For one-way roads angle_diff uses the road's actual bearing; for
+    bidirectional roads the minimum of forward/reverse is taken.
+    """
+    import geopandas as gpd
+    import pandas as pd
+    from shapely.geometry import Point, LineString
+
+    # Sign on a side street, facing north (bearing=90), at origin.
+    sign = pd.Series({
+        'roadName': 'Kerkstraat',
+        'bearing': 90.0,
+        'side': 'L',   # sign is to the left of a northbound road = west side
+        'geometry': Point(0, 0)
+    })
+
+    # Scenario B: one-way primary 30m east (digitised northward = bearing 90°),
+    # bidirectional tertiary 8m west (also digitised northward).
+    # sign bearing=90, road bearing=90 -> angle_diff=0 for both.
+    # Bonus BLOCKED for primary (oneway). Scores:
+    #   primary:  30*0.7 + 0*0.15 + 0 + 0 + 30 = 51.0
+    #   tertiary:  8*0.7 + 0*0.15 + 0 + 2 + 30 = 37.6  <- wins
+    roads_b = gpd.GeoDataFrame([
+        {
+            'osm_id': 301, 'name': 'Daelderweg', 'highway': 'primary', 'priority': 1,
+            'geometry': LineString([(30, 0), (30, 20)]),   # northbound, 30m east
+            'other_tags': '"oneway"=>"yes"'
+        },
+        {
+            'osm_id': 302, 'name': 'Zuideinde', 'highway': 'tertiary', 'priority': 3,
+            'geometry': LineString([(-8, 0), (-8, 20)]),   # northbound, 8m west
+            'other_tags': ''
+        }
+    ], crs="EPSG:28992")
+    idx_b, _ = snap_c9_to_roads.directional_snap(sign, roads_b, roads_b.sindex, roads_b.geometry.values, {})
+    assert roads_b.loc[idx_b]['name'] == 'Zuideinde', (
+        "One-way guard must prevent bonus: tertiary wins when one-way primary is farther"
+    )
+
+    # Scenario C: same layout but primary is bidirectional — bonus FIRES.
+    # Scores:
+    #   primary:  30*0.7 + 0 + 0 +  0 = 21.0  <- wins (bonus removes name penalty)
+    #   tertiary:  8*0.7 + 0 + 2 + 30 = 37.6
+    roads_c = gpd.GeoDataFrame([
+        {
+            'osm_id': 401, 'name': 'Daelderweg', 'highway': 'primary', 'priority': 1,
+            'geometry': LineString([(30, 0), (30, 20)]),   # same position, bidirectional
+            'other_tags': ''
+        },
+        {
+            'osm_id': 402, 'name': 'Zuideinde', 'highway': 'tertiary', 'priority': 3,
+            'geometry': LineString([(-8, 0), (-8, 20)]),
+            'other_tags': ''
+        }
+    ], crs="EPSG:28992")
+    idx_c, _ = snap_c9_to_roads.directional_snap(sign, roads_c, roads_c.sindex, roads_c.geometry.values, {})
+    assert roads_c.loc[idx_c]['name'] == 'Daelderweg', (
+        "Bidirectional primary must win via bonus (regression check for original behaviour)"
+    )
