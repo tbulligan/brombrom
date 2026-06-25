@@ -36,7 +36,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     geopandas \
     shapely \
     osmium \
-    fiona
+    pyogrio
 
 WORKDIR /app
 
