@@ -20,6 +20,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     wget \
     procps \
     python3-pip \
+    python3-venv \
     osmium-tool \
     gdal-bin \
     && rm -rf /var/lib/apt/lists/*
