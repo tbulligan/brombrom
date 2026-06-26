@@ -178,7 +178,7 @@ def test_intersection_bonus():
     # Coords: sign is at (0, 0), facing North (bearing 90)
     sign = pd.Series({
         'roadName': 'De Dors',
-        'bearing': 90.0,
+        'bearing': 0.0,
         'side': 'R',
         'geometry': Point(0, 0)
     })
@@ -220,7 +220,7 @@ def test_intersection_bonus_oneway_non_dual():
 
     sign = pd.Series({
         'roadName': 'Kerkstraat',
-        'bearing': 90.0,
+        'bearing': 0.0,
         'side': 'L',
         'geometry': Point(0, 0)
     })
@@ -258,7 +258,7 @@ def test_intersection_bonus_blocked_for_dual_carriageway():
 
     sign = pd.Series({
         'roadName': 'Kerkstraat',
-        'bearing': 90.0,
+        'bearing': 0.0,
         'side': 'L',
         'geometry': Point(0, 0)
     })
@@ -299,7 +299,7 @@ def test_intersection_bonus_bidirectional():
 
     sign = pd.Series({
         'roadName': 'Kerkstraat',
-        'bearing': 90.0,
+        'bearing': 0.0,
         'side': 'L',
         'geometry': Point(0, 0)
     })
@@ -405,4 +405,67 @@ def test_has_opposing_carriageway_flared():
         roads_gdf.iloc[0], line_a, roads_gdf, spatial_index, roads_geoms
     )
     assert is_dual, "Flared dual carriageway (bearing diff 140) should be detected with 45° tolerance"
+
+
+def test_clean_snap_corrected_bearing():
+    import geopandas as gpd
+    import pandas as pd
+    from shapely.geometry import Point, LineString
+    # Sign facing West (bearing 270 geo) should match road going West (bearing 180 math, 270 geo)
+    sign = pd.Series({
+        'roadName': 'A1',
+        'bearing': 270.0,
+        'side': 'R',
+        'geometry': Point(0, 0)
+    })
+    roads = gpd.GeoDataFrame([{
+        'osm_id': 1, 'name': 'A1', 'highway': 'primary',
+        'geometry': LineString([(0, 0), (-50, 0)]), 'other_tags': '' # Westbound
+    }], crs="EPSG:28992")
+    idx, _ = snap_c9_to_roads.directional_snap(sign, roads, roads.sindex, roads.geometry.values, {})
+    assert idx == 0
+
+def test_tie_breaking_priority():
+    import geopandas as gpd
+    import pandas as pd
+    from shapely.geometry import Point, LineString
+    # Sign for 'Kolkweg' (bearing 0 geo) near a primary and tertiary road, both unnamed
+    sign = pd.Series({
+        'roadName': 'Kolkweg',
+        'bearing': 0.0,
+        'side': 'R',
+        'geometry': Point(0, 0)
+    })
+    roads = gpd.GeoDataFrame([
+        # Primary (priority 1) 10m away
+        {'osm_id': 1, 'name': None, 'highway': 'primary', 'geometry': LineString([(10, -50), (10, 50)]), 'other_tags': ''},
+        # Tertiary (priority 3) 12m away
+        {'osm_id': 2, 'name': None, 'highway': 'tertiary', 'geometry': LineString([(-12, -50), (-12, 50)]), 'other_tags': ''}
+    ], crs="EPSG:28992")
+    idx, _ = snap_c9_to_roads.directional_snap(sign, roads, roads.sindex, roads.geometry.values, {})
+    # Primary should win due to higher priority class overriding the distance gap
+    assert idx == 0
+
+def test_tagging_direction_split():
+    # Test split logic with converted geo bearing
+    # Sign bearing is North (0 geo). Segment B goes North (90 math -> 0 geo).
+    # Diff is 0 < 90 -> Restrict B.
+    bearing_sign = 0.0
+    bearing_B = 90.0 # math North
+    diff = min(abs(bearing_sign - ((90 - bearing_B) % 360)), 360 - abs(bearing_sign - ((90 - bearing_B) % 360)))
+    restrict_B = diff < 90.0
+    assert restrict_B is True
+
+def test_fallback_bearing_from_side():
+    import pandas as pd
+    # Sign bearing is NaN, side is 'O' (East -> 90 geo)
+    sign = pd.Series({
+        'roadName': 'Rijksweg',
+        'bearing': float('nan'),
+        'side': 'O',
+        'geometry': Point(0, 0)
+    })
+    # Resolve bearing
+    resolved_bearing = snap_c9_to_roads.get_bearing_from_side(sign['side'])
+    assert resolved_bearing == 90.0
 

@@ -23,7 +23,8 @@ $$\text{Score} = (\text{Distance} \times 0.7) + (\text{Angle Difference} \times 
 This ensures distance is the primary metric, while orientation, side alignment, highway class, and road names refine the snap.
 
 ### 1. Orientation & Bearing Matching
-- The sign's cardinal placement (`side` mapped to wind-rose angles) or explicit `bearing` is compared to the segment's bearing.
+- The sign's cardinal placement (`side` mapped to wind-rose angles) or explicit `bearing` is compared to the segment's bearing in standard geographical coordinates (where $0^\circ = \text{North}$, $90^\circ = \text{East}$).
+- Mathematical road bearings ($M$) calculated from segment geometries are converted to geographical coordinates ($G$) via $G = (90 - M) \pmod{360}$ before matching.
 - For bi-directional roads, the sign's bearing can match either the forward or backward road bearing to handle digitization directions safely.
 
 ### 2. Geometric Side Matching (2D Cross-Product)

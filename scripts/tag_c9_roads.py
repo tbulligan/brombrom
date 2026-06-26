@@ -104,10 +104,13 @@ class TagC9Handler(osmium.SimpleHandler):
                         p_next = Point(coords[split_idx + 1])
                         bearing_B = bearing_between(p_split, p_next)
                         
+                        # Convert mathematical segment bearing to geographical bearing
+                        seg_geo_bearing = (90 - bearing_B) % 360
+                        
                         # Calculate angle difference
                         restrict_B = True # Default if bearing is missing
                         if bearing_sign is not None:
-                            diff = min(abs(bearing_sign - bearing_B), 360 - abs(bearing_sign - bearing_B))
+                            diff = min(abs(bearing_sign - seg_geo_bearing), 360 - abs(bearing_sign - seg_geo_bearing))
                             # If difference is < 90 degrees, the sign applies in the direction of B
                             if diff < 90.0:
                                 restrict_B = True

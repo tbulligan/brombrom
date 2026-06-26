@@ -324,12 +324,6 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
         
     bearing = row.get("bearing")
 
-    # Fallback side -> bearing
-    if pd.isna(bearing) or bearing == 0.0:
-        side_bearing = get_bearing_from_side(row.get('side'))
-        if side_bearing is not None:
-            bearing = side_bearing
-
     # Optional side stats
     side = str(row.get('side', '')).upper()
     if side in side_count:
@@ -375,13 +369,16 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
         tags = str(road_row.get('other_tags', ''))
         is_oneway = '"oneway"=>"yes"' in tags or '"junction"=>"roundabout"' in tags or '"highway"=>"motorway"' in tags
 
+        # Convert mathematical segment bearing to geographical bearing
+        seg_geo_bearing = (90 - seg_bearing) % 360
+        
         # Handle missing bearing gracefully
         if pd.isna(bearing):
             angle_diff = 0.0 # No angular penalty if we don't know the sign's angle
         else:
-            angle_diff = min(abs(bearing - seg_bearing), 360 - abs(bearing - seg_bearing))
+            angle_diff = min(abs(bearing - seg_geo_bearing), 360 - abs(bearing - seg_geo_bearing))
             if not is_oneway:
-                angle_diff_opp = min(abs(bearing - (seg_bearing + 180) % 360), 360 - abs(bearing - (seg_bearing + 180) % 360))
+                angle_diff_opp = min(abs(bearing - (seg_geo_bearing + 180) % 360), 360 - abs(bearing - (seg_geo_bearing + 180) % 360))
                 angle_diff = min(angle_diff, angle_diff_opp)
         
         # Side Matching Logic
@@ -448,12 +445,24 @@ def main():
     # Load and reproject to RD New (EPSG:28992) for accurate distances
     c9_gdf = gpd.read_file("c9_ndw.gpkg").to_crs(epsg=28992)
     
+    # Filter out removed or non-placed signs
+    active_mask = c9_gdf['removedOn'].isna() & (c9_gdf['status'] == 'PLACED')
+    print(f"Filtering out {len(c9_gdf) - active_mask.sum()} inactive/removed C9 signs...")
+    c9_gdf = c9_gdf[active_mask].copy()
+
+    # Pre-resolve missing bearings using windrose side info
+    resolved_bearings = c9_gdf.apply(
+        lambda r: get_bearing_from_side(r.get('side')) if pd.isna(r.get('bearing')) else r.get('bearing'),
+        axis=1
+    )
+    c9_gdf['bearing'] = resolved_bearings
+    
     # Filter out pre-warning (voorwaarschuwing) signs before snapping
     pre_warning_mask = c9_gdf.apply(is_pre_warning, axis=1)
     print(f"Filtering out {pre_warning_mask.sum()} pre-warning (VOOR) signs...")
     c9_gdf = c9_gdf[~pre_warning_mask]
     
-    roads_gdf = gpd.read_file("nl_roads.gpkg").to_crs(epsg=28992)
+    roads_gdf = gpd.read_file("nl_roads.gpkg")
 
     # Filter out minor roads (priority >= 4: residential, unclassified, service, living_street) and roundabouts
     priority_series = roads_gdf["highway"].map(HIGHWAY_PRIORITY).fillna(99)
@@ -471,6 +480,10 @@ def main():
 
     print(f"Filtering roads: excluding {is_minor_mask.sum()} minor segments and {is_roundabout_mask.sum()} roundabout segments...")
     roads_gdf = roads_gdf[~is_minor_mask & ~is_roundabout_mask].copy()
+
+    # Reproject only the remaining filtered roads to RD New (EPSG:28992) for accurate distances
+    print("Reprojecting filtered roads to RD New (EPSG:28992)...")
+    roads_gdf = roads_gdf.to_crs(epsg=28992)
 
     # Build spatial index
     spatial_index = roads_gdf.sindex
