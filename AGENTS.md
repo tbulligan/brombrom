@@ -62,5 +62,3 @@ AI agents working on this repository MUST adhere to the "lazy senior dev" philos
 *   **No Over-engineering**: Do not introduce unrequested abstractions, boilerplate, or new dependencies if they can be avoided.
 *   **Leverage Platform & Stdlib**: Prioritize native platform features and standard library functions before writing custom code.
 *   **Quality over Haste**: While code should be minimal, do not compromise on security, input validation, or error handling. Ensure non-trivial logic includes a simple test check.
-
-
