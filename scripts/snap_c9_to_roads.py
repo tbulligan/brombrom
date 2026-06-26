@@ -251,6 +251,63 @@ def get_bearing_from_side(side):
     """NDW side windroos -> degrees"""
     return SIDE_MAP.get(str(side).upper(), None)
 
+DUAL_CARRIAGEWAY_TOL = 20.0  # metres; max separation between opposing carriageways
+
+def has_opposing_carriageway(road_row, line, roads_gdf, spatial_index, roads_geoms):
+    """Return True if `road_row` is part of a dual carriageway.
+
+    A dual carriageway is detected when another one-way road of the same or
+    higher highway class runs roughly parallel (bearing within 30°) and in the
+    opposite direction within DUAL_CARRIAGEWAY_TOL metres.
+    """
+    mid_pt = line.interpolate(0.5, normalized=True)
+    tol = DUAL_CARRIAGEWAY_TOL
+    nearby = list(spatial_index.query(
+        box(mid_pt.x - tol, mid_pt.y - tol, mid_pt.x + tol, mid_pt.y + tol)
+    ))
+
+    # This road's bearing (digitisation direction)
+    road_start = line.interpolate(0.0)
+    road_end = line.interpolate(min(line.length, 100.0))
+    road_bearing = bearing_between(road_start, road_end)
+
+    own_priority = HIGHWAY_PRIORITY.get(str(road_row.get('highway', '')), 99)
+
+    for idx in nearby:
+        other_row = roads_gdf.iloc[idx]
+        # Must be one-way
+        other_tags = str(other_row.get('other_tags', ''))
+        other_oneway = (
+            '"oneway"=>"yes"' in other_tags
+            or '"junction"=>"roundabout"' in other_tags
+            or '"highway"=>"motorway"' in other_tags
+        )
+        if not other_oneway:
+            continue
+
+        # Must be a similar or higher priority road class
+        other_priority = HIGHWAY_PRIORITY.get(str(other_row.get('highway', '')), 99)
+        if abs(other_priority - own_priority) > 1:
+            continue
+
+        # Must be close (actual geometry distance, not just bounding box)
+        other_line = roads_geoms[idx]
+        if other_line.distance(mid_pt) > tol:
+            continue
+
+        # Must run in the roughly opposite direction (within 30° of 180° offset)
+        other_start = other_line.interpolate(0.0)
+        other_end = other_line.interpolate(min(other_line.length, 100.0))
+        other_bearing = bearing_between(other_start, other_end)
+
+        diff = abs(road_bearing - other_bearing)
+        diff = min(diff, 360 - diff)  # now in [0, 180]
+        if diff >= 150:
+            return True
+
+    return False
+
+
 def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     point = row.geometry
     if point is None or point.is_empty:
@@ -348,16 +405,16 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
         # Conditional Intersection Warning Bonus:
         # If no candidate matched the name, allow a bonus for high-priority roads
         # (priority <= 2) within 50m whose bearing matches within 30 degrees.
-        # GUARD: Skip one-way roads to prevent false snaps to dual carriageways
-        # (e.g. N298 Daelderweg) where only one direction would get blocked.
-        # WARNING: This guard blocks the bonus for ALL one-way primaries, not just
-        # dual carriageways. A sign on an access road adjacent to a one-way arterial
-        # (non-divided) will now miss if its NDW road name doesn't match the OSM name.
-        # Upgrade path: detect a parallel opposing carriageway within ~20m to distinguish
-        # dual carriageways from single one-way roads, and only block in that case.
+        # GUARD: Block the bonus only for dual carriageways (parallel opposing
+        # one-way road detected within 20m) to prevent asymmetric blocking.
+        # Single one-way roads still receive the bonus.
         if not name_matched and not any_name_matched:
-            if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0 and not is_oneway:
-                name_penalty = 0.0
+            if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0:
+                is_dual = is_oneway and has_opposing_carriageway(
+                    road_row, line, roads_gdf, spatial_index, roads_geoms
+                )
+                if not is_dual:
+                    name_penalty = 0.0
 
         # Score formulation: Distance is king, but orientation/side/priority refine it.
         # Use a larger weight (0.15) for angle difference to prevent perpendicular false snaps
