@@ -322,3 +322,87 @@ def test_intersection_bonus_bidirectional():
         "Bidirectional primary must win via bonus (regression check)"
     )
 
+
+def test_get_bearing_at_distance():
+    from shapely.geometry import LineString
+    from scripts import snap_c9_to_roads
+
+    # Horizontal line from (0,0) to (100,0) -> bearing 0
+    line = LineString([(0, 0), (100, 0)])
+    assert snap_c9_to_roads.get_bearing_at_distance(line, 0.0) == pytest.approx(0.0)
+    assert snap_c9_to_roads.get_bearing_at_distance(line, 50.0) == pytest.approx(0.0)
+    assert snap_c9_to_roads.get_bearing_at_distance(line, 99.5) == pytest.approx(0.0)
+
+    # Extremely short line
+    short_line = LineString([(0, 0), (0.5, 0.5)])
+    assert snap_c9_to_roads.get_bearing_at_distance(short_line, 0.2) == pytest.approx(45.0)
+
+
+def test_has_opposing_carriageway_curved():
+    import geopandas as gpd
+    from shapely.geometry import LineString
+    from scripts import snap_c9_to_roads
+
+    # Curved Northbound: (0,0) -> (100,0) -> (100,200)
+    # Midpoint is at (100,50). Local bearing near midpoint is North (90°).
+    # Start bearing is East (0°).
+    line_a = LineString([(0, 0), (100, 0), (100, 200)])
+
+    # Curved Southbound: (115,200) -> (115,0) -> (215,0)
+    # Midpoint is at (115,100). Local bearing near midpoint is South (270°).
+    # Start bearing is South (270°).
+    line_b = LineString([(115, 200), (115, 0), (215, 0)])
+
+    roads_gdf = gpd.GeoDataFrame([
+        {
+            'osm_id': 601, 'name': 'ParallelRoad', 'highway': 'primary', 'priority': 1,
+            'geometry': line_a, 'other_tags': '"oneway"=>"yes"'
+        },
+        {
+            'osm_id': 602, 'name': 'ParallelRoad', 'highway': 'primary', 'priority': 1,
+            'geometry': line_b, 'other_tags': '"oneway"=>"yes"'
+        }
+    ], crs="EPSG:28992")
+
+    spatial_index = roads_gdf.sindex
+    roads_geoms = roads_gdf.geometry.values
+
+    # Test that line_a is detected as part of dual carriageway (opposing line_b nearby)
+    is_dual = snap_c9_to_roads.has_opposing_carriageway(
+        roads_gdf.iloc[0], line_a, roads_gdf, spatial_index, roads_geoms
+    )
+    assert is_dual, "Curved dual carriageway should be detected using local midpoint bearings"
+
+
+def test_has_opposing_carriageway_flared():
+    import geopandas as gpd
+    from shapely.geometry import LineString
+    from scripts import snap_c9_to_roads
+
+    # Northbound going North-East (bearing 60°)
+    line_a = LineString([(0, 0), (10, 17.32)])
+
+    # Southbound going South-West, but flared at an angle of 200° (180 + 20)
+    # The bearing difference is 200 - 60 = 140° (which is 40° off from 180° opposite).
+    line_b = LineString([(5, 13.66), (1.58, 4.26)])
+
+    roads_gdf = gpd.GeoDataFrame([
+        {
+            'osm_id': 701, 'name': 'FlaredRoad', 'highway': 'primary', 'priority': 1,
+            'geometry': line_a, 'other_tags': '"oneway"=>"yes"'
+        },
+        {
+            'osm_id': 702, 'name': 'FlaredRoad', 'highway': 'primary', 'priority': 1,
+            'geometry': line_b, 'other_tags': '"oneway"=>"yes"'
+        }
+    ], crs="EPSG:28992")
+
+    spatial_index = roads_gdf.sindex
+    roads_geoms = roads_gdf.geometry.values
+
+    # Flared road (diff = 140) should be detected under 45° tolerance (diff >= 135)
+    is_dual = snap_c9_to_roads.has_opposing_carriageway(
+        roads_gdf.iloc[0], line_a, roads_gdf, spatial_index, roads_geoms
+    )
+    assert is_dual, "Flared dual carriageway (bearing diff 140) should be detected with 45° tolerance"
+

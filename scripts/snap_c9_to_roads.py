@@ -253,11 +253,23 @@ def get_bearing_from_side(side):
 
 DUAL_CARRIAGEWAY_TOL = 20.0  # metres; max separation between opposing carriageways
 
+def get_bearing_at_distance(line, distance):
+    """Calculate local bearing of line at a given distance."""
+    if line.length <= 1.0:
+        return bearing_between(line.interpolate(0.0), line.interpolate(line.length))
+    if distance > line.length - 1.0:
+        p1 = line.interpolate(max(0.0, distance - 10.0))
+        p2 = line.interpolate(distance)
+    else:
+        p1 = line.interpolate(distance)
+        p2 = line.interpolate(min(line.length, distance + 10.0))
+    return bearing_between(p1, p2)
+
 def has_opposing_carriageway(road_row, line, roads_gdf, spatial_index, roads_geoms):
     """Return True if `road_row` is part of a dual carriageway.
 
     A dual carriageway is detected when another one-way road of the same or
-    higher highway class runs roughly parallel (bearing within 30°) and in the
+    higher highway class runs roughly parallel (bearing within 45°) and in the
     opposite direction within DUAL_CARRIAGEWAY_TOL metres.
     """
     mid_pt = line.interpolate(0.5, normalized=True)
@@ -266,10 +278,8 @@ def has_opposing_carriageway(road_row, line, roads_gdf, spatial_index, roads_geo
         box(mid_pt.x - tol, mid_pt.y - tol, mid_pt.x + tol, mid_pt.y + tol)
     ))
 
-    # This road's bearing (digitisation direction)
-    road_start = line.interpolate(0.0)
-    road_end = line.interpolate(min(line.length, 100.0))
-    road_bearing = bearing_between(road_start, road_end)
+    # This road's local bearing near its midpoint
+    road_bearing = get_bearing_at_distance(line, line.length * 0.5)
 
     own_priority = HIGHWAY_PRIORITY.get(str(road_row.get('highway', '')), 99)
 
@@ -295,14 +305,13 @@ def has_opposing_carriageway(road_row, line, roads_gdf, spatial_index, roads_geo
         if other_line.distance(mid_pt) > tol:
             continue
 
-        # Must run in the roughly opposite direction (within 30° of 180° offset)
-        other_start = other_line.interpolate(0.0)
-        other_end = other_line.interpolate(min(other_line.length, 100.0))
-        other_bearing = bearing_between(other_start, other_end)
+        # This other road's local bearing near the point closest to mid_pt
+        other_proj = other_line.project(mid_pt)
+        other_bearing = get_bearing_at_distance(other_line, other_proj)
 
         diff = abs(road_bearing - other_bearing)
         diff = min(diff, 360 - diff)  # now in [0, 180]
-        if diff >= 150:
+        if diff >= 135:  # within 45° of 180° offset
             return True
 
     return False
