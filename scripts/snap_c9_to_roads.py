@@ -86,7 +86,11 @@ HIGHWAY_PRIORITY = {
     "tertiary": 3,
     "tertiary_link": 3,
     "residential": 4,
-    "unclassified": 4
+    "unclassified": 4,
+    "living_street": 5,
+    "service": 6,
+    "track": 7,
+    "road": 8
 }
 
 
@@ -442,8 +446,8 @@ def main():
         print("nl_roads_brom.gpkg already exists. Skipping.")
         return
 
-    # Load and reproject to RD New (EPSG:28992) for accurate distances
-    c9_gdf = gpd.read_file("c9_ndw.gpkg").to_crs(epsg=28992)
+    # Load NDW C9 signs in native WGS84
+    c9_gdf = gpd.read_file("c9_ndw.gpkg")
     
     # Filter out removed or non-placed signs
     active_mask = c9_gdf['removedOn'].isna() & (c9_gdf['status'] == 'PLACED')
@@ -460,14 +464,21 @@ def main():
     # Filter out pre-warning (voorwaarschuwing) signs before snapping
     pre_warning_mask = c9_gdf.apply(is_pre_warning, axis=1)
     print(f"Filtering out {pre_warning_mask.sum()} pre-warning (VOOR) signs...")
-    c9_gdf = c9_gdf[~pre_warning_mask]
+    c9_gdf = c9_gdf[~pre_warning_mask].copy()
     
+    # Load all roads in native WGS84
     roads_gdf = gpd.read_file("nl_roads.gpkg")
 
-    # Filter out minor roads (priority >= 4: residential, unclassified, service, living_street) and roundabouts
-    priority_series = roads_gdf["highway"].map(HIGHWAY_PRIORITY).fillna(99)
-    is_minor_mask = priority_series >= 4
+    # Fast spatial pre-filtering: keep only roads within a ~100m bounding box of any sign (0.001 deg)
+    print("Pre-filtering roads spatially near C9 signs to optimize candidates and reprojection...")
+    candidate_indices = set()
+    roads_sindex = roads_gdf.sindex
+    for geom in c9_gdf.geometry:
+        candidate_indices.update(roads_sindex.query(box(geom.x - 0.001, geom.y - 0.001, geom.x + 0.001, geom.y + 0.001)))
+    print(f"Spatially filtered candidate roads: kept {len(candidate_indices)} of {len(roads_gdf)} roads")
+    roads_gdf = roads_gdf.iloc[list(candidate_indices)].copy()
 
+    # Exclude roundabout segments to prevent cutting off intersection routing
     other_tags_series = roads_gdf['other_tags'].fillna("").astype(str)
     highway_series = roads_gdf['highway'].fillna("").astype(str)
     junction_series = (roads_gdf['junction'].fillna("").astype(str) if 'junction' in roads_gdf.columns else pd.Series("", index=roads_gdf.index))
@@ -478,11 +489,12 @@ def main():
         (junction_series == 'roundabout')
     )
 
-    print(f"Filtering roads: excluding {is_minor_mask.sum()} minor segments and {is_roundabout_mask.sum()} roundabout segments...")
-    roads_gdf = roads_gdf[~is_minor_mask & ~is_roundabout_mask].copy()
+    print(f"Excluding {is_roundabout_mask.sum()} roundabout segments...")
+    roads_gdf = roads_gdf[~is_roundabout_mask].copy()
 
-    # Reproject only the remaining filtered roads to RD New (EPSG:28992) for accurate distances
-    print("Reprojecting filtered roads to RD New (EPSG:28992)...")
+    # Reproject signs and filtered candidate roads to RD New (EPSG:28992) for accurate metric distance queries
+    print("Reprojecting filtered signs and roads to RD New (EPSG:28992)...")
+    c9_gdf = c9_gdf.to_crs(epsg=28992)
     roads_gdf = roads_gdf.to_crs(epsg=28992)
 
     # Build spatial index
