@@ -259,6 +259,22 @@
         <h2 class="faq-title" data-i18n="faq_title">Veelgestelde Vragen</h2>
         <div class="faq-accordion">
 
+          <div class="faq-item">
+            <button class="faq-question">
+              <span data-i18n="faq_q1">Ik krijg de melding "Kan app niet installeren" (of "Kan niet updaten") in de Play Store. Wat moet ik doen?</span>
+              <i class="ph ph-caret-down"></i>
+            </button>
+            <div class="faq-answer">
+              <p data-i18n="faq_a1">
+                Dit gebeurt meestal als er al een eerdere testversie (bijvoorbeeld direct geïnstalleerd via een los APK-bestand van GitHub) op je telefoon staat. Omdat de beveiligingssleutels van losse APK-bestanden en de Google Play Store verschillen, blokkeert Android de installatie.<br /><br />
+                <strong>De oplossing:</strong><br />
+                1. Verwijder de app van je telefoon. Zorg er hierbij voor dat je eventuele vinkjes zoals <strong>"App-gegevens behouden"</strong> uitschakelt.<br />
+                2. Mocht de melding blijven: ga op je telefoon naar <strong>Instellingen → Apps → BromBrom Manager</strong>. Tik rechtsboven op de drie puntjes en kies <strong>"Verwijderen voor alle gebruikers"</strong>.<br />
+                3. Wis daarna het geheugen van de Play Store app (Instellingen → Apps → Google Play Store → Opslag → Cache en gegevens wissen).<br />
+                4. Start je telefoon opnieuw op en installeer de app opnieuw via de Play Store.
+              </p>
+            </div>
+          </div>
 
           <div class="faq-item">
             <button class="faq-question" id="faq-btn-import-fail">
@@ -300,6 +316,25 @@
 
           <div class="faq-item">
             <button class="faq-question">
+              <span data-i18n="faq_q4">Help, de navigatie stuurt me alsnog de snelweg of autoweg (N-weg) op!</span>
+              <i class="ph ph-caret-down"></i>
+            </button>
+            <div class="faq-answer">
+              <p data-i18n="faq_a4">
+                Als dit gebeurt, staat in OsmAnd het verkeerde rijprofiel actief. De app denkt op dat moment dat je een
+                gewone auto bent.<br /><br />
+                <strong>De oplossing:</strong> Kijk in het navigatiescherm van OsmAnd. Zie je daar bovenaan of in de
+                route-instellingen een <strong>standaard auto-icoontje</strong> (vooraanzicht)? Tik daarop en wissel het
+                profiel naar het specifieke BromBrom-profiel. Dit herken je aan het <strong>oranje autootje van de
+                  zijkant gezien</strong>. Zodra het juiste profiel actief is, worden snelwegen, autowegen en C9-wegen
+                automatisch vermeden.
+              </p>
+              <img src="/assets/bbm-screenshots/brombrom-osmand-profile.png" alt="BromBrom OsmAnd Profile" class="faq-image" />
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">
               <span data-i18n="faq_q3">Ik zie het BromBrom-profiel helemaal niet in de lijst van OsmAnd staan.</span>
               <i class="ph ph-caret-down"></i>
             </button>
@@ -317,24 +352,6 @@
                   href="https://brombrom.bulligan.com/#visual-guide" class="link-subtle"
                   style="text-decoration: underline;">brombrom.bulligan.com/#visual-guide</a> op een laptop of tablet,
                 zodat je rustig kunt meelezen tijdens het uitvoeren van de stappen op je telefoon.
-              </p>
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-question">
-              <span data-i18n="faq_q4">Help, de navigatie stuurt me alsnog de snelweg of autoweg (N-weg) op!</span>
-              <i class="ph ph-caret-down"></i>
-            </button>
-            <div class="faq-answer">
-              <p data-i18n="faq_a4">
-                Als dit gebeurt, staat in OsmAnd het verkeerde rijprofiel actief. De app denkt op dat moment dat je een
-                gewone auto bent.<br /><br />
-                <strong>De oplossing:</strong> Kijk in het navigatiescherm van OsmAnd. Zie je daar bovenaan of in de
-                route-instellingen een <strong>standaard auto-icoontje</strong> (vooraanzicht)? Tik daarop en wissel het
-                profiel naar het specifieke BromBrom-profiel. Dit herken je aan het <strong>oranje autootje van de
-                  zijkant gezien</strong>. Zodra het juiste profiel actief is, worden snelwegen, autowegen en C9-wegen
-                automatisch vermeden.
               </p>
             </div>
           </div>

@@ -928,7 +928,7 @@ footer {
 }
 
 .faq-item.active .faq-answer {
-  max-height: 1000px; /* high enough to contain text */
+  max-height: 1200px; /* high enough to contain text and image */
   transition: max-height 0.3s cubic-bezier(1, 0, 1, 0);
 }
 
@@ -947,6 +947,15 @@ footer {
   color: var(--primary);
   font-style: normal;
   font-weight: 600;
+}
+
+.faq-image {
+  max-width: 320px;
+  width: 100%;
+  border-radius: 12px;
+  margin: 0 1.5rem 1.5rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Support Section Card styling */
