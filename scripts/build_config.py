@@ -5,10 +5,6 @@ from pathlib import Path
 PRIMARY_TOL = 2.0
 FALLBACK_TOL = 60.0
 
-# BRouter Configuration
-# Used in build_brom_segments.py
-BROUTER_VERSION = "brouter-1.7.8-all.jar"
-DOCKER_BROUTER_PATH = Path("/opt/brouter")
 
 # Finds the OSM ID field name dynamically from a GeoDataFrame
 def find_osm_id_field(gdf):

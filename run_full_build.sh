@@ -12,11 +12,11 @@ rm -f OsmAndMapCreator/*.odb osmand_gen/*.odb osmand_output/*.obf
 # Stage 1: Processing (Steps 1-6)
 ./scripts/run_pipeline.sh
 
-# Stage 2: Map Generation (Steps 7-8)
+# Stage 2: Map Generation (Step 7)
 if ls OsmAndMapCreator/NL_BromBrom_tagged.obf >/dev/null 2>&1; then
-    echo "[7/9] OsmAnd OBF Map already exists. Skipping."
+    echo "[7/8] OsmAnd OBF Map already exists. Skipping."
 else
-    echo "[7/9] Generating OsmAnd OBF Map..."
+    echo "[7/8] Generating OsmAnd OBF Map..."
     # Clean output, input, and gen to start fresh if building
     rm -rf osmand_output/*
     rm -rf osmand_gen/*
@@ -57,16 +57,8 @@ else
     find osmand_output/ -name "*.obf" -exec mv {} OsmAndMapCreator/NL_BromBrom_tagged.obf \;
 fi
 
-# Optional: Developer Debug Mode
-if [ "$DEBUG" = "true" ]; then
-    echo "[8/9] DEBUG mode active: Generating BRouter Segments..."
-    python3 scripts/build_brom_segments.py
-else
-    echo "[8/9] Skipping Developer features (DEBUG != true)."
-fi
-
-# Stage 3: Deployment (Step 9)
-echo "[9/9] Creating OsmAnd Deployment Package..."
+# Stage 3: Deployment (Step 8)
+echo "[8/8] Creating OsmAnd Deployment Package..."
 python3 scripts/generate_osmand_deploy.py
 
 # Stage 4: QA Validation
