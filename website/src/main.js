@@ -169,7 +169,7 @@ const translations = {
 };
 
 const screenshots = [
-  'bbm-0-interface.png',
+  'bbm-0-updates-available.png',
   'bbm-1-open-with-osmand.png',
   'bbm-2-import.png',
   'bbm-2.5-replace.png',
