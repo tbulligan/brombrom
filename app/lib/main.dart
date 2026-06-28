@@ -25,34 +25,76 @@ const String _prefLastKnownRelease = "last_known_release_date";
 const String _prefBgScheduled = "bg_task_scheduled";
 const String _prefOnboardingSeen = "onboarding_seen";
 
+// ── Shared Release Metadata Helper Class ──
+class GithubReleaseInfo {
+  final DateTime latestDate;
+  final DateTime? remoteOsfDate;
+  final Map<String, String> downloadUrls;
+
+  GithubReleaseInfo({
+    required this.latestDate,
+    required this.remoteOsfDate,
+    required this.downloadUrls,
+  });
+
+  static Future<GithubReleaseInfo> fetch(String apiUrl) async {
+    final response = await http.get(
+      Uri.parse(apiUrl),
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception("API Error ${response.statusCode}");
+    }
+
+    final data = jsonDecode(response.body);
+    final String publishedAt = data['published_at'] ?? '';
+    if (publishedAt.isEmpty) {
+      throw Exception("Missing published_at");
+    }
+
+    DateTime latestDate = DateTime.parse(publishedAt);
+    DateTime? remoteOsfDate;
+    final Map<String, String> downloadUrls = {};
+
+    final List assets = data['assets'] ?? [];
+    for (var asset in assets) {
+      final String name = asset['name'] ?? '';
+      final String? updatedAtStr = asset['updated_at'];
+      if (updatedAtStr == null || name.isEmpty) continue;
+      final DateTime updatedAt = DateTime.parse(updatedAtStr);
+
+      if (asset['browser_download_url'] != null) {
+        downloadUrls[name] = asset['browser_download_url'];
+      }
+
+      if (updatedAt.isAfter(latestDate)) {
+        latestDate = updatedAt;
+      }
+
+      if (name == "BromBrom.osf") {
+        remoteOsfDate = updatedAt;
+      }
+    }
+
+    return GithubReleaseInfo(
+      latestDate: latestDate,
+      remoteOsfDate: remoteOsfDate,
+      downloadUrls: downloadUrls,
+    );
+  }
+}
+
 // ── Background Task Handler (runs in a separate isolate) ──
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
-      // 1. Fetch latest release date from GitHub
-      final response = await http.get(
-        Uri.parse(_releaseApiUrl),
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-        },
-      );
-      if (response.statusCode != 200) return Future.value(false);
-
-      final data = jsonDecode(response.body);
-      final String publishedAt = data['published_at'] ?? '';
-      if (publishedAt.isEmpty) return Future.value(true);
-
-      DateTime latestDate = DateTime.parse(publishedAt);
-      final List assets = data['assets'] ?? [];
-      for (var asset in assets) {
-        final DateTime updatedAt = DateTime.parse(asset['updated_at']);
-        if (updatedAt.isAfter(latestDate)) {
-          latestDate = updatedAt;
-        }
-      }
-      final String latestDateStr = latestDate.toIso8601String();
+      // 1. Fetch latest release info from GitHub
+      final release = await GithubReleaseInfo.fetch(_releaseApiUrl);
+      final String latestDateStr = release.latestDate.toIso8601String();
 
       // 2. Compare with last known release date
       final prefs = await SharedPreferences.getInstance();
@@ -60,7 +102,7 @@ void callbackDispatcher() {
 
       if (lastKnown != null && latestDateStr != lastKnown) {
         // New release detected! Fire a notification.
-        final remoteDate = latestDate;
+        final remoteDate = release.latestDate;
         final localDate = DateTime.tryParse(lastKnown);
 
         if (localDate != null && remoteDate.isAfter(localDate)) {
@@ -173,7 +215,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   static const platform = MethodChannel('com.brombrom.app/package_check');
   bool _osmandInstalled = false;
   bool _notificationPermissionGranted = false;
-  Timer? _onboardingTimer;
   
   // CACHED URLs
   final Map<String, String> _downloadUrls = {};
@@ -245,7 +286,15 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       _targetDir = dir?.path;
     } catch(e) {
       _log("Failed to get external storage dir: $e");
-      _targetDir = "/storage/emulated/0/Download";
+    }
+
+    if (_targetDir == null) {
+      try {
+        final dir = await getApplicationDocumentsDirectory();
+        _targetDir = dir.path;
+      } catch (e) {
+        _log("Failed to get app documents dir: $e");
+      }
     }
   }
 
@@ -327,7 +376,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   @override
   void dispose() {
-    _onboardingTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _onboardingPageController.dispose();
     super.dispose();
@@ -339,7 +387,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       _checkOnboardingRequirements().then((_) {
         _checkVersions();
       });
-      _onboardingPageChanged(_onboardingCurrentPage);
     }
   }
 
@@ -352,40 +399,13 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     });
     
     try {
-      final response = await http.get(
-        Uri.parse(RELEASE_API),
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-        },
-      );
-      if (response.statusCode != 200) throw Exception("API Error ${response.statusCode}");
+      final release = await GithubReleaseInfo.fetch(RELEASE_API);
       
-      final data = jsonDecode(response.body);
+      _downloadUrls.clear();
+      _downloadUrls.addAll(release.downloadUrls);
       
-      DateTime latestDate = DateTime.parse(data['published_at']);
-      DateTime? remoteOsfDate;
-
-      final List assets = data['assets'] ?? [];
-      for (var asset in assets) {
-        final String name = asset['name'];
-        final DateTime updatedAt = DateTime.parse(asset['updated_at']);
-        
-        if (asset['browser_download_url'] != null) {
-          _downloadUrls[name] = asset['browser_download_url'];
-        }
-        
-        if (updatedAt.isAfter(latestDate)) {
-          latestDate = updatedAt;
-        }
-
-        if (name == OSF_FILENAME) {
-          remoteOsfDate = updatedAt;
-        }
-      }
-      
-      _latestReleaseDate = latestDate;
-      _remoteOsfDate = remoteOsfDate;
+      _latestReleaseDate = release.latestDate;
+      _remoteOsfDate = release.remoteOsfDate;
       _log("Latest Release: $_latestReleaseDate");
 
       // Persist for background task comparison
@@ -782,7 +802,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   }
 
   Future<void> _dismissOnboarding() async {
-    _onboardingTimer?.cancel();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefOnboardingSeen, true);
     if (mounted) {
@@ -798,24 +817,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
-  void _onboardingPageChanged(int page) {
-    _onboardingTimer?.cancel();
-    if (page == 1 && !_osmandInstalled) {
-      _onboardingTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-        final installed = await _isOsmAndInstalled();
-        if (installed && mounted) {
-          timer.cancel();
-          setState(() {
-            _osmandInstalled = true;
-          });
-          _onboardingPageController.nextPage(
-            duration: const Duration(milliseconds: 350),
-            curve: Curves.easeInOut,
-          );
-        }
-      });
-    }
-  }
+
 
   Widget _buildOnboardingCarousel() {
     final Color orange = Colors.orange[800]!;
@@ -881,7 +883,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                   itemCount: _osmandInstalled ? slides.length : 2,
                   onPageChanged: (i) {
                     setState(() => _onboardingCurrentPage = i);
-                    _onboardingPageChanged(i);
                   },
                   itemBuilder: (context, index) {
                     final slide = slides[index];

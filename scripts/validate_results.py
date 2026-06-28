@@ -33,7 +33,7 @@ def validate_build():
         print(f"❌ CRITICAL: Map is suspiciously small (<{MIN_EXPECTED_OBF_SIZE_MB}MB). Build likely failed or data source was empty.")
         sys.exit(1)
         
-    # 2. Validate Tagging Logic (if GPKG available)
+    # 2. Validate Tagging Logic
     # The GPKG is the source of truth for what went into the OBF map
     gpkg_path = "nl_roads_brom.gpkg"
     if os.path.exists(gpkg_path):
@@ -46,9 +46,11 @@ def validate_build():
                 print(f"❌ CRITICAL: Too few roads tagged ({count}). Possible NDW API failure or empty input data.")
                 sys.exit(1)
         except Exception as e:
-            print(f"⚠️ Warning: Could not validate GPKG contents: {e}")
+            print(f"❌ CRITICAL: Could not validate GPKG contents: {e}")
+            sys.exit(1)
     else:
-        print(f"⚠️ Warning: {gpkg_path} not found for validation.")
+        print(f"❌ CRITICAL: Validation GPKG file ({gpkg_path}) not found!")
+        sys.exit(1)
 
     print("✅ QA Validation Passed!")
 

@@ -14,6 +14,7 @@ except ImportError:
     from scripts import build_config as config
 
 def distance_meters(lon1, lat1, lon2, lat2):
+    # Flat-Earth equirectangular approximation for speed in local node checks. Max ceiling error increases over large distances.
     lat_avg = math.radians((lat1 + lat2) / 2.0)
     dx = (lon2 - lon1) * 111320.0 * math.cos(lat_avg)
     dy = (lat2 - lat1) * 111320.0
@@ -25,14 +26,15 @@ class TagC9Handler(osmium.SimpleHandler):
         self.writer = writer
         self.forbidden_ways = forbidden_ways
         self.way_snaps = way_snaps
+        # Hardcoded ID offset to generate unique synthetic ways. Collision ceiling at 90B+ upstream OSM IDs.
         self.next_way_id = 90000000000
 
     def node(self, n):
-        # forward all nodes unchanged
+        # Forward all nodes unchanged
         self.writer.add_node(n)
 
     def relation(self, r):
-        # forward all relations unchanged
+        # Forward all relations unchanged
         self.writer.add_relation(r)
 
     def way(self, w):
