@@ -64,7 +64,7 @@ The fastest way to install and keep your navigation updated automatically.
 
   | 1. Updates Available | 2. Open with OsmAnd | 3. Select Resources to Import |
   | :---: | :---: | :---: |
-  | ![Updates Available](assets/bbm-screenshots/bbm-0-updates-available.png) | ![Open with OsmAnd](assets/bbm-screenshots/bbm-1-open-with-osmand.png) | ![Select Resources](assets/bbm-screenshots/bbm-2-import.png) |
+  | ![Updates Available](assets/bbm-screenshots/bbm-0-interface.png) | ![Open with OsmAnd](assets/bbm-screenshots/bbm-1-open-with-osmand.png) | ![Select Resources](assets/bbm-screenshots/bbm-2-import.png) |
 
   | 4. Confirm Replacement (If asked) | 5. Import Complete (Tap Close) |
   | :---: | :---: |
