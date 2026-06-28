@@ -23,6 +23,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     python3-venv \
     osmium-tool \
     gdal-bin \
+    libgdal-dev \
+    g++ \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a venv that inherits system-level GDAL/GEOS bindings,
@@ -30,13 +33,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN python3 -m venv /opt/venv --system-site-packages
 ENV PATH="/opt/venv/bin:$PATH"
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install \
+    GDAL_CONFIG=/usr/bin/gdal-config pip install \
     requests \
     tqdm \
     geopandas \
     shapely \
     osmium \
-    pyogrio
+    --no-binary pyogrio pyogrio
 
 WORKDIR /app
 
