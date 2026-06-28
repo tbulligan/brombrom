@@ -110,18 +110,16 @@ def create_osmand_deploy_package():
     with zipfile.ZipFile(osf_path, 'w', zipfile.ZIP_DEFLATED) as osf_zip:
         
         # 1. Routing file inside '/routing'
-        if routing_src.exists():
-            osf_zip.write(routing_src, "routing/routing.xml")
-            print(f"  Added routing.xml")
-        else:
-            print("  Warning: routing.xml not found")
+        if not routing_src.exists():
+            raise FileNotFoundError(f"Routing configuration file not found at {routing_src}")
+        osf_zip.write(routing_src, "routing/routing.xml")
+        print(f"  Added routing.xml")
 
         # 2. Map data at root
-        if map_src.exists():
-            osf_zip.write(map_src, "NL_BromBrom_tagged.obf")
-            print(f"  Added NL_BromBrom_tagged.obf")
-        else:
-             print("  Warning: Map .obf not found")
+        if not map_src.exists():
+            raise FileNotFoundError(f"OsmAnd OBF map file not found at {map_src}")
+        osf_zip.write(map_src, "NL_BromBrom_tagged.obf")
+        print(f"  Added NL_BromBrom_tagged.obf")
 
         # 3. Profile JSON
         osf_zip.writestr("profile_brombrom.json", json.dumps(osmand_profile_json, indent=2))
