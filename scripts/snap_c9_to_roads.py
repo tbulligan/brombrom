@@ -39,11 +39,14 @@ _NAME_SUFFIXES = tuple(sorted(
     key=len, reverse=True
 ))
 
+CLEAN_NAME_PATTERN = re.compile(r'[^a-z0-9\s]')
+SPLIT_NAME_PATTERN = re.compile(r'[;/,-]')
+
 def normalize_name(name):
     if not name or pd.isna(name):
         return ""
     name = str(name).lower().strip()
-    name = re.sub(r'[^a-z0-9\s]', '', name)
+    name = CLEAN_NAME_PATTERN.sub('', name)
     name = name.replace(" ", "")
     
     for suffix in _NAME_SUFFIXES:
@@ -56,8 +59,8 @@ def check_name_match(ndw_name, osm_name):
     if pd.isna(ndw_name) or not ndw_name or pd.isna(osm_name) or not osm_name:
         return True
     
-    ndw_parts = re.split(r'[;/,-]', str(ndw_name))
-    osm_parts = re.split(r'[;/,-]', str(osm_name))
+    ndw_parts = SPLIT_NAME_PATTERN.split(str(ndw_name))
+    osm_parts = SPLIT_NAME_PATTERN.split(str(osm_name))
     
     for ndw_p in ndw_parts:
         ndw_norm = normalize_name(ndw_p)
@@ -70,6 +73,7 @@ def check_name_match(ndw_name, osm_name):
             if (ndw_norm == osm_norm) or (ndw_norm in osm_norm) or (osm_norm in ndw_norm):
                 return True
     return False
+
 
 
 # Global highway class priorities for snapping and filtering
@@ -160,7 +164,7 @@ def has_microcar_exemption(row):
     except Exception:
         return False
 
-def snap_c9_distance_only(row, roads_gdf, spatial_index, roads_geoms):
+def snap_c9_distance_only(row, roads_gdf, spatial_index, roads_geoms, roads_names=None, roads_highways=None):
     # Original distance-based snap for fallback
     # Helper to calculate precise snap
     point = row.geometry
@@ -178,8 +182,13 @@ def snap_c9_distance_only(row, roads_gdf, spatial_index, roads_geoms):
             dist = geom.distance(point)
             
             # Apply priority penalty to fallback snapping as well
-            road_row = roads_gdf.iloc[idx]
-            highway = str(road_row.get('highway', ''))
+            if roads_highways is not None:
+                highway = str(roads_highways[idx]) if pd.notna(roads_highways[idx]) else ""
+                road_row = None
+            else:
+                road_row = roads_gdf.iloc[idx]
+                highway = str(road_row.get('highway', ''))
+                
             priority = HIGHWAY_PRIORITY.get(highway, 99)
             if priority >= 4:
                 priority_penalty = 8.0 / 0.7  # Convert score penalty to meters
@@ -189,7 +198,11 @@ def snap_c9_distance_only(row, roads_gdf, spatial_index, roads_geoms):
                 priority_penalty = 0.0
                 
             # Apply name mismatch penalty
-            osm_name = road_row.get('name')
+            if roads_names is not None:
+                osm_name = roads_names[idx]
+            else:
+                osm_name = road_row.get('name') if road_row is not None else None
+                
             name_matched = check_name_match(ndw_name, osm_name)
             name_penalty = 0.0 if name_matched else (30.0 / 0.7)
             
@@ -269,7 +282,7 @@ def get_bearing_at_distance(line, distance):
         p2 = line.interpolate(min(line.length, distance + 10.0))
     return bearing_between(p1, p2)
 
-def has_opposing_carriageway(road_row, line, roads_gdf, spatial_index, roads_geoms):
+def has_opposing_carriageway(road_row, line, roads_gdf, spatial_index, roads_geoms, roads_highways=None, roads_tags=None):
     """Return True if `road_row` is part of a dual carriageway.
 
     A dual carriageway is detected when another one-way road of the same or
@@ -288,9 +301,13 @@ def has_opposing_carriageway(road_row, line, roads_gdf, spatial_index, roads_geo
     own_priority = HIGHWAY_PRIORITY.get(str(road_row.get('highway', '')), 99)
 
     for idx in nearby:
-        other_row = roads_gdf.iloc[idx]
-        # Must be one-way
-        other_tags = str(other_row.get('other_tags', ''))
+        if roads_tags is not None:
+            other_tags = str(roads_tags[idx]) if pd.notna(roads_tags[idx]) else ""
+            other_row = None
+        else:
+            other_row = roads_gdf.iloc[idx]
+            other_tags = str(other_row.get('other_tags', ''))
+            
         other_oneway = (
             '"oneway"=>"yes"' in other_tags
             or '"junction"=>"roundabout"' in other_tags
@@ -300,7 +317,11 @@ def has_opposing_carriageway(road_row, line, roads_gdf, spatial_index, roads_geo
             continue
 
         # Must be a similar or higher priority road class
-        other_priority = HIGHWAY_PRIORITY.get(str(other_row.get('highway', '')), 99)
+        if roads_highways is not None:
+            other_priority = HIGHWAY_PRIORITY.get(str(roads_highways[idx]), 99)
+        else:
+            other_priority = HIGHWAY_PRIORITY.get(str(other_row.get('highway', '')), 99)
+            
         if abs(other_priority - own_priority) > 1:
             continue
 
@@ -321,7 +342,8 @@ def has_opposing_carriageway(road_row, line, roads_gdf, spatial_index, roads_geo
     return False
 
 
-def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
+def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
+                     roads_names=None, roads_highways=None, roads_tags=None):
     point = row.geometry
     if point is None or point.is_empty:
         return None, None
@@ -338,20 +360,24 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     has_side = side in ['L', 'R']
     
     if pd.isna(bearing) and not has_side:
-        return snap_c9_distance_only(row, roads_gdf, spatial_index, roads_geoms)
+        return snap_c9_distance_only(row, roads_gdf, spatial_index, roads_geoms, roads_names, roads_highways)
 
     candidates = list(spatial_index.query(box(point.x - FALLBACK_TOL, point.y - FALLBACK_TOL, point.x + FALLBACK_TOL, point.y + FALLBACK_TOL)))
     if len(candidates) == 0:
         return None, None
 
-    candidates_df = roads_gdf.iloc[candidates]
-
     # Check if any candidate road matches the NDW sign roadName
     ndw_name = row.get("roadName")
     any_name_matched = False
-    names_series = candidates_df.get("name")
-    if names_series is not None:
-        any_name_matched = any(check_name_match(ndw_name, name) for name in names_series)
+    
+    if roads_names is not None:
+        names_series = [roads_names[idx] for idx in candidates]
+        any_name_matched = any(check_name_match(ndw_name, name) for name in names_series if pd.notna(name))
+    else:
+        candidates_df = roads_gdf.iloc[candidates]
+        names_series = candidates_df.get("name")
+        if names_series is not None:
+            any_name_matched = any(check_name_match(ndw_name, name) for name in names_series)
 
     best_idx, best_score = None, float("inf")
     best_snap_pt = None
@@ -359,81 +385,144 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count):
     # Optimization: Access geometries directly
     candidate_geoms = roads_geoms[candidates]
 
-    for (label, road_row), line in zip(candidates_df.iterrows(), candidate_geoms):
-        proj_dist = line.project(point)
-        proj_pt = line.interpolate(proj_dist)
+    if roads_names is not None and roads_highways is not None and roads_tags is not None:
+        labels = [roads_gdf.index[idx] for idx in candidates]
+        for i, (idx, line) in enumerate(zip(candidates, candidate_geoms)):
+            label = labels[i]
+            proj_dist = line.project(point)
+            proj_pt = line.interpolate(proj_dist)
 
-        ahead_m = min(100.0, line.length / 2)
-        ahead_frac = min(1.0, (proj_dist + ahead_m) / line.length)
-        seg_end = line.interpolate(ahead_frac)
+            ahead_m = min(100.0, line.length / 2)
+            ahead_frac = min(1.0, (proj_dist + ahead_m) / line.length)
+            seg_end = line.interpolate(ahead_frac)
 
-        seg_bearing = bearing_between(proj_pt, seg_end)
-        
-        # Check OneWay status
-        tags = str(road_row.get('other_tags', ''))
-        is_oneway = '"oneway"=>"yes"' in tags or '"junction"=>"roundabout"' in tags or '"highway"=>"motorway"' in tags
-
-        # Convert mathematical segment bearing to geographical bearing
-        seg_geo_bearing = (90 - seg_bearing) % 360
-        
-        # Handle missing bearing gracefully
-        if pd.isna(bearing):
-            angle_diff = 0.0 # No angular penalty if we don't know the sign's angle
-        else:
-            angle_diff = min(abs(bearing - seg_geo_bearing), 360 - abs(bearing - seg_geo_bearing))
-            if not is_oneway:
-                angle_diff_opp = min(abs(bearing - (seg_geo_bearing + 180) % 360), 360 - abs(bearing - (seg_geo_bearing + 180) % 360))
-                angle_diff = min(angle_diff, angle_diff_opp)
-        
-        # Side Matching Logic
-        side_penalty = 0.0
-        if has_side:
-            geom_side = get_geometric_side(point, line, proj_dist)
+            seg_bearing = bearing_between(proj_pt, seg_end)
             
-            if geom_side == side:
-                side_penalty = -2.0 # Bonus for matching side
-            # No penalty for mismatch: rely on Angle (for opposing) and Bonus (for parallel)
-            # This handles 'Breukelerwaard' where side data conflicts with OneWay geometry
+            # Check OneWay status
+            tags = str(roads_tags[idx]) if pd.notna(roads_tags[idx]) else ""
+            is_oneway = '"oneway"=>"yes"' in tags or '"junction"=>"roundabout"' in tags or '"highway"=>"motorway"' in tags
+
+            # Convert mathematical segment bearing to geographical bearing
+            seg_geo_bearing = (90 - seg_bearing) % 360
+            
+            # Handle missing bearing gracefully
+            if pd.isna(bearing):
+                angle_diff = 0.0 # No angular penalty if we don't know the sign's angle
             else:
-                side_penalty = 0.0
-        
-        highway = str(road_row.get('highway', ''))
-        priority = HIGHWAY_PRIORITY.get(highway, 99)
-        if priority >= 4:
-            priority_penalty = 8.0
-        elif priority == 3:
-            priority_penalty = 2.0
-        else:
-            priority_penalty = 0.0
+                angle_diff = min(abs(bearing - seg_geo_bearing), 360 - abs(bearing - seg_geo_bearing))
+                if not is_oneway:
+                    angle_diff_opp = min(abs(bearing - (seg_geo_bearing + 180) % 360), 360 - abs(bearing - (seg_geo_bearing + 180) % 360))
+                    angle_diff = min(angle_diff, angle_diff_opp)
             
-        dist = proj_pt.distance(point)
-        # Name match penalty
-        osm_name = road_row.get("name")
-        name_matched = check_name_match(ndw_name, osm_name)
-        name_penalty = 0.0 if name_matched else 30.0
+            # Side Matching Logic
+            side_penalty = 0.0
+            if has_side:
+                geom_side = get_geometric_side(point, line, proj_dist)
+                
+                if geom_side == side:
+                    side_penalty = -2.0 # Bonus for matching side
+                else:
+                    side_penalty = 0.0
+            
+            highway = str(roads_highways[idx]) if pd.notna(roads_highways[idx]) else ""
+            priority = HIGHWAY_PRIORITY.get(highway, 99)
+            if priority >= 4:
+                priority_penalty = 8.0
+            elif priority == 3:
+                priority_penalty = 2.0
+            else:
+                priority_penalty = 0.0
+                
+            dist = proj_pt.distance(point)
+            # Name match penalty
+            osm_name = roads_names[idx]
+            name_matched = check_name_match(ndw_name, osm_name)
+            name_penalty = 0.0 if name_matched else 30.0
 
-        # Conditional Intersection Warning Bonus:
-        # If no candidate matched the name, allow a bonus for high-priority roads
-        # (priority <= 2) within 50m whose bearing matches within 30 degrees.
-        # GUARD: Block the bonus only for dual carriageways (parallel opposing
-        # one-way road detected within 20m) to prevent asymmetric blocking.
-        # Single one-way roads still receive the bonus.
-        if not name_matched and not any_name_matched:
-            if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0:
-                is_dual = is_oneway and has_opposing_carriageway(
-                    road_row, line, roads_gdf, spatial_index, roads_geoms
-                )
-                if not is_dual:
-                    name_penalty = 0.0
+            if not name_matched and not any_name_matched:
+                if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0:
+                    road_row_dict = {'highway': highway, 'other_tags': tags, 'name': osm_name}
+                    is_dual = is_oneway and has_opposing_carriageway(
+                        road_row_dict, line, roads_gdf, spatial_index, roads_geoms, roads_highways, roads_tags
+                    )
+                    if not is_dual:
+                        name_penalty = 0.0
 
-        # Score formulation: Distance is king, but orientation/side/priority refine it.
-        # Use a larger weight (0.15) for angle difference to prevent perpendicular false snaps
-        score = dist * 0.7 + angle_diff * 0.15 + side_penalty + priority_penalty + name_penalty
+            score = dist * 0.7 + angle_diff * 0.15 + side_penalty + priority_penalty + name_penalty
 
-        if score < best_score:
-            best_score = score
-            best_idx = label
-            best_snap_pt = proj_pt
+            if score < best_score:
+                best_score = score
+                best_idx = label
+                best_snap_pt = proj_pt
+
+    else:
+        # Fallback path using iterrows (maintaining backward compatibility)
+        candidates_df = roads_gdf.iloc[candidates]
+        for (label, road_row), line in zip(candidates_df.iterrows(), candidate_geoms):
+            proj_dist = line.project(point)
+            proj_pt = line.interpolate(proj_dist)
+
+            ahead_m = min(100.0, line.length / 2)
+            ahead_frac = min(1.0, (proj_dist + ahead_m) / line.length)
+            seg_end = line.interpolate(ahead_frac)
+
+            seg_bearing = bearing_between(proj_pt, seg_end)
+            
+            # Check OneWay status
+            tags = str(road_row.get('other_tags', ''))
+            is_oneway = '"oneway"=>"yes"' in tags or '"junction"=>"roundabout"' in tags or '"highway"=>"motorway"' in tags
+
+            # Convert mathematical segment bearing to geographical bearing
+            seg_geo_bearing = (90 - seg_bearing) % 360
+            
+            # Handle missing bearing gracefully
+            if pd.isna(bearing):
+                angle_diff = 0.0 # No angular penalty if we don't know the sign's angle
+            else:
+                angle_diff = min(abs(bearing - seg_geo_bearing), 360 - abs(bearing - seg_geo_bearing))
+                if not is_oneway:
+                    angle_diff_opp = min(abs(bearing - (seg_geo_bearing + 180) % 360), 360 - abs(bearing - (seg_geo_bearing + 180) % 360))
+                    angle_diff = min(angle_diff, angle_diff_opp)
+            
+            # Side Matching Logic
+            side_penalty = 0.0
+            if has_side:
+                geom_side = get_geometric_side(point, line, proj_dist)
+                
+                if geom_side == side:
+                    side_penalty = -2.0 # Bonus for matching side
+                else:
+                    side_penalty = 0.0
+            
+            highway = str(road_row.get('highway', ''))
+            priority = HIGHWAY_PRIORITY.get(highway, 99)
+            if priority >= 4:
+                priority_penalty = 8.0
+            elif priority == 3:
+                priority_penalty = 2.0
+            else:
+                priority_penalty = 0.0
+                
+            dist = proj_pt.distance(point)
+            # Name match penalty
+            osm_name = road_row.get("name")
+            name_matched = check_name_match(ndw_name, osm_name)
+            name_penalty = 0.0 if name_matched else 30.0
+
+            if not name_matched and not any_name_matched:
+                if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0:
+                    is_dual = is_oneway and has_opposing_carriageway(
+                        road_row, line, roads_gdf, spatial_index, roads_geoms
+                    )
+                    if not is_dual:
+                        name_penalty = 0.0
+
+            score = dist * 0.7 + angle_diff * 0.15 + side_penalty + priority_penalty + name_penalty
+
+            if score < best_score:
+                best_score = score
+                best_idx = label
+                best_snap_pt = proj_pt
 
     return best_idx, best_snap_pt
 
@@ -505,12 +594,16 @@ def main():
 
     # Apply directional snapping
     roads_geoms = roads_gdf.geometry.values
+    roads_names = roads_gdf['name'].values
+    roads_highways = roads_gdf['highway'].values
+    roads_tags = roads_gdf['other_tags'].values
     
     print(f"Snapping {len(c9_gdf)} signs with tolerance {FALLBACK_TOL}m...")
     
     # Run snapping and expand result into two columns
     snap_results = c9_gdf.apply(
-        lambda row: directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count),
+        lambda row: directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
+                                     roads_names, roads_highways, roads_tags),
         axis=1,
         result_type='expand'
     )
