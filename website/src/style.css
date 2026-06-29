@@ -939,8 +939,9 @@ footer {
   line-height: 1.6;
 }
 
+.faq-question strong,
 .faq-answer strong {
-  color: #fff;
+  color: var(--primary);
 }
 
 .faq-answer em {
