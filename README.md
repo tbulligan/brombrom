@@ -2,7 +2,7 @@
   <img src="assets/brombrom-banner-EN.png" alt="BromBrom Banner" width="100%">
 </p>
 
-# BromBrom: OsmAnd Microcar Navigation (Netherlands)
+# BromBrom: [OsmAnd](https://www.osmand.net/) Microcar Navigation (Netherlands)
 
 > [!IMPORTANT]
 > BromBrom is a *planning aid* only. You are responsible for following traffic signs and Dutch law.
@@ -11,9 +11,9 @@
 [![Website](https://img.shields.io/badge/Website-Live-brightgreen?logo=google-chrome)](https://brombrom.bulligan.com/)
 [![Google Play](https://img.shields.io/badge/Google_Play-App-004D40?logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.brombrom.app)
 
-**BromBrom** creates a professional-grade **OsmAnd** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
+**BromBrom** creates a professional-grade **[OsmAnd](https://www.osmand.net/)** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
 
-OsmAnd is a free and open-source offline navigation app for Android and iOS: https://osmand.net.
+[OsmAnd](https://www.osmand.net/) is a free and open-source offline navigation app for Android and iOS: https://osmand.net.
 
 ## ✨ Features
 
@@ -41,7 +41,7 @@ See the difference: standard car navigation would route you onto expressways or 
 ## 📲 Installation & Setup
 
 > [!IMPORTANT]
-> **Prerequisite**: You must have **OsmAnd** installed on your device first. Download it from the [Google Play Store](https://play.google.com/store/apps/details?id=net.osmand) or [iOS App Store](https://apps.apple.com/app/osmand-maps-navigation/id934850257).
+> **Prerequisite**: You must have **[OsmAnd](https://www.osmand.net/)** installed on your device first. Download it from the [Google Play Store](https://play.google.com/store/apps/details?id=net.osmand) or [iOS App Store](https://apps.apple.com/app/osmand-maps-navigation/id934850257).
 
 ### ✅ Option A: BromBrom Manager (Android Recommended)
 The fastest way to install and keep your navigation updated automatically.
@@ -49,13 +49,13 @@ The fastest way to install and keep your navigation updated automatically.
 [![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=com.brombrom.app)
 
 > [!TIP]
-> **Already Configured?** If you have already set up the BromBrom profile in OsmAnd, you only need to perform **Phase 1: Installation & Import**. OsmAnd will automatically retain your settings and profile choice for updates!
+> **Already Configured?** If you have already set up the BromBrom profile in [OsmAnd](https://www.osmand.net/), you only need to perform **Phase 1: Installation & Import**. [OsmAnd](https://www.osmand.net/) will automatically retain your settings and profile choice for updates!
 
 #### Phase 1: Installation & Import (Required Every Month)
 1.  **Download** the **BromBrom Manager App** from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
 2.  **Install** and **Open** the app.
 3.  **Download & Import**: The app automatically checks for and downloads the update. Once downloaded, review the popup instructions and tap **"OPEN OSMAND"**.
-4.  OsmAnd will open. Check both **"Settings"** and **"Resources"**, then tap **"Continue"**.
+4.  [OsmAnd](https://www.osmand.net/) will open. Check both **"Settings"** and **"Resources"**, then tap **"Continue"**.
 5.  Tap **"Replace all"** (overwrite) or **"Apply"** (first time) and wait for the import to finish.
 6.  On the **"Import complete"** screen, tap **"Close"**.
 
@@ -74,7 +74,7 @@ The fastest way to install and keep your navigation updated automatically.
 #### Phase 2: Profile Activation (First-Time Installation Only)
 If this is your first time installing BromBrom, you must activate the profile:
 
-7.  Open the OsmAnd menu (three lines button in the corner).
+7.  Open the [OsmAnd](https://www.osmand.net/) menu (three lines button in the corner).
 8.  Go to **Settings** -> **Configure profiles**.
 9.  **Enable BromBrom** — Scroll down to the profiles list, find **BromBrom** and toggle it **ON**.
 10. Tap the navigation icon and select the **BromBrom** profile (orange microcar icon).
@@ -100,15 +100,15 @@ Because the entire BromBrom profile is packaged into a Smart Folder (`.osf`), ma
 
 1. Go to the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)** on your phone.
 2. Download the **`BromBrom.osf`** package file.
-3. Tap on the downloaded file. Your OS will prompt you to open it with **OsmAnd**.
+3. Tap on the downloaded file. Your OS will prompt you to open it with **[OsmAnd](https://www.osmand.net/)**.
 4. Check both **"Settings"** and **"Resources"**, then tap **"Continue"**.
 5. Tap **"Replace all"** (update) or **"Apply"** (first time) and wait for the import to finish.
 6. On the **"Import complete"** screen, tap **"Close"**.
-7. Open the OsmAnd menu (three lines in the corner) and go to **Settings**.
+7. Open the [OsmAnd](https://www.osmand.net/) menu (three lines in the corner) and go to **Settings**.
 8.  **Enable BromBrom** — Scroll down to the profiles list, find **BromBrom** and toggle it **ON**.
 9.  In the navigation menu, select the **BromBrom** profile (orange microcar icon).
 
-> ⚠️ Do not skip steps 6–8. OsmAnd does not enable or activate new profiles automatically.
+> ⚠️ Do not skip steps 6–9. [OsmAnd](https://www.osmand.net/) does not enable or activate new profiles automatically.
 
 See the [Manual Install Guide](docs/manual_install.md) for deeper troubleshooting.
 
