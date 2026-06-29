@@ -304,7 +304,7 @@ async function fetchLatestVersion() {
     const data = await response.json();
 
     if (data.assets) {
-      const mapAsset = data.assets.find(a => a.name.endsWith('.obf'));
+      const mapAsset = data.assets.find(a => a.name.endsWith('.osf') || a.name.endsWith('.obf'));
       const timestamp = mapAsset ? mapAsset.updated_at : data.published_at;
 
       const versionEl = document.getElementById('version-tag');
