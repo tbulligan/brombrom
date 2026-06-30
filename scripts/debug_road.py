@@ -9,6 +9,7 @@ Usage:
   python scripts/debug_road.py --way <OSM_ID> [--pull]
   python scripts/debug_road.py --sign <SIGN_ID> [--pull]
   python scripts/debug_road.py --name <ROAD_NAME> [--pull]
+  python scripts/debug_road.py --coords <LAT,LON> [--pull]
 """
 import argparse
 import os
@@ -17,6 +18,7 @@ import json
 import subprocess
 import geopandas as gpd
 import pandas as pd
+from shapely.geometry import Point
 
 def pull_freshest_data():
     print("\n================ REFRESHING PIPELINE DATA ================")
@@ -199,12 +201,46 @@ def search_by_name(name):
         for idx, row in allowed_roads.iterrows():
             print(f"  OSM ID: {row['osm_id']} | Name: {row['name']} | Highway: {row['highway']}")
 
+def inspect_coords(lat, lon):
+    print(f"\n================ INSPECTING COORDINATES: ({lat}, {lon}) ================")
+    
+    # Convert WGS84 lat/lon coordinates to RD New projection (EPSG:28992)
+    pt_wgs = gpd.GeoSeries([Point(lon, lat)], crs="EPSG:4326")
+    pt_rd = pt_wgs.to_crs(epsg=28992).iloc[0]
+    
+    gdf_raw = gpd.read_file("nl_roads.gpkg")
+    if gdf_raw.empty:
+        print("Raw roads database is empty.")
+        return
+        
+    # Spatial search within 100 meters
+    sindex = gdf_raw.sindex
+    candidates = list(sindex.query(pt_rd.buffer(100.0)))
+    
+    if not candidates:
+        print("No roads found within 100 meters of these coordinates.")
+        return
+        
+    subset = gdf_raw.iloc[candidates]
+    dists = subset.geometry.distance(pt_rd)
+    closest_idx = dists.idxmin()
+    closest_road = gdf_raw.loc[closest_idx]
+    
+    way_id = closest_road['osm_id']
+    print(f"Closest road segment found (distance {dists.loc[closest_idx]:.2f}m):")
+    print(f"  OSM Way ID: {way_id}")
+    print(f"  Name:       {closest_road.get('name')}")
+    print(f"  Highway:    {closest_road.get('highway')}")
+    
+    inspect_way(way_id)
+
 def main():
     parser = argparse.ArgumentParser(description="BromBrom Pipeline & Map Diagnostics CLI")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-w", "--way", help="OSM Way ID to inspect")
     group.add_argument("-s", "--sign", help="NDW Sign UUID to inspect")
     group.add_argument("-n", "--name", help="Road name substring to search for")
+    group.add_argument("-c", "--coords", help="Coordinates as 'lat,lon' (e.g. '52.2640,5.4724')")
     
     parser.add_argument("-p", "--pull", action="store_true", help="Force refresh of all pipeline input data first")
     
@@ -222,6 +258,13 @@ def main():
         inspect_sign(args.sign)
     elif args.name:
         search_by_name(args.name)
+    elif args.coords:
+        try:
+            lat, lon = map(float, args.coords.split(','))
+            inspect_coords(lat, lon)
+        except Exception as e:
+            print(f"❌ Error: Invalid coordinates format '{args.coords}'. Must be 'lat,lon'. Details: {e}")
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()
