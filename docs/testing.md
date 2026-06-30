@@ -50,6 +50,9 @@ python scripts/debug_road.py --sign <SIGN_UUID>
 # Search for roads and C9 signs by name (case-insensitive substring)
 python scripts/debug_road.py --name <ROAD_NAME>
 
+# Find the closest road segment to a coordinate and inspect it
+python scripts/debug_road.py --coords <LAT,LON>
+
 # Force a full refresh (re-download and extract) of the freshest NDW/OSM data before analysis
 python scripts/debug_road.py --name <ROAD_NAME> --pull
 ```
