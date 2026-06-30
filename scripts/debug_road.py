@@ -135,7 +135,7 @@ def inspect_sign(sign_id):
     gdf_brom = gpd.read_file("nl_roads_brom.gpkg")
     snapped_ways = []
     
-    # Check by coordinates matching (or sign ID if we parse it)
+    # Check by sign ID or coordinates matching
     sign_lon, sign_lat = row.geometry.x, row.geometry.y
     for idx, r in gdf_brom.iterrows():
         snaps_str = r.get('c9_snaps')
@@ -143,7 +143,14 @@ def inspect_sign(sign_id):
             try:
                 snaps = json.loads(snaps_str)
                 for s in snaps:
-                    if abs(s.get('lon') - sign_lon) < 0.0001 and abs(s.get('lat') - sign_lat) < 0.0001:
+                    # Match by exact sign ID (new behavior) or fallback to coords with 0.0015 deg tolerance (~100m)
+                    is_match = False
+                    if s.get('id') == sign_id:
+                        is_match = True
+                    elif abs(s.get('lon') - sign_lon) < 0.0015 and abs(s.get('lat') - sign_lat) < 0.0015:
+                        is_match = True
+                        
+                    if is_match:
                         snapped_ways.append({
                             'osm_id': r['osm_id'],
                             'name': r['name'],

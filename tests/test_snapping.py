@@ -469,3 +469,37 @@ def test_fallback_bearing_from_side():
     resolved_bearing = snap_c9_to_roads.get_bearing_from_side(sign['side'])
     assert resolved_bearing == 90.0
 
+def test_intersection_bonus_name_match_aligned():
+    import geopandas as gpd
+    import pandas as pd
+    from shapely.geometry import Point, LineString
+    
+    # Sign has roadName 'Erkemederweg', facing North (bearing 0.0)
+    sign = pd.Series({
+        'roadName': 'Erkemederweg',
+        'bearing': 0.0,
+        'side': 'N',
+        'geometry': Point(0, 0)
+    })
+    
+    # Two candidate roads:
+    # 1. 'Nijkerkerweg' (primary link, priority 1, aligned with bearing 0.0 -> goes North)
+    # 2. 'Erkemederweg' (unclassified, priority 4, perpendicular to bearing 0.0 -> goes West/East)
+    roads = gpd.GeoDataFrame([
+        {
+            'osm_id': 1, 'name': 'Nijkerkerweg', 'highway': 'primary_link',
+            'geometry': LineString([(0.1, -10), (0.1, 10)]), 'other_tags': '' # Aligned
+        },
+        {
+            'osm_id': 2, 'name': 'Erkemederweg', 'highway': 'unclassified',
+            'geometry': LineString([(-10, 1), (10, 1)]), 'other_tags': '' # Perpendicular
+        }
+    ], crs="EPSG:28992")
+    
+    idx, _ = snap_c9_to_roads.directional_snap(sign, roads, roads.sindex, roads.geometry.values, {})
+    # Since the name-matching candidate 'Erkemederweg' (osm_id 2) is perpendicular (angle_diff = 90° > 45°),
+    # it should NOT count as an aligned name match. Therefore, 'any_name_matched' is False,
+    # allowing 'Nijkerkerweg' (osm_id 1) to receive the intersection warning bonus and win!
+    assert idx == 0
+
+

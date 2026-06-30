@@ -324,12 +324,39 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
     if len(candidates) == 0:
         return None, None
 
-    # Check if any candidate road matches the NDW sign roadName
+    # Check if any candidate road matches the NDW sign roadName and is roughly aligned
     ndw_name = row.get("roadName")
     any_name_matched = False
     
-    names_series = [roads_names[idx] for idx in candidates]
-    any_name_matched = any(check_name_match(ndw_name, name) for name in names_series if pd.notna(name))
+    for idx in candidates:
+        line = roads_geoms[idx]
+        osm_name = roads_names[idx]
+        if pd.notna(osm_name) and check_name_match(ndw_name, osm_name):
+            if not pd.isna(bearing):
+                proj_dist = line.project(point)
+                proj_pt = line.interpolate(proj_dist)
+                
+                ahead_m = min(100.0, line.length / 2)
+                ahead_frac = min(1.0, (proj_dist + ahead_m) / line.length)
+                seg_end = line.interpolate(ahead_frac)
+                
+                seg_bearing = bearing_between(proj_pt, seg_end)
+                seg_geo_bearing = (90 - seg_bearing) % 360
+                
+                tags = str(roads_tags[idx]) if pd.notna(roads_tags[idx]) else ""
+                is_oneway = '"oneway"=>"yes"' in tags or '"junction"=>"roundabout"' in tags or '"highway"=>"motorway"' in tags
+                
+                angle_diff = min(abs(bearing - seg_geo_bearing), 360 - abs(bearing - seg_geo_bearing))
+                if not is_oneway:
+                    angle_diff_opp = min(abs(bearing - (seg_geo_bearing + 180) % 360), 360 - abs(bearing - (seg_geo_bearing + 180) % 360))
+                    angle_diff = min(angle_diff, angle_diff_opp)
+                
+                if angle_diff <= 45.0:
+                    any_name_matched = True
+                    break
+            else:
+                any_name_matched = True
+                break
 
     best_idx, best_score = None, float("inf")
     best_snap_pt = None
@@ -393,7 +420,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
         if not name_matched and not any_name_matched:
             if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0:
                 road_row_dict = {'highway': highway, 'other_tags': tags, 'name': osm_name}
-                is_dual = is_oneway and has_opposing_carriageway(
+                is_dual = (not highway.endswith('_link')) and is_oneway and has_opposing_carriageway(
                     road_row_dict, line, roads_gdf, spatial_index, roads_geoms, roads_highways, roads_tags
                 )
                 if not is_dual:
@@ -632,6 +659,7 @@ def main():
     for row in c9_gdf_wgs84.dropna(subset=["osm_id"]).itertuples():
         osm_id = int(row.osm_id)
         snap_info = {
+            "id": getattr(row, 'id'),
             "lon": row.snap_lon,
             "lat": row.snap_lat,
             "bearing": row.bearing if not pd.isna(row.bearing) else None
