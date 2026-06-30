@@ -121,6 +121,7 @@ We ensure road safety through a combination of unit tests and post-build validat
 - **Fast Iteration**: We use `pytest` for unit testing the core ETL logic.
 - **Visual Audit**: In `DEBUG` mode, we generate `debug_snaps.gpkg` for spatial verification.
 - **Build Guard**: Automated QA script `validate_results.py` checks artifact integrity.
+- **On-Demand Diagnostics**: CLI tool `debug_road.py` allows inspecting specific ways/signs and searching by name.
 
 > [!TIP]
 > **Run Tests**: `pytest`

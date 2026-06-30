@@ -32,6 +32,30 @@ In addition to unit tests, the `run_full_build.sh` pipeline includes a QA valida
 
 3. **Forced Rebuild**: Running with `FORCE_REBUILD=true` allows you to re-run the geospatial processing (snapping) logic even if the intermediary files (like `nl_roads_brom.gpkg`) already exist. This is useful for testing logic changes without performing a full `./clean.sh` which would delete your downloaded base maps.
 
+## On-Demand Diagnostics
+
+For debugging specific routing complaints or verifying local data, a command-line diagnostic tool is available in [debug_road.py](file:///home/tomaso/projects/brombrom/scripts/debug_road.py).
+
+It queries the raw road database (`nl_roads.gpkg`), the blocked road database (`nl_roads_brom.gpkg`), and the NDW signs database (`c9_ndw.gpkg`) to report metadata, snapped signs, and tags.
+
+### Usage
+
+```bash
+# Query a specific OSM Way ID to see its metadata, tags, and snapped signs
+python scripts/debug_road.py --way <OSM_WAY_ID>
+
+# Query a specific NDW Sign UUID to see its attributes, image URL, and where it snapped
+python scripts/debug_road.py --sign <SIGN_UUID>
+
+# Search for roads and C9 signs by name (case-insensitive substring)
+python scripts/debug_road.py --name <ROAD_NAME>
+
+# Force a full refresh (re-download and extract) of the freshest NDW/OSM data before analysis
+python scripts/debug_road.py --name <ROAD_NAME> --pull
+```
+
+If the required geopackage databases are missing when running a query, the tool will automatically pull and rebuild them for you out-of-the-box.
+
 ## Visual Inspection with QGIS
 
 Use [QGIS](https://qgis.org/) (Free and Open Source GIS) to verify that the logic correctly identifies and splits roads.
