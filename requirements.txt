@@ -5,3 +5,5 @@ shapely==2.1.2
 osmium==4.2.0
 pyogrio==0.12.1
 pytest==9.0.2
+networkx>=3.0
+

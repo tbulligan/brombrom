@@ -15,6 +15,7 @@ dependencies:
   - requests
   - shapely
   - tqdm
+  - networkx
   - pip
   - pip:
     - osmium>=4.0  # Python bindings for osmium
