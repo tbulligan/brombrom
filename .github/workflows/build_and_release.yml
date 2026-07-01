@@ -68,14 +68,14 @@ jobs:
 
       - name: Restore OSM Map Data Cache
         if: github.event.inputs.force_fresh != 'true'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: nl_map.osm.pbf
           key: osm-pbf-${{ steps.osm_md5.outputs.hash }}
 
       - name: Restore NDW Traffic Sign Data Cache
         if: github.event.inputs.force_fresh != 'true'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ndw_c9_current_state.json
           key: ndw-c9-${{ steps.date.outputs.year_month }}
@@ -97,14 +97,14 @@ jobs:
 
       - name: Save OSM Map Data Cache
         if: steps.osm_md5.outputs.hash != ''
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: nl_map.osm.pbf
           key: osm-pbf-${{ steps.osm_md5.outputs.hash }}
 
       - name: Save NDW Traffic Sign Data Cache
         if: steps.date.outputs.year_month != ''
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: ndw_c9_current_state.json
           key: ndw-c9-${{ steps.date.outputs.year_month }}
