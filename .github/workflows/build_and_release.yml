@@ -67,6 +67,7 @@ jobs:
           echo "hash=$MD5" >> $GITHUB_OUTPUT
 
       - name: Restore OSM Map Data Cache
+        id: cache-osm
         if: github.event.inputs.force_fresh != 'true'
         uses: actions/cache/restore@v6
         with:
@@ -74,6 +75,7 @@ jobs:
           key: osm-pbf-${{ steps.osm_md5.outputs.hash }}
 
       - name: Restore NDW Traffic Sign Data Cache
+        id: cache-ndw
         if: github.event.inputs.force_fresh != 'true'
         uses: actions/cache/restore@v6
         with:
@@ -96,14 +98,14 @@ jobs:
           docker run --rm -v ${{ github.workspace }}:/app --memory="6g" brombrom-builder
 
       - name: Save OSM Map Data Cache
-        if: steps.osm_md5.outputs.hash != ''
+        if: steps.cache-osm.outputs.cache-hit != 'true' && steps.osm_md5.outputs.hash != ''
         uses: actions/cache/save@v6
         with:
           path: nl_map.osm.pbf
           key: osm-pbf-${{ steps.osm_md5.outputs.hash }}
 
       - name: Save NDW Traffic Sign Data Cache
-        if: steps.date.outputs.year_month != ''
+        if: steps.cache-ndw.outputs.cache-hit != 'true' && steps.date.outputs.year_month != ''
         uses: actions/cache/save@v6
         with:
           path: ndw_c9_current_state.json
