@@ -24,27 +24,23 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
     print(f"Start: ({start_lat}, {start_lon})")
     print(f"End:   ({end_lat}, {end_lon})")
     
-    # 1. Load roads
-    print("Loading databases...")
-    gdf_raw = gpd.read_file("nl_roads.gpkg")
-    gdf_brom = gpd.read_file("nl_roads_brom.gpkg")
-    
-    blocked_ids = set(gdf_brom['osm_id'].astype(str))
-    print(f"Loaded {len(gdf_raw)} raw roads and {len(blocked_ids)} blocked roads.")
-    
-    # 2. Filter to bounding box containing start and end coordinates with padding
+    # 1. Calculate bounding box containing start and end coordinates with padding
     min_lon = min(start_lon, end_lon) - 0.05
     max_lon = max(start_lon, end_lon) + 0.05
     min_lat = min(start_lat, end_lat) - 0.05
     max_lat = max(start_lat, end_lat) + 0.05
     
     print(f"Filtering roads to bounding box: Lon [{min_lon:.4f}, {max_lon:.4f}], Lat [{min_lat:.4f}, {max_lat:.4f}]...")
-    # Using centroid to approximate spatial filter
-    bbox_mask = (
-        (gdf_raw.geometry.centroid.x >= min_lon) & (gdf_raw.geometry.centroid.x <= max_lon) &
-        (gdf_raw.geometry.centroid.y >= min_lat) & (gdf_raw.geometry.centroid.y <= max_lat)
-    )
-    gdf_area = gdf_raw[bbox_mask].copy()
+    bbox = (min_lon, min_lat, max_lon, max_lat)
+    
+    # 2. Load databases (optimizing raw roads load with bbox to avoid reading 527MB table)
+    print("Loading databases...")
+    gdf_raw = gpd.read_file("nl_roads.gpkg", bbox=bbox)
+    gdf_brom = gpd.read_file("nl_roads_brom.gpkg")
+    
+    blocked_ids = set(gdf_brom['osm_id'].astype(str))
+    print(f"Loaded {len(gdf_raw)} raw roads in search area and {len(blocked_ids)} blocked roads.")
+    gdf_area = gdf_raw.copy()
     print(f"Road segments in search area: {len(gdf_area)}")
     
     if len(gdf_area) == 0:
