@@ -16,8 +16,14 @@ on:
       - 'run_full_build.sh'
       - '.github/workflows/build_and_release.yml'
   schedule:
-    - cron: '0 0 2 * *' # Monthly on the 2nd at midnight
+    - cron: '0 5 * * 1' # Weekly on Mondays at 05:00 UTC (07:00 CET/CEST)
   workflow_dispatch:   # Allow manual trigger
+    inputs:
+      force_fresh:
+        description: 'Force fresh download of OSM and NDW data (bypass cache)'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -35,6 +41,7 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+          cache: 'pip'
 
       - name: Install Dependencies
         run: |
@@ -44,17 +51,65 @@ jobs:
         run: |
           pytest
 
+      - name: Get current date and month
+        id: date
+        run: |
+          echo "year_month=$(date +'%Y-%m')" >> $GITHUB_OUTPUT
+
+      - name: Get OSM MD5
+        id: osm_md5
+        run: |
+          MD5=$(curl -fsS https://download.geofabrik.de/europe/netherlands-latest.osm.pbf.md5 | awk '{print $1}')
+          if [ -z "$MD5" ]; then
+            echo "Error: Failed to fetch MD5 from Geofabrik." >&2
+            exit 1
+          fi
+          echo "hash=$MD5" >> $GITHUB_OUTPUT
+
+      - name: Restore OSM Map Data Cache
+        id: cache-osm
+        if: github.event.inputs.force_fresh != 'true'
+        uses: actions/cache/restore@v6
+        with:
+          path: nl_map.osm.pbf
+          key: osm-pbf-${{ steps.osm_md5.outputs.hash }}
+
+      - name: Restore NDW Traffic Sign Data Cache
+        id: cache-ndw
+        if: github.event.inputs.force_fresh != 'true'
+        uses: actions/cache/restore@v6
+        with:
+          path: ndw_c9_current_state.json
+          key: ndw-c9-${{ steps.date.outputs.year_month }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
       - name: Build Docker Image
         run: |
-          docker buildx build -t brombrom-builder . --load
+          docker buildx build \
+            --cache-from=type=gha \
+            --cache-to=type=gha,mode=max \
+            -t brombrom-builder . --load
 
       - name: Run Build Pipeline
         run: |
           # The runner has ~7GB physical RAM. We stay at 6GB to avoid swap/OOM.
           docker run --rm -v ${{ github.workspace }}:/app --memory="6g" brombrom-builder
+
+      - name: Save OSM Map Data Cache
+        if: steps.cache-osm.outputs.cache-hit != 'true' && steps.osm_md5.outputs.hash != ''
+        uses: actions/cache/save@v6
+        with:
+          path: nl_map.osm.pbf
+          key: osm-pbf-${{ steps.osm_md5.outputs.hash }}
+
+      - name: Save NDW Traffic Sign Data Cache
+        if: steps.cache-ndw.outputs.cache-hit != 'true' && steps.date.outputs.year_month != ''
+        uses: actions/cache/save@v6
+        with:
+          path: ndw_c9_current_state.json
+          key: ndw-c9-${{ steps.date.outputs.year_month }}
 
       - name: Generate Release Tag
         id: tag
@@ -67,7 +122,7 @@ jobs:
           git push origin stable -f
           
           # 2. Define release notes (backticks escaped because it's inside double quotes)
-          NOTES="## Automated Monthly Build
+          NOTES="## Automated Weekly Build
           This release contains the latest map data and routing profiles for microcars in the Netherlands.
           
           **Installation Instructions (Android - Recommended)**: 

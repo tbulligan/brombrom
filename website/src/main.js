@@ -28,7 +28,7 @@ const translations = {
     step_3_title: "Eén-klik Update",
     step_3_desc: "Open BromBrom Manager. De app controleert automatisch op updates en start de download. Tik na het downloaden op <strong>Open OsmAnd</strong>. OsmAnd opent: vink zowel <em>Instellingen</em> als <em>Bronnen</em> aan, tik op <em>Doorgaan</em> en kies <em>Alles vervangen</em>. Tik na de import op <em>Sluiten</em>.",
     tip_title: "iOS / Apple Gebruikers",
-    tip_desc: "Geen app nodig! Voor iOS (iPhone) kun je het BromBrom.osf-bestand direct downloaden en openen in OsmAnd. Let op: handmatige installaties worden <strong>niet automatisch bijgewerkt</strong>; je zult elke maand de nieuwste versie zelf moeten downloaden. Bekijk de <a href='https://github.com/tbulligan/brombrom#-installation--setup' target='_blank' class='link-subtle' style='text-decoration: underline;'>Manual Installation Guide</a> (Engels) op GitHub voor alle details.",
+    tip_desc: "Geen app nodig! Voor iOS (iPhone) kun je het BromBrom.osf-bestand direct downloaden en openen in OsmAnd. Let op: handmatige installaties worden <strong>niet automatisch bijgewerkt</strong>; je zult de nieuwste versie zelf moeten downloaden voor updates. Bekijk de <a href='https://github.com/tbulligan/brombrom#-installation--setup' target='_blank' class='link-subtle' style='text-decoration: underline;'>Manual Installation Guide</a> (Engels) op GitHub voor alle details.",
     tip_btn: "Download BromBrom.osf",
     footer_copy: "&copy; 2026 BromBrom Project.",
     footer_sub: "Open source en gratis. Data gebaseerd op OpenStreetMap & NDW.",
@@ -45,7 +45,7 @@ const translations = {
     faq_q4: "Help, de navigatie stuurt me alsnog de <strong>snelweg</strong> of <strong>autoweg</strong> op!",
     faq_a4: "Als dit gebeurt, staat in OsmAnd het verkeerde rijprofiel actief. De app denkt op dat moment dat je een gewone auto bent.<br/><br/><strong>De oplossing:</strong> Kijk in het navigatiescherm van OsmAnd. Zie je daar bovenaan of in de route-instellingen een <strong>standaard auto-icoontje</strong> (vooraanzicht)? Tik daarop en wissel het profiel naar het specifieke BromBrom-profiel. Dit herken je aan het <strong>oranje autootje van de zijkant gezien</strong>. Zodra het juiste profiel actief is, worden snelwegen, autowegen en C9-wegen automatisch vermeden.",
     faq_q5: "Werkt de app ook op een <strong>iPhone</strong> (Apple iOS)?",
-    faq_a5: "Nee, op dit moment is de BromBrom Manager <strong>alleen beschikbaar voor Android-telefoons</strong>. Er is momenteel nog geen versie voor iPhones beschikbaar in de Apple App Store.<br/><br/>Voor de echte avonturiers is het wel mogelijk om de kaarten handmatig op iOS te installeren. Download hiervoor het <strong>BromBrom.osf</strong> bestand onderaan de homepage en open dit direct in de OsmAnd app op je iPhone.<br/><br/><em>Belangrijke opmerking:</em> Bij deze handmatige methode worden kaarten en routes <strong>niet automatisch bijgewerkt</strong>. Je zult elke maand zelf de nieuwste `BromBrom.osf` van de website moeten downloaden en importeren.",
+    faq_a5: "Nee, op dit moment is de BromBrom Manager <strong>alleen beschikbaar voor Android-telefoons</strong>. Er is momenteel nog geen versie voor iPhones beschikbaar in de Apple App Store.<br/><br/>Voor de echte avonturiers is het wel mogelijk om de kaarten handmatig op iOS te installeren. Download hiervoor het <strong>BromBrom.osf</strong> bestand onderaan de homepage en open dit direct in de OsmAnd app op je iPhone.<br/><br/><em>Belangrijke opmerking:</em> Bij deze handmatige methode worden kaarten en routes <strong>niet automatisch bijgewerkt</strong>. Je zult zelf de nieuwste `BromBrom.osf` van de website moeten downloaden en importeren voor updates.",
     faq_q6: "Is de app ook geschikt voor een <strong>scootmobiel</strong>, <strong>Canta</strong> of andere voertuigen?",
     faq_a6: "<strong>Nee, de app is specifiek en uitsluitend ingeregeld voor brommobielen (45 km/u voertuigen).</strong> De routeplanner houdt rekening met de wegen waar je met een brommobiel mag en moet rijden. Voor een scootmobiel of een Canta gelden heel andere verkeersregels (zoals het mogen rijden op het fietspad of de stoep). Je moet de app daarvoor dus <strong>niet gebruiken</strong>.",
     faq_q7: "Kan ik de app ook in <strong>België</strong> of <strong>Duitsland</strong> gebruiken?",
@@ -110,7 +110,7 @@ const translations = {
     step_3_title: "One-Click Update",
     step_3_desc: "Open BromBrom Manager. The app will automatically check for updates and start the download. Once finished, tap <strong>Open OsmAnd</strong>. OsmAnd will open: check both <em>Settings</em> and <em>Resources</em>, tap <em>Continue</em>, and choose <em>Replace all</em>. After import, tap <em>Close</em>.",
     tip_title: "iOS / Apple Users",
-    tip_desc: "No app needed! For iOS (iPhone), you can download the BromBrom.osf file directly and open it in OsmAnd. Note: manual installations <strong>do not update automatically</strong>; you will need to manually download the latest version each month. Check the <a href='https://github.com/tbulligan/brombrom#-installation--setup' target='_blank' class='link-subtle' style='text-decoration: underline;'>Manual Installation Guide</a> on GitHub for detailed steps.",
+    tip_desc: "No app needed! For iOS (iPhone), you can download the BromBrom.osf file directly and open it in OsmAnd. Note: manual installations <strong>do not update automatically</strong>; you will need to manually download the latest version to get updates. Check the <a href='https://github.com/tbulligan/brombrom#-installation--setup' target='_blank' class='link-subtle' style='text-decoration: underline;'>Manual Installation Guide</a> on GitHub for detailed steps.",
     tip_btn: "Download BromBrom.osf",
     footer_copy: "&copy; 2026 BromBrom Project.",
     footer_sub: "Open source and free. Data based on OpenStreetMap & NDW.",
@@ -128,7 +128,7 @@ const translations = {
     faq_q4: "Help, the navigation is sending me onto <strong>motorways</strong> or <strong>expressways</strong>!",
     faq_a4: "This happens when the wrong navigation profile is active. OsmAnd thinks you are driving a standard car.<br/><br/><strong>The solution:</strong> Look at your navigation screen. Do you see a <strong>standard car icon</strong> (front view)? Tap it and switch to the <strong>BromBrom</strong> profile, which is represented by an <strong>orange microcar icon (side view)</strong>. Once selected, motorways and C9 roads will be avoided automatically.",
     faq_q5: "Does the app work on <strong>iPhone</strong> (Apple iOS)?",
-    faq_a5: "No, the BromBrom Manager is currently **Android-only**. There is no iOS app available in the Apple App Store.<br/><br/>For advanced users, you can manually import the maps to iOS. Download the **BromBrom.osf** file at the bottom of the homepage and open it directly with OsmAnd on your iPhone.<br/><br/><em>Important note:</em> Manual installations <strong>do not update automatically</strong>. You will need to manually download and import the latest `BromBrom.osf` file each month.",
+    faq_a5: "No, the BromBrom Manager is currently **Android-only**. There is no iOS app available in the Apple App Store.<br/><br/>For advanced users, you can manually import the maps to iOS. Download the **BromBrom.osf** file at the bottom of the homepage and open it directly with OsmAnd on your iPhone.<br/><br/><em>Important note:</em> Manual installations <strong>do not update automatically</strong>. You will need to manually download and import the latest `BromBrom.osf` file to get updates.",
     faq_q6: "Is the app suitable for <strong>mobility scooters</strong>, <strong>Cantas</strong>, or other vehicles?",
     faq_a6: "<strong>No, the app is strictly and exclusively tailored for microcars (45 km/u vehicles).</strong> The route planner calculates paths where microcars are legally allowed and supposed to drive. Mobility scooters and Cantas have different traffic rules (e.g., driving on cycle lanes or pavements) and should <strong>not use</strong> this app.",
     faq_q7: "Can I use the app in <strong>Belgium</strong> or <strong>Germany</strong>?",
@@ -311,7 +311,7 @@ async function fetchLatestVersion() {
       if (versionEl && timestamp) {
         const date = new Date(timestamp);
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const displayVersion = `${months[date.getMonth()]} ${date.getFullYear()}`;
+        const displayVersion = `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 
         document.querySelectorAll('.version-plh').forEach(el => el.textContent = displayVersion);
 

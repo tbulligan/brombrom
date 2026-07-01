@@ -30,7 +30,11 @@ BromBrom is a **multi-component system**:
 *   `docs/snapping_logic.md`: Algorithmic documentation for spatial snapping and exemptions. Must be kept up to date whenever the snapping logic is modified.
 
 ## 🚀 Release Strategy
-*   **Schedule**: Automated builds trigger on the **2nd of every month**.
+*   **Schedule**: Automated builds trigger weekly on **Mondays at 05:00 UTC**.
+*   **Data Freshness & Caching**: 
+    *   To keep builds fast, raw external datasets (OSM Netherlands extract and NDW traffic sign data) are cached in CI.
+    *   **Automated Releases**: The weekly Monday release utilizes the cache. Since the OSM cache key is derived from Geofabrik's daily MD5 checksum, it naturally invalidates and downloads a fresh map on the weekly build. The NDW cache key is month-based, meaning the weekly build will restore NDW from cache (saving ~1.18 GB of download) and only pull it fresh on the first build of each month.
+    *   **Manual Override**: Developers triggering manual builds via `workflow_dispatch` can force a fresh cache-free compile by setting the `force_fresh` input to `true`.
 *   **Zero-Downtime**: We use `gh release upload --clobber` to overwrite artifacts in-place on the `latest` tag. This prevents 404 errors for users during the update window.
 *   **App Versioning**: Always increase the version number in `app/pubspec.yaml` whenever you update the app (both the version name `n.n.n` and the build number after the `+`). Decide which component of the version number (`major.minor.patch`) to increase based on the nature of the changes (e.g., bump patch for bug fixes, minor for new backward-compatible features, major for breaking changes).
 *   **Commit Messages**: Never use generic or auto-generated commit messages (e.g., "Merge branch 'develop'"). All commit messages—especially merge commits—must be descriptive, follow the conventional commits style, and represent the feature/fix scope rather than the action of merging itself.
