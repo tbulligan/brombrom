@@ -120,11 +120,11 @@ We ensure road safety through a combination of unit tests and post-build validat
 
 - **Fast Iteration**: We use `pytest` for unit testing the core ETL logic.
 - **Visual Audit**: In `DEBUG` mode, we generate `debug_snaps.gpkg` for spatial verification.
-- **Build Guard**: Automated QA script `validate_results.py` checks artifact integrity.
-- **On-Demand Diagnostics**: CLI tool `debug_road.py` allows inspecting specific ways/signs, searching by name, or querying coordinates.
+- **Build Guard**: Automated QA script `scripts/validate_results.py` checks artifact integrity.
+- **On-Demand Diagnostics**: CLI tools `scripts/debug_road.py` and `scripts/diagnose_route.py` allow inspecting specific ways/signs, searching by name, querying coordinates, or simulating routes.
 
 > [!TIP]
-> **Run Tests**: `pytest`
+> **Run Tests**: `pytest` (or `micromamba run -n brombrom pytest`)
 > **Learn More**: See [Testing & QA Architecture](docs/testing.md).
 
 ---
@@ -156,8 +156,9 @@ If you mistakenly enter a forbidden road (e.g., following traffic or missing a s
 
 ### Option A: Native (Fastest)
 1. **Setup Environment**: `micromamba env create -f environment.yml`
-2. **Install Tools**: `./scripts/setup_tools.sh`
-3. **Run Build**: `./run_full_build.sh`
+2. **Activate Environment**: `micromamba activate brombrom`
+3. **Install Tools**: `./scripts/setup_tools.sh`
+4. **Run Build**: `./run_full_build.sh`
 
 ### Option B: Docker (Source of Truth)
 ```bash

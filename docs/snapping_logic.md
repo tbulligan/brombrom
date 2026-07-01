@@ -4,16 +4,21 @@
 The heart of BromBrom is its directional snapping, name-matching validation, and pre-warning/exemption parsing logic. This ensures that C9 traffic signs from the NDW dataset are correctly mapped to OpenStreetMap road segments.
 
 ## Snapping Candidates & Search Tolerances
-To map C9 sign points to OSM linestrings, BromBrom uses a two-tier spatial query:
-1. **Primary Search**: Query a narrow bounding box around the sign point (`PRIMARY_TOL = 2.0` meters).
-2. **Fallback Search**: If no candidates are found, query a wider bounding box (`FALLBACK_TOL = 60.0` meters).
+To map C9 sign points to OSM linestrings, BromBrom queries road candidates around each sign. The query logic depends on the sign's metadata:
+- **If the sign lacks both bearing and relative side info**: A two-tier spatial search is performed.
+  1. **Primary Search**: Query a narrow bounding box around the sign point (`PRIMARY_TOL = 2.0` meters).
+  2. **Fallback Search**: If no candidates are found, query a wider bounding box (`FALLBACK_TOL = 60.0` meters).
+- **If the sign has bearing or relative side info**: The search queries the wider fallback bounding box (`FALLBACK_TOL = 60.0` meters) directly.
 
-Using a larger fallback tolerance of 60 meters accommodates NDW GPS inaccuracies while name-matching constraints prevent incorrect snaps to adjacent roads.
+Using a fallback tolerance of 60 meters accommodates NDW GPS inaccuracies while name-matching and bearing constraints prevent incorrect snaps to adjacent roads.
 
-### Candidate Exclusions & Filtering
-To prevent false-positive road closures on local paths and intersections:
-- **Minor Roads**: Road segments with highway classes mapping to priority >= 4 (such as `residential`, `unclassified`, `service`, and `living_street`) are excluded from snapping candidates entirely. C9 signs placed at junctions will instead snap to the major high-priority road they are intended to restrict.
-- **Roundabouts**: Roundabouts (`junction=roundabout` or roundabout highway classes) are excluded from the snapping candidate pool to avoid blocking general intersection routing for microcars.
+### Sign & Candidate Filtering
+To ensure only active restrictions are mapped and to prevent false-positive closures:
+- **Inactive Signs**: C9 signs that are marked as removed or whose status is not `PLACED` are filtered out before snapping.
+- **Pre-warning Metadata Filtering**: Signs containing `type: "VOOR"` in their `textSigns` attribute are filtered out before snapping.
+- **Roundabouts**: Roundabouts (`junction=roundabout` or roundabout highway classes) are excluded from the snapping candidate pool entirely to avoid blocking general intersection routing for microcars.
+- **Minor Roads Penalty**: Road segments with highway classes mapping to priority >= 4 (such as `residential`, `unclassified`, `service`, `living_street`, `track`, and `road`) are not excluded from snapping candidates, but receive a priority penalty of `+8.0` in scoring (see below) to prefer snapping to high-priority roads at junctions.
+- **Post-Snap Priority Filter**: Roads with highway classes mapping to priority >= 10 (e.g. non-road types) are filtered out post-snap by resetting their snap to `None`.
 
 ## Snapping Score Formulation
 When multiple candidate road segments are found, they are scored using a weighted formulation. The road with the lowest score is selected:
@@ -54,7 +59,7 @@ Signs containing `type: "VOOR"` in their `textSigns` attribute (indicating a war
 
 ### 2. Post-Snapping Downstream Heuristic
 Since many pre-warnings lack complete metadata in NDW (empty `textSigns`), BromBrom employs a downstream validation heuristic:
-- If a sign A snaps to a low-speed road segment (`maxspeed <= 50` or minor road classes) but another C9 sign B exists downstream on the same road (matching normalized names) within **1.5 km** and heading in a similar direction (bearing difference <= 45°), and B snaps to a high-speed road (`maxspeed > 50` or `trunk`/`motorway` class):
+- If a sign A snaps to a low-speed road segment (`maxspeed <= 50` or minor road classes) but another C9 sign B exists downstream on the same road (matching normalized names) within **300.0 m** and heading in a similar direction (bearing difference <= 45°), and B snaps to a high-speed road (`maxspeed > 50` or `trunk`/`motorway` class):
 - Sign A is flagged as a pre-warning and ignored, while the downstream sign B remains to enforce the restriction where it actually starts.
 
 ## Exemption Parsing
@@ -64,7 +69,18 @@ Beyond spatial snapping, BromBrom accurately parses "onderborden" (sub-plates) t
 - **Negative Guards**: Prevents false exemptions by identifying explicit prohibitions like *"Geldt ook voor brommobiel"* (Also applies to microcars).
 
 ## Custom OSM Tagging & Routing Overrides
-During the PBF tagging pipeline (`tag_c9_roads.py`), custom translation rules are applied to the OSM data to ensure [OsmAnd](https://www.osmand.net/)'s routing engine respects microcar accessibility correctly:
+During the PBF tagging pipeline (`tag_c9_roads.py`), custom translation rules and geometry modifications are applied to the OSM data to ensure [OsmAnd](https://www.osmand.net/)'s routing engine respects microcar accessibility correctly:
+
+### 1. Existing OSM Tag Conversions
 - **Microcar Prohibitions (`microcar=no`)**: Promoted to `motor_vehicle=no` (if `motor_vehicle` is not already restricted) to enforce C9 restrictions inside [OsmAnd](https://www.osmand.net/).
 - **Microcar Allowances (`microcar=yes`)**: Bypasses general motorized restrictions. If a road is tagged with `microcar=yes` but has general motorized restrictions (`motor_vehicle=no`, `vehicle=no`, `access=no`, or `motorcar=no`), the pipeline overrides these tags to `yes` to restore microcar routing access.
+
+### 2. NDW Pipeline Way Splitting & Directional Tagging
+When a road segment is identified as C9-forbidden by the snapping pipeline, it is processed as follows:
+- **Way Splitting**: If the C9 sign snaps in the middle of an OSM way (specifically, at least 5.0 meters away from both the start and end nodes of a way containing at least 3 nodes), the way is split into two separate segments: segment A (from start to split node) and segment B (from split node to end).
+- **Directional Restriction**: The pipeline compares the geographical bearing of the C9 sign to the local bearing of segment B (from split node to next node):
+  - If the sign bearing is within 90 degrees of segment B's bearing, the sign restricts segment B. Segment B is tagged with `motor_vehicle=no` and `microcar=no`.
+  - Otherwise, the sign restricts segment A. Segment A is tagged with `motor_vehicle=no` and `microcar=no`.
+  - The split off segment receives a unique synthetic way ID starting at 90,000,000,000 to prevent conflicts with upstream OSM IDs.
+- **Unsplit Ways**: If the way does not meet the splitting criteria (e.g. snaps close to ends or has fewer than 3 nodes), the entire way is restricted with `motor_vehicle=no` and `microcar=no`.
 
