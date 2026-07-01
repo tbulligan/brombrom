@@ -316,7 +316,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
-  /// Schedule a weekly background task to check for updates.
+  /// Schedule a daily background task to check for updates.
   /// Only registers once (persisted via SharedPreferences).
   Future<void> _scheduleBackgroundUpdateCheck() async {
     final prefs = await SharedPreferences.getInstance();
