@@ -558,8 +558,8 @@ def main():
             if pd.isna(bearing_A):
                 bearing_A = get_bearing_from_side(row_A.side)
                 
-            # Query spatial index for signs within 1.5 km bounding box
-            bbox = box(geom_A.x - 1500.0, geom_A.y - 1500.0, geom_A.x + 1500.0, geom_A.y + 1500.0)
+            # Query spatial index for signs within 300.0 m bounding box
+            bbox = box(geom_A.x - 300.0, geom_A.y - 300.0, geom_A.x + 300.0, geom_A.y + 300.0)
             candidate_pos_indices = snapped_sindex.query(bbox)
             
             for pos_B in candidate_pos_indices:
@@ -573,9 +573,9 @@ def main():
                     continue
                     
                 geom_B = geometries[pos_B]
-                # Must be within 1.5 km
+                # Must be within 300.0 m
                 dist_m = geom_A.distance(geom_B)
-                if dist_m > 1500.0:
+                if dist_m > 300.0:
                     continue
                     
                 # Must have similar bearings
