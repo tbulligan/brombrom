@@ -49,6 +49,9 @@ BromBrom is a **multi-component system**:
     ```
     *Note: Skip Python test runs for pure app or website UI/text modifications to save time.*
 *   **Graph Drills**: Use `scripts/validate_results.py` to verify map sanity and OSF artifact existence.
+*   **On-Demand Diagnostics**: For debugging specific routing complaints or verifying local data, use `scripts/debug_road.py` and `scripts/diagnose_route.py` as detailed in [testing.md](file:///home/tomaso/projects/brombrom/docs/testing.md).
+    *   Inspect a road way: `micromamba run -n brombrom python scripts/debug_road.py --way <OSM_WAY_ID>`
+    *   Simulate a route: `micromamba run -n brombrom python scripts/diagnose_route.py --start <LAT,LON> --end <LAT,LON>`
 *   **App Testing**: Push app changes to `develop`. Build results can be downloaded as APK artifacts from GitHub Actions before merging to `main`.
 
 ## ⏱️ Agent Execution Rules

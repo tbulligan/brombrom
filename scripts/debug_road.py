@@ -71,8 +71,9 @@ def inspect_way(way_id):
     
     # 1. Look up in the raw roads network
     print("\n--- 1. Raw OSM Road Data (nl_roads.gpkg) ---")
-    gdf_raw = gpd.read_file("nl_roads.gpkg")
-    way_raw = gdf_raw[gdf_raw['osm_id'].astype(str) == str(way_id)]
+    sql = f"SELECT * FROM lines WHERE osm_id = '{way_id}'"
+    gdf_raw = gpd.read_file("nl_roads.gpkg", sql=sql)
+    way_raw = gdf_raw
     
     if way_raw.empty:
         print(f"Way {way_id} not found in the raw road database.")
@@ -113,8 +114,9 @@ def inspect_sign(sign_id):
     print(f"\n================ INSPECTING NDW SIGN: {sign_id} ================")
     
     # 1. Look up in the NDW database
-    gdf_ndw = gpd.read_file("c9_ndw.gpkg")
-    sign = gdf_ndw[gdf_ndw['id'] == sign_id]
+    sql = f"SELECT * FROM c9_ndw WHERE id = '{sign_id}'"
+    gdf_ndw = gpd.read_file("c9_ndw.gpkg", sql=sql)
+    sign = gdf_ndw
     
     if sign.empty:
         print(f"NDW Sign {sign_id} not found in the database.")
@@ -169,10 +171,14 @@ def inspect_sign(sign_id):
 def search_by_name(name):
     print(f"\n================ SEARCHING FOR ROAD NAME: '{name}' ================")
     
+    # Escape single quotes for SQL safety
+    escaped_name = name.replace("'", "''")
+    
     # 1. Search in NDW signs
     print("\n--- 1. Matching NDW C9 Signs (c9_ndw.gpkg) ---")
-    gdf_ndw = gpd.read_file("c9_ndw.gpkg")
-    matching_signs = gdf_ndw[gdf_ndw['roadName'].fillna('').str.contains(name, case=False)]
+    sql_ndw = f"SELECT * FROM c9_ndw WHERE roadName LIKE '%{escaped_name}%'"
+    gdf_ndw = gpd.read_file("c9_ndw.gpkg", sql=sql_ndw)
+    matching_signs = gdf_ndw
     
     if matching_signs.empty:
         print("No C9 signs found matching this name.")
@@ -183,8 +189,9 @@ def search_by_name(name):
             
     # 2. Search in processed blocked roads
     print("\n--- 2. Matching Blocked Roads (nl_roads_brom.gpkg) ---")
-    gdf_brom = gpd.read_file("nl_roads_brom.gpkg")
-    matching_brom = gdf_brom[gdf_brom['name'].fillna('').str.contains(name, case=False)]
+    sql_brom = f"SELECT * FROM brom_roads WHERE name LIKE '%{escaped_name}%'"
+    gdf_brom = gpd.read_file("nl_roads_brom.gpkg", sql=sql_brom)
+    matching_brom = gdf_brom
     
     if matching_brom.empty:
         print("No blocked roads found matching this name.")
@@ -195,8 +202,9 @@ def search_by_name(name):
             
     # 3. Search in raw roads (to show allowed ones)
     print("\n--- 3. Matching Raw/Allowed Roads (nl_roads.gpkg) ---")
-    gdf_raw = gpd.read_file("nl_roads.gpkg")
-    matching_raw = gdf_raw[gdf_raw['name'].fillna('').str.contains(name, case=False)]
+    sql_raw = f"SELECT * FROM lines WHERE name LIKE '%{escaped_name}%'"
+    gdf_raw = gpd.read_file("nl_roads.gpkg", sql=sql_raw)
+    matching_raw = gdf_raw
     
     blocked_ids = set(matching_brom['osm_id'].astype(str))
     allowed_roads = matching_raw[~matching_raw['osm_id'].astype(str).isin(blocked_ids)]
@@ -211,25 +219,29 @@ def search_by_name(name):
 def inspect_coords(lat, lon):
     print(f"\n================ INSPECTING COORDINATES: ({lat}, {lon}) ================")
     
-    # Convert WGS84 lat/lon coordinates to RD New projection (EPSG:28992)
-    pt_wgs = gpd.GeoSeries([Point(lon, lat)], crs="EPSG:4326")
-    pt_rd = pt_wgs.to_crs(epsg=28992).iloc[0]
+    # Read only candidate roads nearby using bbox (WGS84) to avoid loading the entire 527MB DB.
+    # 100 meters is roughly 0.001 degrees latitude and 0.0016 degrees longitude in the Netherlands.
+    # We use a 200m buffer (0.002 degrees) as a safe bounding box.
+    bbox = (lon - 0.002, lat - 0.002, lon + 0.002, lat + 0.002)
+    gdf_raw = gpd.read_file("nl_roads.gpkg", bbox=bbox)
     
-    gdf_raw = gpd.read_file("nl_roads.gpkg")
     if gdf_raw.empty:
-        print("Raw roads database is empty.")
-        return
-        
-    # Spatial search within 100 meters
-    sindex = gdf_raw.sindex
-    candidates = list(sindex.query(pt_rd.buffer(100.0)))
-    
-    if not candidates:
         print("No roads found within 100 meters of these coordinates.")
         return
         
-    subset = gdf_raw.iloc[candidates]
-    dists = subset.geometry.distance(pt_rd)
+    # Convert WGS84 coordinates to RD New projection (EPSG:28992) for accurate metric distance checks
+    pt_wgs = gpd.GeoSeries([Point(lon, lat)], crs="EPSG:4326")
+    pt_rd = pt_wgs.to_crs(epsg=28992).iloc[0]
+    
+    gdf_raw_rd = gdf_raw.to_crs(epsg=28992)
+    dists = gdf_raw_rd.geometry.distance(pt_rd)
+    
+    # Filter candidates within 100 meters
+    nearby = gdf_raw[dists <= 100.0]
+    if nearby.empty:
+        print("No roads found within 100 meters of these coordinates.")
+        return
+        
     closest_idx = dists.idxmin()
     closest_road = gdf_raw.loc[closest_idx]
     
