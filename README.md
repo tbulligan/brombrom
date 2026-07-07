@@ -2,7 +2,7 @@
   <img src="assets/brombrom-banner-EN.png" alt="BromBrom Banner" width="100%">
 </p>
 
-# BromBrom: [OsmAnd](https://www.osmand.net/) Microcar Navigation (Netherlands)
+# BromBrom: OsmAnd Microcar Navigation (Netherlands)
 
 > [!IMPORTANT]
 > BromBrom is a *planning aid* only. You are responsible for following traffic signs and Dutch law.
