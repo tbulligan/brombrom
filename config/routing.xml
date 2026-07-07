@@ -327,7 +327,22 @@
 			<select value="25" t="barrier"/>
 			
 			<!-- Brommobiels hate speed bumps (drempels) -->
-			<select value="20" t="traffic_calming"/>
+			<!-- Severe vertical deflections (crawling required) -->
+			<select value="25" t="traffic_calming" v="bump"/>
+			<select value="15" t="traffic_calming" v="hump"/>
+			<select value="15" t="traffic_calming" v="table"/>
+			<select value="15" t="traffic_calming" v="cushion"/>
+			<select value="15" t="traffic_calming" v="dip"/>
+			
+			<!-- Mild horizontal/surface deflections (no slowdown/penalty) -->
+			<select value="0" t="traffic_calming" v="chicane"/>
+			<select value="0" t="traffic_calming" v="island"/>
+			<select value="0" t="traffic_calming" v="choker"/>
+			<select value="0" t="traffic_calming" v="pinch_point"/>
+			<select value="0" t="traffic_calming" v="rumble_strip"/>
+			
+			<!-- Fallback for generic or other traffic calming -->
+			<select value="10" t="traffic_calming"/>
 			
 			<select value="20" t="highway" v="traffic_signals"/>
 			<select value="15" t="highway" v="stop"/>
