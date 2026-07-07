@@ -92,7 +92,6 @@ def test_nijkerk_almere_routing():
     
     # C. Should NOT contain restricted Zeedijk road segments (except for minor crossings/parking if any,
     # but the main road routing should not have name "zeedijk")
-    # Let's count how many times we went on Zeedijk
     zeedijk_count = sum(1 for name in used_names if "zeedijk" in name)
     # The route should avoid Zeedijk
     assert zeedijk_count == 0, f"Route went on Zeedijk {zeedijk_count} times!"
