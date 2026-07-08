@@ -413,13 +413,19 @@
               <p data-i18n="faq_a9">
                 BromBrom is volledig gratis voor <strong>persoonlijk en niet-commercieel gebruik</strong> onder de
                 bijbehorende licentie. Commercieel gebruik, herdistributie of modificatie is niet toegestaan zonder
-                voorafgaande schriftelijke toestemming.<br /><br />Voor vragen over commerciële licenties of
-                samenwerkingen kun je <a href="#" id="open-contact-btn" class="link-subtle"
+                voorafgaande schriftelijke toestemming.<br /><br />Voor vragen over commerciële licenties of samenwerkingen kun je <a href="#" id="open-contact-btn" class="link-subtle js-open-contact"
                   style="text-decoration: underline;">direct contact met mij opnemen</a>.
               </p>
             </div>
           </div>
 
+        </div>
+
+        <div class="faq-fallback">
+          <p>
+            <span data-i18n="faq_fallback_text">Staat je vraag er niet tussen?</span>
+            <a href="#" class="js-open-contact" data-i18n="faq_fallback_link">Neem contact op</a>.
+          </p>
         </div>
       </section>
       <!-- Support Section -->
@@ -467,6 +473,11 @@
       <p data-i18n="contact_desc" class="modal-desc">Heb je vragen over commercieel gebruik of samenwerkingen? Stuur
         direct een bericht.</p>
 
+      <div class="contact-notice-box">
+        <i class="ph-bold ph-info"></i>
+        <span data-i18n="contact_notice">De meeste problemen worden daar al beantwoord.</span>
+      </div>
+
       <form id="contact-form">
         <div class="form-group">
           <label for="contact-name" data-i18n="contact_label_name">Naam</label>
@@ -475,6 +486,15 @@
         <div class="form-group">
           <label for="contact-email" data-i18n="contact_label_email">E-mailadres</label>
           <input type="email" id="contact-email" name="email" required placeholder="naam@voorbeeld.nl" />
+        </div>
+        <div class="form-group">
+          <label for="contact-subject" data-i18n="contact_label_subject">Onderwerp</label>
+          <select id="contact-subject" name="subject" required>
+            <option value="Feedback" data-i18n="contact_opt_feedback">Algemene feedback</option>
+            <option value="Bug / Map Error" data-i18n="contact_opt_bug">Bug of kaartfout rapporteren</option>
+            <option value="Commercial / Partnership" data-i18n="contact_opt_commercial">Commercieel / Samenwerking</option>
+            <option value="Other" data-i18n="contact_opt_other">Overig</option>
+          </select>
         </div>
         <div class="form-group">
           <label for="contact-company" data-i18n="contact_label_company">Bedrijf / Organisatie (Optioneel)</label>
