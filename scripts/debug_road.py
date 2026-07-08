@@ -139,8 +139,8 @@ def inspect_sign(sign_id):
     
     # Check by sign ID or coordinates matching
     sign_lon, sign_lat = row.geometry.x, row.geometry.y
-    for idx, r in gdf_brom.iterrows():
-        snaps_str = r.get('c9_snaps')
+    for r in gdf_brom.itertuples():
+        snaps_str = getattr(r, 'c9_snaps', None)
         if snaps_str and not pd.isna(snaps_str):
             try:
                 snaps = json.loads(snaps_str)
@@ -154,9 +154,9 @@ def inspect_sign(sign_id):
                         
                     if is_match:
                         snapped_ways.append({
-                            'osm_id': r['osm_id'],
-                            'name': r['name'],
-                            'highway': r['highway']
+                            'osm_id': r.osm_id,
+                            'name': r.name,
+                            'highway': r.highway
                         })
             except Exception:
                 pass
@@ -184,8 +184,8 @@ def search_by_name(name):
         print("No C9 signs found matching this name.")
     else:
         print(f"Found {len(matching_signs)} matching C9 signs:")
-        for idx, row in matching_signs.iterrows():
-            print(f"  ID: {row['id']} | Road: {row['roadName']} | Town: {row['townName']} | Coords: ({row.geometry.y:.5f}, {row.geometry.x:.5f})")
+        for row in matching_signs.itertuples():
+            print(f"  ID: {row.id} | Road: {row.roadName} | Town: {row.townName} | Coords: ({row.geometry.y:.5f}, {row.geometry.x:.5f})")
             
     # 2. Search in processed blocked roads
     print("\n--- 2. Matching Blocked Roads (nl_roads_brom.gpkg) ---")
