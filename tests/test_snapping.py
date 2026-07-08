@@ -483,11 +483,11 @@ def test_intersection_bonus_name_match_aligned():
     })
     
     # Two candidate roads:
-    # 1. 'Nijkerkerweg' (primary link, priority 1, aligned with bearing 0.0 -> goes North)
+    # 1. 'Nijkerkerweg' (primary, priority 1, aligned with bearing 0.0 -> goes North)
     # 2. 'Erkemederweg' (unclassified, priority 4, perpendicular to bearing 0.0 -> goes West/East)
     roads = gpd.GeoDataFrame([
         {
-            'osm_id': 1, 'name': 'Nijkerkerweg', 'highway': 'primary_link',
+            'osm_id': 1, 'name': 'Nijkerkerweg', 'highway': 'primary',
             'geometry': LineString([(0.1, -10), (0.1, 10)]), 'other_tags': '' # Aligned
         },
         {

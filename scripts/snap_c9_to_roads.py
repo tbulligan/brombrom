@@ -4,7 +4,7 @@ import geopandas as gpd
 import pandas as pd
 import json
 import os
-from shapely.geometry import LineString, box
+from shapely.geometry import LineString, box, Point
 
 try:
     import build_config as config
@@ -70,8 +70,13 @@ def check_name_match(ndw_name, osm_name):
             osm_norm = normalize_name(osm_p)
             if not osm_norm:
                 continue
-            if (ndw_norm == osm_norm) or (ndw_norm in osm_norm) or (osm_norm in ndw_norm):
+            if ndw_norm == osm_norm:
                 return True
+            # ponytail: substring match only for stems >= 4 chars to avoid
+            # collisions like 'kerk' matching both Kerkweg and Kerkstraat
+            if len(ndw_norm) >= 4 and len(osm_norm) >= 4:
+                if (ndw_norm in osm_norm) or (osm_norm in ndw_norm):
+                    return True
     return False
 
 
@@ -408,12 +413,13 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
 
         if not name_matched and not any_name_matched:
             if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0:
-                road_row_dict = {'highway': highway, 'other_tags': tags, 'name': osm_name}
-                is_dual = (not highway.endswith('_link')) and is_oneway and has_opposing_carriageway(
-                    road_row_dict, line, roads_gdf, spatial_index, roads_geoms, roads_highways, roads_tags
-                )
-                if not is_dual:
-                    name_penalty = 0.0
+                if not highway.endswith('_link'):
+                    road_row_dict = {'highway': highway, 'other_tags': tags, 'name': osm_name}
+                    is_dual = is_oneway and has_opposing_carriageway(
+                        road_row_dict, line, roads_gdf, spatial_index, roads_geoms, roads_highways, roads_tags
+                    )
+                    if not is_dual:
+                        name_penalty = 0.0
 
         score = dist * 0.7 + angle_diff * 0.15 + side_penalty + priority_penalty + name_penalty
 
@@ -454,16 +460,16 @@ def main():
     c9_gdf = c9_gdf[~pre_warning_mask].copy()
     
     # Load all roads in native WGS84
-    roads_gdf = gpd.read_file("nl_roads.gpkg")
+    full_roads_gdf = gpd.read_file("nl_roads.gpkg")
 
     # Fast spatial pre-filtering: keep only roads within a ~100m bounding box of any sign (0.001 deg)
     print("Pre-filtering roads spatially near C9 signs to optimize candidates and reprojection...")
     candidate_indices = set()
-    roads_sindex = roads_gdf.sindex
+    roads_sindex = full_roads_gdf.sindex
     for geom in c9_gdf.geometry:
         candidate_indices.update(roads_sindex.query(box(geom.x - 0.001, geom.y - 0.001, geom.x + 0.001, geom.y + 0.001)))
-    print(f"Spatially filtered candidate roads: kept {len(candidate_indices)} of {len(roads_gdf)} roads")
-    roads_gdf = roads_gdf.iloc[list(candidate_indices)].copy()
+    print(f"Spatially filtered candidate roads: kept {len(candidate_indices)} of {len(full_roads_gdf)} roads")
+    roads_gdf = full_roads_gdf.iloc[list(candidate_indices)].copy()
 
     # Exclude roundabout segments to prevent cutting off intersection routing
     other_tags_series = roads_gdf['other_tags'].fillna("").astype(str)
@@ -623,10 +629,12 @@ def main():
 
     c9_gdf = c9_gdf[~exemption_mask]
     print(f"-> {len(c9_gdf)} C9s for tagging")
+    snapped_ids = c9_gdf["road_index"].dropna().unique()
+    new_forbidden_ids = set(snapped_ids)
 
     # Output forbidden roads
-    forbidden_ids = c9_gdf["road_index"].dropna().unique()
-    forbidden_roads = roads_gdf.loc[forbidden_ids].copy()
+    forbidden_ids = list(new_forbidden_ids)
+    forbidden_roads = full_roads_gdf.loc[forbidden_ids].copy()
     forbidden_roads["microcar"] = "no"
 
     # Identify the OSM ID field name dynamically

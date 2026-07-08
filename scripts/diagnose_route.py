@@ -49,7 +49,7 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         
     # 3. Build NetworkX Graph
     print("Building NetworkX routing graph...")
-    G = nx.Graph()
+    G = nx.DiGraph()
     
     def get_node_key(pt):
         # Round to 5 decimal places (~1.1 meter precision) to match intersection vertices
@@ -81,17 +81,32 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
             continue
             
+        # E. Cycleways/footpaths are closed for microcars (unless microcar=yes)
+        if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
+            if '"microcar"=>"yes"' not in other_tags:
+                continue
+            
         # Project geometry to RD New (EPSG:28992) for accurate metric length calculation
         geom_rd = gpd.GeoSeries([geom], crs="EPSG:4326").to_crs(epsg=28992).iloc[0]
         length_m = geom_rd.length
         
+        is_oneway = '"oneway"=>"yes"' in other_tags or '"junction"=>"roundabout"' in other_tags
+        is_oneway_rev = '"oneway"=>"-1"' in other_tags
+        
         coords = list(geom.coords)
+        part_len = length_m / (len(coords) - 1)
         for i in range(len(coords) - 1):
             n1 = get_node_key(Point(coords[i]))
             n2 = get_node_key(Point(coords[i+1]))
-            # Edge weight is length in meters
-            part_len = length_m / (len(coords) - 1)
-            G.add_edge(n1, n2, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
+            
+            if is_oneway_rev:
+                G.add_edge(n2, n1, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
+            elif is_oneway:
+                G.add_edge(n1, n2, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
+            else:
+                G.add_edge(n1, n2, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
+                G.add_edge(n2, n1, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
+
             
     print(f"Graph built with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
     
