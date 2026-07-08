@@ -1180,6 +1180,11 @@ footer {
   color: var(--text-muted);
 }
 
+.faq-fallback p {
+  margin: 0 auto;
+  max-width: none;
+}
+
 .faq-fallback a {
   color: var(--primary);
   text-decoration: underline;
