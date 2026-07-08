@@ -55,14 +55,14 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         # Round to 5 decimal places (~1.1 meter precision) to match intersection vertices
         return (round(pt.y, 5), round(pt.x, 5))
         
-    for idx, row in gdf_area.iterrows():
-        osm_id = str(row['osm_id'])
+    for row in gdf_area.itertuples():
+        osm_id = str(row.osm_id)
         geom = row.geometry
         if geom is None or geom.is_empty:
             continue
             
-        highway = str(row.get('highway') or '')
-        other_tags = str(row.get('other_tags') or '')
+        highway = str(getattr(row, 'highway', '') or '')
+        other_tags = str(getattr(row, 'other_tags', '') or '')
         
         # Apply routing.xml BromBrom restrictions
         # A. Blocked by snapped NDW C9 signs
@@ -91,7 +91,7 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
             n2 = get_node_key(Point(coords[i+1]))
             # Edge weight is length in meters
             part_len = length_m / (len(coords) - 1)
-            G.add_edge(n1, n2, weight=part_len, osm_id=osm_id, name=row.get('name'), highway=highway)
+            G.add_edge(n1, n2, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
             
     print(f"Graph built with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
     

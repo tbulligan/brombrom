@@ -34,14 +34,14 @@ def test_nijkerk_almere_routing():
     def get_node_key(pt):
         return (round(pt.y, 5), round(pt.x, 5))
         
-    for idx, row in gdf_area.iterrows():
-        osm_id = str(row['osm_id'])
+    for row in gdf_area.itertuples():
+        osm_id = str(row.osm_id)
         geom = row.geometry
         if geom is None or geom.is_empty:
             continue
             
-        highway = str(row.get('highway') or '')
-        other_tags = str(row.get('other_tags') or '')
+        highway = str(getattr(row, 'highway', '') or '')
+        other_tags = str(getattr(row, 'other_tags', '') or '')
         
         # Apply routing profile restrictions
         if osm_id in blocked_ids:
@@ -61,7 +61,7 @@ def test_nijkerk_almere_routing():
             n1 = get_node_key(Point(coords[i]))
             n2 = get_node_key(Point(coords[i+1]))
             part_len = length_m / (len(coords) - 1)
-            G.add_edge(n1, n2, weight=part_len, osm_id=osm_id, name=row.get('name'), highway=highway)
+            G.add_edge(n1, n2, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
             
     # 4. Snap start/end to graph
     start_pt = (start_lat, start_lon)
