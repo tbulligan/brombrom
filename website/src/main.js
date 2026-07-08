@@ -55,12 +55,20 @@ const translations = {
     faq_q9: "Is BromBrom <strong>gratis</strong>? Mag ik de app <strong>commercieel</strong> gebruiken?",
     faq_a9: "BromBrom is volledig gratis voor <strong>persoonlijk en niet-commercieel gebruik</strong> onder de bijbehorende licentie. Commercieel gebruik, herdistributie of modificatie is niet toegestaan zonder voorafgaande schriftelijke toestemming.<br/><br/>Voor vragen over commerciële licenties of samenwerkingen kun je <a href=\"#\" id=\"open-contact-btn\" class=\"link-subtle\" style=\"text-decoration: underline;\">direct contact met mij opnemen</a>.",
     contact_title: "Contact Opnemen",
-    contact_desc: "Heb je vragen over commercieel gebruik of samenwerkingen? Stuur direct een bericht.",
+    contact_desc: "Heb je vragen, feedback of een bug? Stuur direct een bericht.",
+    contact_notice: "De meeste problemen worden daar al beantwoord.",
     contact_label_name: "Naam",
     contact_label_email: "E-mailadres",
+    contact_label_subject: "Onderwerp",
+    contact_opt_feedback: "Algemene feedback",
+    contact_opt_bug: "Bug of kaartfout rapporteren",
+    contact_opt_commercial: "Commercieel / Samenwerking",
+    contact_opt_other: "Overig",
     contact_label_company: "Bedrijf / Organisatie (Optioneel)",
     contact_label_msg: "Bericht",
     contact_btn_send: "Verstuur Bericht",
+    faq_fallback_text: "Staat je vraag er niet tussen?",
+    faq_fallback_link: "Neem contact op",
     carousel_section_title: "Visuele Handleiding",
     carousel_mode_first_time: "Eerste Installatie",
     carousel_mode_update: "Updates",
@@ -138,12 +146,20 @@ const translations = {
     faq_q9: "Is BromBrom <strong>free</strong>? Can I use it <strong>commercially</strong>?",
     faq_a9: "BromBrom is completely free for <strong>personal, non-commercial use</strong> under its license. Commercial use, redistribution, or modification is prohibited without prior written consent.<br/><br/>For commercial inquiries or partnerships, please <a href=\"#\" id=\"open-contact-btn\" class=\"link-subtle\" style=\"text-decoration: underline;\">contact me directly</a>.",
     contact_title: "Get in Touch",
-    contact_desc: "Have questions about commercial use or partnerships? Send a message directly.",
+    contact_desc: "Have questions, feedback, or a bug? Send a message directly.",
+    contact_notice: "Most issues are already answered there.",
     contact_label_name: "Name",
     contact_label_email: "Email Address",
+    contact_label_subject: "Subject",
+    contact_opt_feedback: "General feedback",
+    contact_opt_bug: "Report a bug or map error",
+    contact_opt_commercial: "Commercial / Partnership",
+    contact_opt_other: "Other",
     contact_label_company: "Company / Organization (Optional)",
     contact_label_msg: "Message",
     contact_btn_send: "Send Message",
+    faq_fallback_text: "Question not answered?",
+    faq_fallback_link: "Get in touch",
     carousel_section_title: "Visual Setup Guide",
     carousel_mode_first_time: "First-Time Setup",
     carousel_mode_update: "Updates",
@@ -423,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const contactStatus = document.getElementById('contact-status');
 
   document.addEventListener('click', (e) => {
-    if (e.target && e.target.id === 'open-contact-btn') {
+    if (e.target && (e.target.id === 'open-contact-btn' || e.target.classList.contains('js-open-contact') || e.target.closest('.js-open-contact'))) {
       e.preventDefault();
       if (contactModal) {
         contactModal.classList.add('active');
@@ -468,6 +484,10 @@ document.addEventListener('DOMContentLoaded', () => {
         payload.message = `Company: ${payload.company}\n\n${payload.message}`;
       }
       delete payload.company;
+
+      if (payload.subject && payload.message) {
+        payload.message = `[Category: ${payload.subject}]\n${payload.message}`;
+      }
 
       try {
         const response = await fetch('https://bulligan-form-mailer.tomaso-bulligan.workers.dev', {

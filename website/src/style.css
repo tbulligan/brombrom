@@ -1121,6 +1121,7 @@ footer {
 }
 
 .form-group input,
+.form-group select,
 .form-group textarea {
   width: 100%;
   background: rgba(15, 23, 42, 0.6);
@@ -1134,10 +1135,16 @@ footer {
 }
 
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+}
+
+.form-group select option {
+  background: var(--bg-card);
+  color: #fff;
 }
 
 .turnstile-container {
@@ -1163,4 +1170,45 @@ footer {
 
 .contact-status.error {
   color: #f87171;
+}
+
+/* FAQ Fallback */
+.faq-fallback {
+  text-align: center;
+  margin-top: 2.5rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.faq-fallback a {
+  color: var(--primary);
+  text-decoration: underline;
+  font-weight: 600;
+  margin-left: 0.25rem;
+  transition: color 0.2s;
+}
+
+.faq-fallback a:hover {
+  color: var(--primary-hover);
+}
+
+/* Contact Notice Box */
+.contact-notice-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.contact-notice-box i {
+  color: var(--accent);
+  font-size: 1.2rem;
+  flex-shrink: 0;
 }
