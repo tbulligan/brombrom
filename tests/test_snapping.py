@@ -502,4 +502,18 @@ def test_intersection_bonus_name_match_aligned():
     # allowing 'Nijkerkerweg' (osm_id 1) to receive the intersection warning bonus and win!
     assert idx == 0
 
+def test_snapping_interpolation_bearing():
+    from shapely.geometry import LineString
+    # A line from North (0, 100) to South (0, 0)
+    line = LineString([(0, 100), (0, 0)])
+    
+    # The math bearing at 10m should be 270 degrees (pointing straight down)
+    math_bearing = snap_c9_to_roads.get_bearing_at_distance(line, 10.0)
+    assert math_bearing == pytest.approx(270.0)
+    
+    # Convert math bearing to geo bearing: (90 - math) % 360 = 180.0 (South)
+    geo_bearing = (90 - math_bearing) % 360
+    assert geo_bearing == pytest.approx(180.0)
+
+
 

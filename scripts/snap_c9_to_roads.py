@@ -334,13 +334,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
         if pd.notna(osm_name) and check_name_match(ndw_name, osm_name):
             if not pd.isna(bearing):
                 proj_dist = line.project(point)
-                proj_pt = line.interpolate(proj_dist)
-                
-                ahead_m = min(100.0, line.length / 2)
-                ahead_frac = min(1.0, (proj_dist + ahead_m) / line.length)
-                seg_end = line.interpolate(ahead_frac)
-                
-                seg_bearing = bearing_between(proj_pt, seg_end)
+                seg_bearing = get_bearing_at_distance(line, proj_dist)
                 seg_geo_bearing = (90 - seg_bearing) % 360
                 
                 tags = str(roads_tags[idx]) if pd.notna(roads_tags[idx]) else ""
@@ -369,12 +363,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
         label = labels[i]
         proj_dist = line.project(point)
         proj_pt = line.interpolate(proj_dist)
-
-        ahead_m = min(100.0, line.length / 2)
-        ahead_frac = min(1.0, (proj_dist + ahead_m) / line.length)
-        seg_end = line.interpolate(ahead_frac)
-
-        seg_bearing = bearing_between(proj_pt, seg_end)
+        seg_bearing = get_bearing_at_distance(line, proj_dist)
         
         # Check OneWay status
         tags = str(roads_tags[idx]) if pd.notna(roads_tags[idx]) else ""
