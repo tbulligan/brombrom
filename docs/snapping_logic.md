@@ -84,13 +84,3 @@ When a road segment is identified as C9-forbidden by the snapping pipeline, it i
   - The split off segment receives a unique synthetic way ID starting at 90,000,000,000 to prevent conflicts with upstream OSM IDs.
 - **Unsplit Ways**: If the way does not meet the splitting criteria (e.g. snaps close to ends or has fewer than 3 nodes), the entire way is restricted with `motor_vehicle=no` and `microcar=no`.
 
-## Known Limitations
-
-### Dual-Map Deduplication Bypass for Split Ways
-When the standard OsmAnd Netherlands map is active alongside the BromBrom overlay, OsmAnd's routing engine deduplicates overlapping roads by way ID and geometry. For **unsplit** ways, the BromBrom version (with `motor_vehicle=no`) has the same ID and identical node list as the standard map, so BromBrom's restricted version correctly overrides the standard map's open version.
-
-For **split** ways, the restricted segment has a different node count than the standard map's full way (e.g., 4 nodes vs 5 nodes). This geometry mismatch prevents deduplication, allowing OsmAnd to route on the standard map's unrestricted version of the road, effectively bypassing the C9 block.
-
-This bypass affects virtually all split ways (99.6% of C9-snapped roads are open in the standard map). It cannot be fixed by blocking entire ways, because doing so would correctly enforce restrictions on critical connecting roads (e.g., Rijksstraatweg near the Kiltunnel), creating catastrophic routing dead-ends nationwide. The bypass is an unavoidable architectural tradeoff of the dual-map overlay approach.
-
-**Mitigation**: Incorrect or outdated C9 signs that cause unwanted routing through restricted zones should be reported to NDW for removal, rather than addressed through code changes.
