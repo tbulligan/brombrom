@@ -75,12 +75,5 @@ During the PBF tagging pipeline (`tag_c9_roads.py`), custom translation rules an
 - **Microcar Prohibitions (`microcar=no`)**: Promoted to `motor_vehicle=no` (if `motor_vehicle` is not already restricted) to enforce C9 restrictions inside [OsmAnd](https://www.osmand.net/).
 - **Microcar Allowances (`microcar=yes`)**: Bypasses general motorized restrictions. If a road is tagged with `microcar=yes` but has general motorized restrictions (`motor_vehicle=no`, `vehicle=no`, `access=no`, or `motorcar=no`), the pipeline overrides these tags to `yes` to restore microcar routing access.
 
-### 2. NDW Pipeline Way Splitting & Directional Tagging
-When a road segment is identified as C9-forbidden by the snapping pipeline, it is processed as follows:
-- **Way Splitting**: If the C9 sign snaps in the middle of an OSM way (specifically, at least 5.0 meters away from both the start and end nodes of a way containing at least 3 nodes), the way is split into two separate segments: segment A (from start to split node) and segment B (from split node to end).
-- **Directional Restriction**: The pipeline compares the geographical bearing of the C9 sign to the local bearing of segment B (from split node to next node):
-  - If the sign bearing is within 90 degrees of segment B's bearing, the sign restricts segment B. Segment B is tagged with `motor_vehicle=no` and `microcar=no`.
-  - Otherwise, the sign restricts segment A. Segment A is tagged with `motor_vehicle=no` and `microcar=no`.
-  - The split off segment receives a unique synthetic way ID starting at 90,000,000,000 to prevent conflicts with upstream OSM IDs.
-- **Unsplit Ways**: If the way does not meet the splitting criteria (e.g. snaps close to ends or has fewer than 3 nodes), the entire way is restricted with `motor_vehicle=no` and `microcar=no`.
-
+### 2. NDW Pipeline Coverage: Tag ways identified as C9-forbidden
+When a road segment is identified as C9-forbidden by the snapping pipeline, the entire way is tagged with `motor_vehicle=no` and `microcar=no`. Blocking the entire way under its original OSM ID ensures that OsmAnd's deduplication logic correctly overrides the standard map's open version of the way, preventing routing engines from bypassing the C9 block when standard maps are active.
