@@ -81,6 +81,6 @@ When a road segment is identified as C9-forbidden by the snapping pipeline, it i
 - **Directional Restriction**: The pipeline compares the geographical bearing of the C9 sign to the local bearing of segment B (from split node to next node):
   - If the sign bearing is within 90 degrees of segment B's bearing, the sign restricts segment B. Segment B is tagged with `motor_vehicle=no` and `microcar=no`.
   - Otherwise, the sign restricts segment A. Segment A is tagged with `motor_vehicle=no` and `microcar=no`.
-  - The split off segment receives a unique synthetic way ID starting at 90,000,000,000 to prevent conflicts with upstream OSM IDs.
+  - To prevent OsmAnd from bypassing these blocks due to deduplication when standard maps are active, the restricted split segment always retains the original OSM Way ID. The unrestricted segment is split off and receives a unique synthetic way ID starting at 90,000,000,000.
 - **Unsplit Ways**: If the way does not meet the splitting criteria (e.g. snaps close to ends or has fewer than 3 nodes), the entire way is restricted with `motor_vehicle=no` and `microcar=no`.
 

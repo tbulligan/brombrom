@@ -128,12 +128,15 @@ class TagC9Handler(osmium.SimpleHandler):
                         if restrict_B:
                             tags_B['motor_vehicle'] = 'no'
                             tags_B['microcar'] = 'no'
+                            # Restricted part B retains the original ID
+                            w_A = w.replace(id=self.next_way_id, nodes=nodes_A, tags=tags_A)
+                            w_B = w.replace(nodes=nodes_B, tags=tags_B)
                         else:
                             tags_A['motor_vehicle'] = 'no'
                             tags_A['microcar'] = 'no'
-                            
-                        w_A = w.replace(nodes=nodes_A, tags=tags_A)
-                        w_B = w.replace(id=self.next_way_id, nodes=nodes_B, tags=tags_B)
+                            # Restricted part A retains the original ID
+                            w_A = w.replace(nodes=nodes_A, tags=tags_A)
+                            w_B = w.replace(id=self.next_way_id, nodes=nodes_B, tags=tags_B)
                         self.next_way_id += 1
                         
                         self.writer.add_way(w_A)
