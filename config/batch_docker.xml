@@ -10,7 +10,7 @@
         directory_for_srtm_files="" 
         indexPOI="false" 
         indexRouting="true" 
-        indexMap="false"
+        indexMap="true"
 		indexTransport="false" 
         indexAddress="false">
 	</process>
