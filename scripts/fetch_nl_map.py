@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
-import requests
-from tqdm import tqdm
+import subprocess
 import os
+import sys
 
 URL = "https://download.geofabrik.de/europe/netherlands-latest.osm.pbf"
 PBF_FILE = "nl_map.osm.pbf"
 
 if os.path.exists(PBF_FILE) and os.path.getsize(PBF_FILE) > 1024 * 1024:
     print(f"File {PBF_FILE} already exists. Skipping download.")
-    exit(0)
-
-r = requests.get(URL, stream=True, timeout=30)
-r.raise_for_status()
-
-total_size = int(r.headers.get('content-length', 0))
+    sys.exit(0)
 
 print("Fetching Netherlands OSM...")
-with open(PBF_FILE, "wb") as f, tqdm(
-    desc="NL OSM", total=total_size, unit="B", unit_scale=True
-) as pbar:
-    for chunk in r.iter_content(chunk_size=1024 * 1024):
-        f.write(chunk)
-        pbar.update(len(chunk))
+cmd = [
+    "curl", "-fL",
+    "--connect-timeout", "15",
+    "--retry", "5",
+    "--retry-delay", "5",
+    "--retry-connrefused",
+    "--speed-limit", "10240",
+    "--speed-time", "30",
+    URL,
+    "-o", PBF_FILE
+]
+
+try:
+    subprocess.run(cmd, check=True)
+except subprocess.CalledProcessError as e:
+    print(f"Error downloading Netherlands OSM: {e}", file=sys.stderr)
+    sys.exit(1)
 
 print(f"✓ {PBF_FILE} ({os.path.getsize(PBF_FILE)/1e6:.1f} MB)")
