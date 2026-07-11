@@ -10,7 +10,7 @@ if os.path.exists(PBF_FILE) and os.path.getsize(PBF_FILE) > 1024 * 1024:
     print(f"File {PBF_FILE} already exists. Skipping download.")
     exit(0)
 
-r = requests.get(URL, stream=True)
+r = requests.get(URL, stream=True, timeout=30)
 r.raise_for_status()
 
 total_size = int(r.headers.get('content-length', 0))

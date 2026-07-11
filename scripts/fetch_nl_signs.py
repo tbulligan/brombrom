@@ -14,7 +14,7 @@ headers = {
     "Accept-Encoding": "gzip, deflate"
 }
 
-with requests.get(URL, headers=headers, stream=True) as r:
+with requests.get(URL, headers=headers, stream=True, timeout=30) as r:
     r.raise_for_status()
     content_encoding = (r.headers.get("content-encoding") or "").lower()
 

@@ -34,7 +34,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # --- Tool Acquisition (Isolation in /opt) ---
 
 # 1. OsmAndMapCreator (Latest Nightly)
-RUN wget -q http://download.osmand.net/latest-night-build/OsmAndMapCreator-main.zip -O /tmp/omc.zip && \
+RUN wget --connect-timeout=15 --read-timeout=30 --tries=5 --retry-connrefused -q https://download.osmand.net/latest-night-build/OsmAndMapCreator-main.zip -O /tmp/omc.zip && \
     unzip -q /tmp/omc.zip -d /opt/OsmAndMapCreator && \
     rm /tmp/omc.zip
 

@@ -59,7 +59,7 @@ jobs:
       - name: Get OSM MD5
         id: osm_md5
         run: |
-          MD5=$(curl -fsS https://download.geofabrik.de/europe/netherlands-latest.osm.pbf.md5 | awk '{print $1}')
+          MD5=$(curl -fsS --connect-timeout 15 --retry 3 https://download.geofabrik.de/europe/netherlands-latest.osm.pbf.md5 | awk '{print $1}')
           if [ -z "$MD5" ]; then
             echo "Error: Failed to fetch MD5 from Geofabrik." >&2
             exit 1
