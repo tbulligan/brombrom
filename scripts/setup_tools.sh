@@ -16,7 +16,7 @@ if [ -f "$TOOLS_DIR/OsmAndMapCreator/OsmAndMapCreator.jar" ]; then
     echo "OsmAndMapCreator already present. Skipping."
 else
     echo "Downloading OsmAndMapCreator..."
-    wget -q http://download.osmand.net/latest-night-build/OsmAndMapCreator-main.zip -O "$TOOLS_DIR/omc.zip"
+    wget --connect-timeout=15 --read-timeout=30 --tries=5 --retry-connrefused -q https://download.osmand.net/latest-night-build/OsmAndMapCreator-main.zip -O "$TOOLS_DIR/omc.zip"
     unzip -q "$TOOLS_DIR/omc.zip" -d "$TOOLS_DIR/OsmAndMapCreator"
     rm "$TOOLS_DIR/omc.zip"
     echo "✓ OsmAndMapCreator installed."
