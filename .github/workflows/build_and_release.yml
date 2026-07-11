@@ -30,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
 
     steps:
       - name: Checkout Code
@@ -110,6 +111,29 @@ jobs:
         with:
           path: ndw_c9_current_state.json
           key: ndw-c9-${{ steps.date.outputs.year_month }}
+
+      - name: Clean up old caches
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Cleaning up old osm-pbf caches..."
+          CURRENT_OSM_KEY="osm-pbf-${{ steps.osm_md5.outputs.hash }}"
+          if [ -n "${{ steps.osm_md5.outputs.hash }}" ]; then
+            gh cache list --limit 100 --json id,key | jq -r --arg current "$CURRENT_OSM_KEY" '.[] | select(.key != $current and (.key | startswith("osm-pbf-"))) | .id' | while read -r cache_id; do
+              echo "Deleting old OSM cache: $cache_id"
+              gh cache delete "$cache_id" || true
+            done
+          fi
+
+          echo "Cleaning up old ndw-c9 caches..."
+          CURRENT_NDW_KEY="ndw-c9-${{ steps.date.outputs.year_month }}"
+          if [ -n "${{ steps.date.outputs.year_month }}" ]; then
+            gh cache list --limit 100 --json id,key | jq -r --arg current "$CURRENT_NDW_KEY" '.[] | select(.key != $current and (.key | startswith("ndw-c9-"))) | .id' | while read -r cache_id; do
+              echo "Deleting old NDW cache: $cache_id"
+              gh cache delete "$cache_id" || true
+            done
+          fi
 
       - name: Generate Release Tag
         id: tag
