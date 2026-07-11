@@ -9,7 +9,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     openjdk-17-jre-headless \
     zip \
     unzip \
-    wget \
+    curl \
     procps \
     python3-pip \
     python3-venv \
@@ -34,7 +34,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # --- Tool Acquisition (Isolation in /opt) ---
 
 # 1. OsmAndMapCreator (Latest Nightly)
-RUN wget --connect-timeout=15 --read-timeout=30 --tries=5 --retry-connrefused -q https://download.osmand.net/latest-night-build/OsmAndMapCreator-main.zip -O /tmp/omc.zip && \
+RUN curl -fsSL --connect-timeout 15 --retry 5 --retry-delay 5 --retry-connrefused --speed-limit 10240 --speed-time 30 https://download.osmand.net/latest-night-build/OsmAndMapCreator-main.zip -o /tmp/omc.zip && \
     unzip -q /tmp/omc.zip -d /opt/OsmAndMapCreator && \
     rm /tmp/omc.zip
 

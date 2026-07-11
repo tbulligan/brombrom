@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import requests, os, gzip
-from tqdm import tqdm
+import subprocess
+import os
+import sys
 
 # NDW 'current-state' endpoint provides a full snapshot that regenerates every month.
 URL = "https://data.ndw.nu/api/rest/static-road-data/traffic-signs/v4/current-state?rvv-code=C9"
@@ -8,36 +9,25 @@ JSON_FILE = "ndw_c9_current_state.json"
 
 if os.path.exists(JSON_FILE) and os.path.getsize(JSON_FILE) > 1024 * 1024:
     print(f"File {JSON_FILE} already exists. Skipping download.")
-    exit(0)
+    sys.exit(0)
 
-headers = {
-    "Accept-Encoding": "gzip, deflate"
-}
+print("Fetching NDW traffic signs...")
+cmd = [
+    "curl", "-fL", "--compressed",
+    "--connect-timeout", "15",
+    "--retry", "5",
+    "--retry-delay", "5",
+    "--retry-connrefused",
+    "--speed-limit", "10240",
+    "--speed-time", "30",
+    URL,
+    "-o", JSON_FILE
+]
 
-with requests.get(URL, headers=headers, stream=True, timeout=30) as r:
-    r.raise_for_status()
-    content_encoding = (r.headers.get("content-encoding") or "").lower()
+try:
+    subprocess.run(cmd, check=True)
+except subprocess.CalledProcessError as e:
+    print(f"Error downloading NDW traffic signs: {e}", file=sys.stderr)
+    sys.exit(1)
 
-    if "gzip" in content_encoding:
-        print("→ Download mode: gzipped HTTP, streaming decompress to JSON")
-        decompressor = gzip.GzipFile(fileobj=r.raw)
-
-        with open(JSON_FILE, "wb") as out_f, tqdm(
-            desc="NDW C9 (gz→json)", unit="B", unit_scale=True
-        ) as pbar:
-            while True:
-                chunk = decompressor.read(8192)
-                if not chunk:
-                    break
-                out_f.write(chunk)
-                pbar.update(len(chunk))
-    else:
-        print("→ Download mode: plain JSON (no HTTP compression)")
-        with open(JSON_FILE, "wb") as out_f, tqdm(
-            desc="NDW C9 (json)", unit="B", unit_scale=True
-        ) as pbar:
-            for chunk in r.iter_content(chunk_size=8192):
-                out_f.write(chunk)
-                pbar.update(len(chunk))
-
-print(f"✓ JSON size on disk: {os.path.getsize(JSON_FILE)/1e6:.1f} MB")
+print(f"✓ {JSON_FILE} ({os.path.getsize(JSON_FILE)/1e6:.1f} MB)")
