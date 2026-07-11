@@ -43,7 +43,7 @@ class TagC9Handler(osmium.SimpleHandler):
         
         # Fast path check using native C++ key lookup (no dict copying) (Task 3 optimization)
         has_microcar_no = (w.tags.get('microcar') == 'no' and w.tags.get('motor_vehicle') != 'no')
-        has_microcar_yes = (w.tags.get('microcar') == 'yes' and (w.tags.get('motor_vehicle') == 'no' or w.tags.get('vehicle') == 'no' or w.tags.get('access') == 'no' or w.tags.get('motorcar') == 'no'))
+        has_microcar_yes = (w.tags.get('microcar') == 'yes')
         
         if not is_forbidden and not has_microcar_no and not has_microcar_yes:
             self.writer.add_way(w)
@@ -55,7 +55,7 @@ class TagC9Handler(osmium.SimpleHandler):
         # 0. Allow microcar=yes overrides by bypassing general motor_vehicle/vehicle/access/motorcar prohibitions
         if has_microcar_yes and not is_forbidden:
             for tag in ['motor_vehicle', 'vehicle', 'access', 'motorcar']:
-                if tags.get(tag) == 'no':
+                if tags.get(tag) != 'yes':
                     tags[tag] = 'yes'
                     modified = True
         
