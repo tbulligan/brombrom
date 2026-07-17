@@ -11,6 +11,7 @@ def create_osmand_deploy_package():
     # Paths
     dist_dir = Path("dist")
     map_src = Path("OsmAndMapCreator/Netherlands_BromBrom.obf")
+    empty_map_src = Path("config/empty_NL_BromBrom_tagged.obf")
     routing_src = Path("config/routing.xml")
     osf_path = dist_dir / "BromBrom.osf"
     
@@ -87,6 +88,11 @@ def create_osmand_deploy_package():
           "subtype": "obf_map"
         },
         {
+          "type": "FILE",
+          "file": "/NL_BromBrom_tagged.obf",
+          "subtype": "obf_map"
+        },
+        {
           "type": "PROFILE",
           "file": "profile_brombrom.json",
           "appMode": {
@@ -120,6 +126,12 @@ def create_osmand_deploy_package():
             raise FileNotFoundError(f"OsmAnd OBF map file not found at {map_src}")
         osf_zip.write(map_src, "Netherlands_BromBrom.obf")
         print(f"  Added Netherlands_BromBrom.obf")
+
+        # 3. Dummy OBF to clean up old NL_BromBrom_tagged.obf installs
+        if not empty_map_src.exists():
+            raise FileNotFoundError(f"Minimal OBF file not found at {empty_map_src}")
+        osf_zip.write(empty_map_src, "NL_BromBrom_tagged.obf")
+        print("  Added dummy NL_BromBrom_tagged.obf to overwrite old map")
 
         # 3. Profile JSON
         osf_zip.writestr("profile_brombrom.json", json.dumps(osmand_profile_json, indent=2))
