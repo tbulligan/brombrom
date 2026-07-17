@@ -46,7 +46,7 @@ rm -f OsmAndMapCreator/*.odb osmand_gen/*.odb osmand_output/*.obf
 ./scripts/run_pipeline.sh
 
 # Stage 2: Map Generation (Step 7)
-if ls OsmAndMapCreator/NL_BromBrom_tagged.obf >/dev/null 2>&1; then
+if ls OsmAndMapCreator/BromBrom-NL.obf >/dev/null 2>&1; then
     echo "[7/8] OsmAnd OBF Map already exists. Skipping."
 else
     echo "[7/8] Generating OsmAnd OBF Map..."
@@ -55,7 +55,7 @@ else
     rm -rf osmand_gen/*
     rm -f OsmAndMapCreator/*.obf
     rm -f osmand_input/*.osm.pbf
-    cp NL_BromBrom_tagged.osm.pbf osmand_input/
+    cp BromBrom-NL.osm.pbf osmand_input/
     # Run OsmAndMapCreator
     JAVA_OPTS="-Xmx4800m -Xms2000m -XX:+UseG1GC -XX:+UseStringDeduplication"
     java -Djava.util.logging.config.file="$OMC_DIR/logging.properties" \
@@ -67,7 +67,7 @@ else
     mkdir -p OsmAndMapCreator
     # Move and force rename to the requested name
     # We take any .obf generated (likely NL_BromBrom_tagged.obf) and ensure the name
-    find osmand_output/ -name "*.obf" -exec mv {} OsmAndMapCreator/NL_BromBrom_tagged.obf \;
+    find osmand_output/ -name "*.obf" -exec mv {} OsmAndMapCreator/BromBrom-NL.obf \;
 fi
 
 # Stage 3: Deployment (Step 8)
