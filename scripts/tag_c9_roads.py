@@ -41,12 +41,9 @@ class TagC9Handler(osmium.SimpleHandler):
         way_id = int(w.id)
         is_forbidden = way_id in self.forbidden_ways
         
-        # Force microcar=yes for A27 bridge ways to bypass Geofabrik lag during testing/release
-        bridge_ways = {7268930, 53748188, 53748191, 53748192, 53748187, 53748184, 53748189, 53748186, 153183055}
-        
         # Fast path check using native C++ key lookup (no dict copying) (Task 3 optimization)
         has_microcar_no = (w.tags.get('microcar') == 'no' and w.tags.get('motor_vehicle') != 'no')
-        has_microcar_yes = (w.tags.get('microcar') == 'yes' or way_id in bridge_ways)
+        has_microcar_yes = (w.tags.get('microcar') == 'yes')
         
         if not is_forbidden and not has_microcar_no and not has_microcar_yes:
             self.writer.add_way(w)
