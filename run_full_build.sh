@@ -6,6 +6,18 @@ echo "      BromBrom - OsmAnd Navigation Build"
 echo "========================================================"
 
 # Pre-flight checks & Cleanup
+if ! command -v java >/dev/null 2>&1; then
+    echo "Error: java command not found. Please install OpenJDK 17+."
+    exit 1
+fi
+
+JAVA_VER=$(java -version 2>&1 | head -n 1 | cut -d '"' -f 2)
+MAJOR_VER=$(echo "$JAVA_VER" | cut -d'.' -f1)
+if [[ "$MAJOR_VER" =~ ^[0-9]+$ ]] && [ "$MAJOR_VER" -lt 17 ]; then
+    echo "Error: Java version is $JAVA_VER, but OpenJDK 17+ is required."
+    exit 1
+fi
+echo "✓ Java found (version $JAVA_VER)."
 
 # Locate OsmAndMapCreator
 OMC_DIR=""
