@@ -9,6 +9,9 @@ echo "========================================================"
 if ! command -v java >/dev/null 2>&1; then
     echo "Error: java command not found. Please install Java 17+."
     exit 1
+else
+    JAVA_VER=$(java -version 2>&1 | head -n 1 | cut -d '"' -f 2)
+    echo "✓ Java found (version $JAVA_VER)."
 fi
 
 # Locate OsmAndMapCreator
@@ -27,6 +30,8 @@ if [ -z "$OMC_DIR" ]; then
     echo "Error: OsmAndMapCreator.jar not found."
     echo "Please run './scripts/setup_tools.sh' to install dependencies."
     exit 1
+else
+    echo "✓ OsmAndMapCreator found."
 fi
 
 mkdir -p segments4 dist osmand_input osmand_output osmand_gen
