@@ -13,7 +13,7 @@ echo "========================================================"
 
 # 1. OsmAndMapCreator (Latest Nightly)
 if [ -f "$TOOLS_DIR/OsmAndMapCreator/OsmAndMapCreator.jar" ]; then
-    echo "OsmAndMapCreator already present. Skipping."
+    echo "✓ OsmAndMapCreator already installed."
 else
     echo "Downloading OsmAndMapCreator..."
     curl -fsSL --connect-timeout 15 --retry 5 --retry-delay 5 --retry-connrefused --speed-limit 10240 --speed-time 30 https://download.osmand.net/latest-night-build/OsmAndMapCreator-main.zip -o "$TOOLS_DIR/omc.zip"
