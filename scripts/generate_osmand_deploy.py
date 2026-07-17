@@ -109,16 +109,26 @@ def create_osmand_deploy_package():
 
     with zipfile.ZipFile(osf_path, 'w', zipfile.ZIP_DEFLATED) as osf_zip:
         
-        # 1. Routing file inside '/routing'
+        # 1. Routing file inside '/routing' with far-future timestamp (2035-01-01) for priority override
         if not routing_src.exists():
             raise FileNotFoundError(f"Routing configuration file not found at {routing_src}")
-        osf_zip.write(routing_src, "routing/routing.xml")
+        with open(routing_src, 'rb') as f:
+            routing_data = f.read()
+        routing_info = zipfile.ZipInfo("routing/routing.xml")
+        routing_info.date_time = (2035, 1, 1, 0, 0, 0)
+        routing_info.compress_type = zipfile.ZIP_DEFLATED
+        osf_zip.writestr(routing_info, routing_data)
         print(f"  Added routing.xml")
 
-        # 2. Map data at root
+        # 2. Map data at root with far-future timestamp (2035-01-01) for priority override
         if not map_src.exists():
             raise FileNotFoundError(f"OsmAnd OBF map file not found at {map_src}")
-        osf_zip.write(map_src, "NL_BromBrom_tagged.obf")
+        with open(map_src, 'rb') as f:
+            obf_data = f.read()
+        obf_info = zipfile.ZipInfo("NL_BromBrom_tagged.obf")
+        obf_info.date_time = (2035, 1, 1, 0, 0, 0)
+        obf_info.compress_type = zipfile.ZIP_DEFLATED
+        osf_zip.writestr(obf_info, obf_data)
         print(f"  Added NL_BromBrom_tagged.obf")
 
         # 3. Profile JSON
