@@ -4,6 +4,7 @@ import geopandas as gpd
 import pandas as pd
 import json
 import os
+os.environ["PROJ_NETWORK"] = "OFF"
 from shapely.geometry import LineString, box, Point
 
 try:

@@ -6,6 +6,39 @@ echo "      BromBrom - OsmAnd Navigation Build"
 echo "========================================================"
 
 # Pre-flight checks & Cleanup
+if ! command -v java >/dev/null 2>&1; then
+    echo "Error: java command not found. Please install OpenJDK 17+."
+    exit 1
+fi
+
+JAVA_VER=$(java -version 2>&1 | head -n 1 | cut -d '"' -f 2)
+MAJOR_VER=$(echo "$JAVA_VER" | cut -d'.' -f1)
+if [[ "$MAJOR_VER" =~ ^[0-9]+$ ]] && [ "$MAJOR_VER" -lt 17 ]; then
+    echo "Error: Java version is $JAVA_VER, but OpenJDK 17+ is required."
+    exit 1
+fi
+echo "✓ Java found (version $JAVA_VER)."
+
+# Locate OsmAndMapCreator
+OMC_DIR=""
+for candidate in "tools/OsmAndMapCreator" "/opt/OsmAndMapCreator" "OsmAndMapCreator"; do
+    if [ -d "$candidate" ]; then
+        JAR=$(find "$candidate" -name "OsmAndMapCreator.jar" -print -quit 2>/dev/null)
+        if [ -n "$JAR" ]; then
+            OMC_DIR=$(dirname "$JAR")
+            break
+        fi
+    fi
+done
+
+if [ -z "$OMC_DIR" ]; then
+    echo "Error: OsmAndMapCreator.jar not found."
+    echo "Please run './scripts/setup_tools.sh' to install dependencies."
+    exit 1
+else
+    echo "✓ OsmAndMapCreator found."
+fi
+
 mkdir -p segments4 dist osmand_input osmand_output osmand_gen
 rm -f OsmAndMapCreator/*.odb osmand_gen/*.odb osmand_output/*.obf
 
@@ -23,26 +56,6 @@ else
     rm -f OsmAndMapCreator/*.obf
     rm -f osmand_input/*.osm.pbf
     cp NL_BromBrom_tagged.osm.pbf osmand_input/
-
-    # ... (OMC_DIR logic omitted for brevity in target but will be preserved)
-    # Locate OsmAndMapCreator
-    OMC_DIR=""
-    for candidate in "tools/OsmAndMapCreator" "/opt/OsmAndMapCreator" "OsmAndMapCreator"; do
-        if [ -d "$candidate" ]; then
-            JAR=$(find "$candidate" -name "OsmAndMapCreator.jar" -print -quit 2>/dev/null)
-            if [ -n "$JAR" ]; then
-                OMC_DIR=$(dirname "$JAR")
-                break
-            fi
-        fi
-    done
-
-    if [ -z "$OMC_DIR" ]; then
-        echo "Error: OsmAndMapCreator.jar not found."
-        echo "Please run './scripts/setup_tools.sh' to install dependencies."
-        exit 1
-    fi
-
     # Run OsmAndMapCreator
     JAVA_OPTS="-Xmx4800m -Xms2000m -XX:+UseG1GC -XX:+UseStringDeduplication"
     java -Djava.util.logging.config.file="$OMC_DIR/logging.properties" \

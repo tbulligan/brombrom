@@ -17,14 +17,30 @@ docker run --rm -v "$(pwd):/app" -w /app alpine sh -c "rm -rf \
     temp_map_test/ \
     srtm/ \
     tools/ \
+    scratch/ \
     *.pbf \
     *.gpkg \
+    *.osm \
+    *.o5m \
+    *.geojson \
+    *.gpx \
+    *.zip \
+    *.gz \
+    *.bz2 \
     *.json \
     *.odb \
     *.ocbf \
     *.obf \
-    OsmAndMapCreator/*.obf \
+    OsmAndMapCreator/ \
     *.log \
-    build_log.txt"
+    build_log.txt \
+    osmconvert64 \
+    osmfilter64 \
+    META-INF/ \
+    .pytest_cache/ \
+    .DS_Store \
+    Thumbs.db && \
+    find . -type d -name __pycache__ -exec rm -rf {} + && \
+    find . -type f -name '*.pyc' -exec rm -f {} +"
 
 echo "✓ Workspace is pristine."
