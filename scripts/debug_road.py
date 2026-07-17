@@ -13,6 +13,7 @@ Usage:
 """
 import argparse
 import os
+os.environ["PROJ_NETWORK"] = "OFF"
 import sys
 import json
 import subprocess

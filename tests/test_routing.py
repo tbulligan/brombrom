@@ -1,5 +1,6 @@
 import pytest
 import os
+os.environ["PROJ_NETWORK"] = "OFF"
 import geopandas as gpd
 from shapely.geometry import Point
 import networkx as nx
@@ -13,20 +14,16 @@ def test_nijkerk_almere_routing():
     start_lat, start_lon = 52.2300, 5.4950
     end_lat, end_lon = 52.3680, 5.3090
     
-    # 1. Load data
-    gdf_raw = gpd.read_file("nl_roads.gpkg")
+    # 1. Load data within bbox to optimize speed and avoid full table load
+    min_lon, max_lon = min(start_lon, end_lon) - 0.05, max(start_lon, end_lon) + 0.05
+    min_lat, max_lat = min(start_lat, end_lat) - 0.05, max(start_lat, end_lat) + 0.05
+    bbox = (min_lon, min_lat, max_lon, max_lat)
+    
+    gdf_raw = gpd.read_file("nl_roads.gpkg", bbox=bbox)
     gdf_brom = gpd.read_file("nl_roads_brom.gpkg")
     blocked_ids = set(gdf_brom['osm_id'].astype(str))
     
-    # 2. Filter to search area with margin
-    min_lon, max_lon = min(start_lon, end_lon) - 0.05, max(start_lon, end_lon) + 0.05
-    min_lat, max_lat = min(start_lat, end_lat) - 0.05, max(start_lat, end_lat) + 0.05
-    
-    bbox_mask = (
-        (gdf_raw.geometry.centroid.x >= min_lon) & (gdf_raw.geometry.centroid.x <= max_lon) &
-        (gdf_raw.geometry.centroid.y >= min_lat) & (gdf_raw.geometry.centroid.y <= max_lat)
-    )
-    gdf_area = gdf_raw[bbox_mask].copy()
+    gdf_area = gdf_raw.copy()
     
     # 3. Build Graph
     G = nx.DiGraph()
@@ -50,10 +47,12 @@ def test_nijkerk_almere_routing():
             continue
         if '"motorroad"=>"yes"' in other_tags:
             continue
-        if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
-            continue
-        if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
-            if '"microcar"=>"yes"' not in other_tags:
+        
+        # Allow microcar=yes overrides by bypassing general prohibitions
+        if '"microcar"=>"yes"' not in other_tags:
+            if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
+                continue
+            if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
                 continue
             
         geom_rd = gpd.GeoSeries([geom], crs="EPSG:4326").to_crs(epsg=28992).iloc[0]
@@ -146,10 +145,12 @@ def test_aquamarijnweg_routing():
             continue
         if '"motorroad"=>"yes"' in other_tags:
             continue
-        if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
-            continue
-        if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
-            if '"microcar"=>"yes"' not in other_tags:
+            
+        # Allow microcar=yes overrides by bypassing general prohibitions
+        if '"microcar"=>"yes"' not in other_tags:
+            if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
+                continue
+            if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
                 continue
             
         geom_rd = gpd.GeoSeries([geom], crs="EPSG:4326").to_crs(epsg=28992).iloc[0]

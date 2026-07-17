@@ -2,6 +2,7 @@
 import argparse
 import sys
 import os
+os.environ["PROJ_NETWORK"] = "OFF"
 import json
 import geopandas as gpd
 import pandas as pd
@@ -77,13 +78,11 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         if '"motorroad"=>"yes"' in other_tags:
             continue
             
-        # D. Blocked by access/motor_vehicle/motorcar restrictions in OSM
-        if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
-            continue
-            
-        # E. Cycleways/footpaths are closed for microcars (unless microcar=yes)
-        if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
-            if '"microcar"=>"yes"' not in other_tags:
+        # D. Allow microcar=yes overrides by bypassing general access/motor_vehicle/cycleway blocks
+        if '"microcar"=>"yes"' not in other_tags:
+            if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
+                continue
+            if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
                 continue
             
         # Project geometry to RD New (EPSG:28992) for accurate metric length calculation
