@@ -10,7 +10,7 @@ def create_osmand_deploy_package():
     
     # Paths
     dist_dir = Path("dist")
-    map_src = Path("OsmAndMapCreator/NL_BromBrom_tagged.obf")
+    map_src = Path("OsmAndMapCreator/Netherlands_BromBrom.obf")
     routing_src = Path("config/routing.xml")
     osf_path = dist_dir / "BromBrom.osf"
     
@@ -83,7 +83,7 @@ def create_osmand_deploy_package():
         },
         {
           "type": "FILE",
-          "file": "/NL_BromBrom_tagged.obf",
+          "file": "/Netherlands_BromBrom.obf",
           "subtype": "obf_map"
         },
         {
@@ -118,8 +118,8 @@ def create_osmand_deploy_package():
         # 2. Map data at root
         if not map_src.exists():
             raise FileNotFoundError(f"OsmAnd OBF map file not found at {map_src}")
-        osf_zip.write(map_src, "NL_BromBrom_tagged.obf")
-        print(f"  Added NL_BromBrom_tagged.obf")
+        osf_zip.write(map_src, "Netherlands_BromBrom.obf")
+        print(f"  Added Netherlands_BromBrom.obf")
 
         # 3. Profile JSON
         osf_zip.writestr("profile_brombrom.json", json.dumps(osmand_profile_json, indent=2))

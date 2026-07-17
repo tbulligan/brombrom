@@ -10,7 +10,7 @@ def validate_build():
     print("Running QA Validation...")
     
     # 1. Validate Artifacts
-    obf_path = "OsmAndMapCreator/NL_BromBrom_tagged.obf"
+    obf_path = "OsmAndMapCreator/Netherlands_BromBrom.obf"
     xml_path = "config/routing.xml"
     osf_path = "dist/BromBrom.osf"
     
