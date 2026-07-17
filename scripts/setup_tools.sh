@@ -11,14 +11,6 @@ echo "========================================================"
 echo "Setting up BromBrom Tools in $TOOLS_DIR"
 echo "========================================================"
 
-# 0. Check Java Dependency
-if command -v java >/dev/null 2>&1; then
-    JAVA_VER=$(java -version 2>&1 | head -n 1 | cut -d '"' -f 2)
-    echo "✓ Java found (version $JAVA_VER)."
-else
-    echo "⚠ Warning: Java not found. OpenJDK 17+ is required to run the map compiler."
-fi
-
 # 1. OsmAndMapCreator (Latest Nightly)
 if [ -f "$TOOLS_DIR/OsmAndMapCreator/OsmAndMapCreator.jar" ]; then
     echo "✓ OsmAndMapCreator already installed."
