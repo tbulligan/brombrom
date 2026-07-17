@@ -10,7 +10,7 @@ def create_osmand_deploy_package():
     
     # Paths
     dist_dir = Path("dist")
-    map_src = Path("OsmAndMapCreator/Netherlands_BromBrom.obf")
+    map_src = Path("OsmAndMapCreator/Netherlands.obf")
     empty_map_src = Path("config/empty_NL_BromBrom_tagged.obf")
     routing_src = Path("config/routing.xml")
     osf_path = dist_dir / "BromBrom.osf"
@@ -84,7 +84,7 @@ def create_osmand_deploy_package():
         },
         {
           "type": "FILE",
-          "file": "/Netherlands_BromBrom.obf",
+          "file": "/Netherlands.obf",
           "subtype": "obf_map"
         },
         {
@@ -124,8 +124,8 @@ def create_osmand_deploy_package():
         # 2. Map data at root
         if not map_src.exists():
             raise FileNotFoundError(f"OsmAnd OBF map file not found at {map_src}")
-        osf_zip.write(map_src, "Netherlands_BromBrom.obf")
-        print(f"  Added Netherlands_BromBrom.obf")
+        osf_zip.write(map_src, "Netherlands.obf")
+        print(f"  Added Netherlands.obf")
 
         # 3. Dummy OBF to clean up old NL_BromBrom_tagged.obf installs
         if not empty_map_src.exists():

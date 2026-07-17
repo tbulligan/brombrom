@@ -154,8 +154,8 @@ class TagC9Handler(osmium.SimpleHandler):
             self.writer.add_way(w)
 
 def main():
-    if os.path.exists("Netherlands_BromBrom.osm.pbf"):
-        print("Netherlands_BromBrom.osm.pbf already exists. Skipping.")
+    if os.path.exists("Netherlands.osm.pbf"):
+        print("Netherlands.osm.pbf already exists. Skipping.")
         return
 
     gdf = gpd.read_file("nl_roads_brom.gpkg")
@@ -184,11 +184,11 @@ def main():
                     pass
 
     print("Tagging OSM PBF...")
-    with osmium.SimpleWriter("Netherlands_BromBrom.osm.pbf", overwrite=True) as writer:
+    with osmium.SimpleWriter("Netherlands.osm.pbf", overwrite=True) as writer:
         handler = TagC9Handler(writer, forbidden_ways, way_snaps)
         # Optimization: Use the filtered roads-only PBF as base (huge RAM saving) and cache locations
         handler.apply_file("nl_roads.osm.pbf", locations=True)
-    print(f"✓ Netherlands_BromBrom.osm.pbf created ({len(forbidden_ways)} C9 ways processed)")
+    print(f"✓ Netherlands.osm.pbf created ({len(forbidden_ways)} C9 ways processed)")
 
 if __name__ == "__main__":
     main()
