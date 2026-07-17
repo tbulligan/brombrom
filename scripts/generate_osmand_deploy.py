@@ -10,7 +10,7 @@ def create_osmand_deploy_package():
     
     # Paths
     dist_dir = Path("dist")
-    map_src = Path("OsmAndMapCreator/NL_BromBrom_tagged.obf")
+    map_src = Path("OsmAndMapCreator/BromBrom-NL.obf")
     routing_src = Path("config/routing.xml")
     osf_path = dist_dir / "BromBrom.osf"
     
@@ -83,6 +83,11 @@ def create_osmand_deploy_package():
         },
         {
           "type": "FILE",
+          "file": "/BromBrom-NL.obf",
+          "subtype": "obf_map"
+        },
+        {
+          "type": "FILE",
           "file": "/NL_BromBrom_tagged.obf",
           "subtype": "obf_map"
         },
@@ -109,33 +114,27 @@ def create_osmand_deploy_package():
 
     with zipfile.ZipFile(osf_path, 'w', zipfile.ZIP_DEFLATED) as osf_zip:
         
-        # 1. Routing file inside '/routing' with far-future timestamp (2035-01-01) for priority override
+        # 1. Routing file inside '/routing'
         if not routing_src.exists():
             raise FileNotFoundError(f"Routing configuration file not found at {routing_src}")
-        with open(routing_src, 'rb') as f:
-            routing_data = f.read()
-        routing_info = zipfile.ZipInfo("routing/routing.xml")
-        routing_info.date_time = (2035, 1, 1, 0, 0, 0)
-        routing_info.compress_type = zipfile.ZIP_DEFLATED
-        osf_zip.writestr(routing_info, routing_data)
+        osf_zip.write(routing_src, "routing/routing.xml")
         print(f"  Added routing.xml")
 
-        # 2. Map data at root with far-future timestamp (2035-01-01) for priority override
+        # 2. Map data at root
         if not map_src.exists():
             raise FileNotFoundError(f"OsmAnd OBF map file not found at {map_src}")
-        with open(map_src, 'rb') as f:
-            obf_data = f.read()
-        obf_info = zipfile.ZipInfo("NL_BromBrom_tagged.obf")
-        obf_info.date_time = (2035, 1, 1, 0, 0, 0)
-        obf_info.compress_type = zipfile.ZIP_DEFLATED
-        osf_zip.writestr(obf_info, obf_data)
-        print(f"  Added NL_BromBrom_tagged.obf")
+        osf_zip.write(map_src, "BromBrom-NL.obf")
+        print(f"  Added BromBrom-NL.obf")
 
-        # 3. Profile JSON
+        # 3. Dummy OBF to clean up old NL_BromBrom_tagged.obf installs
+        osf_zip.writestr("NL_BromBrom_tagged.obf", b"")
+        print("  Added dummy NL_BromBrom_tagged.obf to overwrite old map")
+
+        # 4. Profile JSON
         osf_zip.writestr("profile_brombrom.json", json.dumps(osmand_profile_json, indent=2))
         print("  Added profile_brombrom.json")
 
-        # 4. Items.json Manifest
+        # 5. Items.json Manifest
         osf_zip.writestr("items.json", json.dumps(items_manifest, indent=2))
         print("  Added items.json manifest")
 
