@@ -85,4 +85,8 @@ Refer to these screenshots to verify your setup steps.
 
 To update, simply download the newest `BromBrom.osf` and tap it. When [OsmAnd](https://www.osmand.net/) prompts you during the import, check both **"Settings"** and **"Resources"**, then tap **"Continue"** → **"Replace all"**. It will automatically overwrite the old map and routing rules with the fresh data.
 
+> [!IMPORTANT]
+> **Map Priority Mismatch (Routing Issues)**: OsmAnd determines map priority using the file modification timestamp on your device's filesystem (the newest file wins). If you update your official OsmAnd maps, they will become newer than your BromBrom map, which can cause OsmAnd to ignore BromBrom's rules (e.g., routing through highway tunnels). 
+> To fix this, simply **re-import the `BromBrom.osf` file**. This refreshes the custom map's timestamp, making it the newest file again and restoring BromBrom's routing priority.
+
 > **Troubleshooting Import/Open Failures**: If nothing happens or the import dialog fails to appear when opening the file, ensure that **[OsmAnd](https://www.osmand.net/) is completely closed** (swiped away from your phone's recent/background apps) before trying again. This ensures [OsmAnd](https://www.osmand.net/) starts fresh and processes the file import intent immediately.
