@@ -10,7 +10,7 @@ def create_osmand_deploy_package():
     
     # Paths
     dist_dir = Path("dist")
-    map_src = Path("OsmAndMapCreator/BromBrom-NL.obf")
+    map_src = Path("OsmAndMapCreator/NL_BromBrom_tagged.obf")
     routing_src = Path("config/routing.xml")
     osf_path = dist_dir / "BromBrom.osf"
     
@@ -83,11 +83,6 @@ def create_osmand_deploy_package():
         },
         {
           "type": "FILE",
-          "file": "/BromBrom-NL.obf",
-          "subtype": "obf_map"
-        },
-        {
-          "type": "FILE",
           "file": "/NL_BromBrom_tagged.obf",
           "subtype": "obf_map"
         },
@@ -123,18 +118,14 @@ def create_osmand_deploy_package():
         # 2. Map data at root
         if not map_src.exists():
             raise FileNotFoundError(f"OsmAnd OBF map file not found at {map_src}")
-        osf_zip.write(map_src, "BromBrom-NL.obf")
-        print(f"  Added BromBrom-NL.obf")
+        osf_zip.write(map_src, "NL_BromBrom_tagged.obf")
+        print(f"  Added NL_BromBrom_tagged.obf")
 
-        # 3. Dummy OBF to clean up old NL_BromBrom_tagged.obf installs
-        osf_zip.writestr("NL_BromBrom_tagged.obf", b"")
-        print("  Added dummy NL_BromBrom_tagged.obf to overwrite old map")
-
-        # 4. Profile JSON
+        # 3. Profile JSON
         osf_zip.writestr("profile_brombrom.json", json.dumps(osmand_profile_json, indent=2))
         print("  Added profile_brombrom.json")
 
-        # 5. Items.json Manifest
+        # 4. Items.json Manifest
         osf_zip.writestr("items.json", json.dumps(items_manifest, indent=2))
         print("  Added items.json manifest")
 
