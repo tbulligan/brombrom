@@ -232,6 +232,14 @@
 			<select value="30" t="maxspeed:motorcar" v="30"/>
 			<select value="40" t="maxspeed:motorcar" v="40"/>
 
+			<!-- Legal statutory speed limits for microcars on cycleways (RVV 1990 Art. 20): 30 km/h urban, 40 km/h rural -->
+			<if t="zone:traffic" v="NL:urban">
+				<select value="30" t="microcar" v="yes"/>
+				<select value="30" t="highway" v="cycleway"/>
+			</if>
+			<select value="40" t="microcar" v="yes"/>
+			<select value="40" t="highway" v="cycleway"/>
+
 			<!-- Cap everything else at 45 km/h (Brommobiel limit) -->
 			<!-- This ensures 80km/h roads provide NO time advantage over 45km/h roads -->
 			<select value="45" t="highway" v="primary"/>
@@ -299,6 +307,8 @@
 
 			<!-- Preference: Balanced network usage -->
 			<!-- We prefer 50km/h flow (Primary/Secondary) but penalize high-speed deltas via maxspeed tags above -->
+			<select value="1.0" t="microcar" v="yes"/>
+			<select value="1.0" t="highway" v="cycleway"/>
 			<select value="1.0" t="highway" v="primary"/>
 			<select value="1.0" t="highway" v="primary_link"/>
 
