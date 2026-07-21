@@ -117,8 +117,6 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
     start_pt = (start_lat, start_lon)
     end_pt = (end_lat, end_lon)
     
-    start_node = min(G.nodes, key=lambda n: (n[0]-start_pt[0])**2 + (n[1]-start_lon)**2) # Wait, corrected distance formula
-    # Let's use simple euclidean distance check
     start_node = min(G.nodes, key=lambda n: (n[0]-start_pt[0])**2 + (n[1]-start_pt[1])**2)
     end_node = min(G.nodes, key=lambda n: (n[0]-end_pt[0])**2 + (n[1]-end_pt[1])**2)
     
@@ -166,7 +164,90 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         return total_weight, path
         
     except nx.NetworkXNoPath:
-        print("❌ Error: No route exists between the start and end nodes!")
+        print("\n❌ Error: No route exists between the start and end nodes!")
+        print("\n================ ROUTE DIAGNOSTIC REPORT ================")
+        
+        # Stage 1: Check if an undirected path exists (One-Way Bottleneck Check)
+        G_undir = G.to_undirected()
+        if nx.has_path(G_undir, start_node, end_node):
+            undir_path = nx.shortest_path(G_undir, source=start_node, target=end_node, weight='weight')
+            print(f"ℹ️ An undirected route exists ({len(undir_path)} nodes). Checking one-way directional bottlenecks...\n")
+            
+            broken_one_ways = []
+            for i in range(len(undir_path) - 1):
+                u, v = undir_path[i], undir_path[i+1]
+                if not G.has_edge(u, v):
+                    rev_info = G.get_edge_data(v, u)
+                    if rev_info:
+                        broken_one_ways.append((u, v, rev_info))
+                        
+            if broken_one_ways:
+                print(f"🚨 FOUND {len(broken_one_ways)} ONE-WAY BOTTLENECK(S) BLOCKING THIS DIRECTION:\n")
+                for idx, (u, v, info) in enumerate(broken_one_ways, 1):
+                    wid = info.get('osm_id')
+                    hway = info.get('highway')
+                    wname = info.get('name') or '(unnamed)'
+                    url = f"https://www.openstreetmap.org/way/{wid}"
+                    print(f"  {idx}. OSM Way {wid} ({hway}) name='{wname}'")
+                    print(f"     Reason: Tagged 'oneway=yes' pointing in the REVERSE direction ({v} -> {u}).")
+                    print(f"     URL:    {url}\n")
+                print("💡 Recommendation: Inspect the listed way(s) on OpenStreetMap. If the segment is physically bi-directional, update 'oneway=no' in OSM.")
+                return None, None
+        
+        # Stage 2: Spatial Disconnection & Gap Analysis
+        print("ℹ️ The road network graph is physically disconnected between Start and End.\n")
+        start_comp = list(nx.descendants(G, start_node) | {start_node})
+        end_comp = list(nx.ancestors(G, end_node) | {end_node})
+        
+        print(f"  Start Component: {len(start_comp):,} reachable nodes")
+        print(f"  End Component:   {len(end_comp):,} reachable nodes\n")
+        
+        # Fast O(N log M) spatial lookup using scipy cKDTree
+        from scipy.spatial import cKDTree
+        tree = cKDTree(end_comp)
+        distances, indices = tree.query(start_comp)
+        min_idx = distances.argmin()
+        best_pair = (start_comp[min_idx], end_comp[indices[min_idx]])
+        min_sq = distances[min_idx] ** 2
+                    
+        if best_pair:
+            gap_m = (min_sq ** 0.5) * 111000
+            mid_lat = (best_pair[0][0] + best_pair[1][0]) / 2.0
+            mid_lon = (best_pair[0][1] + best_pair[1][1]) / 2.0
+            print(f"📍 Closest Graph Gap: {gap_m:.1f} meters apart near ({mid_lat:.5f}, {mid_lon:.5f})")
+            
+            # Inspect candidate roads near the gap in raw data
+            gap_box = box(min(best_pair[0][1], best_pair[1][1]) - 0.002, min(best_pair[0][0], best_pair[1][0]) - 0.002,
+                          max(best_pair[0][1], best_pair[1][1]) + 0.002, max(best_pair[0][0], best_pair[1][0]) + 0.002)
+            gap_roads = gdf_raw[gdf_raw.geometry.intersects(gap_box)]
+            
+            if not gap_roads.empty:
+                print(f"\nCandidate road segments near the gap ({len(gap_roads)}):")
+                for idx, r in gap_roads.iterrows():
+                    wid = str(r['osm_id'])
+                    hway = r['highway']
+                    wname = r['name'] or '(unnamed)'
+                    tags = str(r['other_tags'] or '')
+                    is_c9_blocked = wid in blocked_ids
+                    
+                    reasons = []
+                    if is_c9_blocked:
+                        reasons.append("C9_TRAFFIC_SIGN_BLOCKED")
+                    if hway in ['motorway', 'motorway_link', 'trunk', 'trunk_link']:
+                        reasons.append(f"CLASS_BLOCKED({hway})")
+                    if '"motorroad"=>"yes"' in tags:
+                        reasons.append("MOTORROAD_YES")
+                    if '"microcar"=>"yes"' not in tags:
+                        if '"motor_vehicle"=>"no"' in tags or '"motorcar"=>"no"' in tags or '"access"=>"no"' in tags:
+                            reasons.append("MOTOR_VEHICLE_NO")
+                        if hway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
+                            reasons.append(f"CYCLEWAY_WITHOUT_MICROCAR_YES({hway})")
+                            
+                    reason_str = ", ".join(reasons) if reasons else "UNKNOWN_DISCONNECTION"
+                    print(f"  • OSM Way {wid} ({hway}) name='{wname}' | Status: {reason_str}")
+                    print(f"    URL: https://www.openstreetmap.org/way/{wid}")
+                    
+        print("=========================================================\n")
         return None, None
 
 def main():
