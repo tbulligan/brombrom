@@ -59,6 +59,24 @@ python scripts/debug_road.py --name <ROAD_NAME> --pull
 
 If the required geopackage databases are missing when running a query, the tool will automatically pull and rebuild them for you out-of-the-box.
 
+### Route Simulation & Automated Gap Diagnosis (`diagnose_route.py`)
+
+To diagnose why a microcar route takes a detour or fails to calculate, use [diagnose_route.py](file:///home/tomaso/projects/brombrom/scripts/diagnose_route.py). It builds a NetworkX graph from the exact BromBrom routing logic and performs instant diagnostic gap analysis:
+
+```bash
+# Simulate a microcar route between two coordinates
+python scripts/diagnose_route.py --start <LAT,LON> --end <LAT,LON>
+
+# Example: Enkhuizen to Lelystad
+python scripts/diagnose_route.py --start 52.704,5.291 --end 52.518,5.471
+```
+
+#### Diagnostic Capabilities
+* **Success Path:** Prints the exact turn-by-turn OSM way sequence, distance, and highway types.
+* **One-Way Bottleneck Detection:** If a directed route fails, automatically runs Stage 1 undirected graph search to pinpoint the exact one-way edges (`oneway=yes`) pointing in the reverse direction, complete with direct clickable OpenStreetMap URLs (`https://www.openstreetmap.org/way/<ID>`).
+* **Graph Disconnection & Spatial Gap Analysis:** If the road network is physically cut (e.g. by C9 signs, motorroad tags, or missing access tags), automatically computes the minimum spatial gap (in meters), pinpoints the coordinates, and lists candidate roads near the gap with their restriction status (`C9_BLOCKED`, `MOTORROAD_YES`, `CYCLEWAY_WITHOUT_MICROCAR_YES`, etc.).
+
+
 ## Visual Inspection with QGIS
 
 Use [QGIS](https://qgis.org/) (Free and Open Source GIS) to verify that the logic correctly identifies and splits roads.
