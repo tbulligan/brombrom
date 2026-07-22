@@ -542,3 +542,29 @@ def test_g_exemption_tagging():
     assert called_tags['vehicle'] == 'yes'
     assert called_tags['access'] == 'yes'
     assert called_tags['motorcar'] == 'yes'
+
+def test_native_c9_tag_ingestion():
+    import pandas as pd
+    
+    other_tags_series = pd.Series([
+        '"agricultural"=>"no","traffic_sign"=>"NL:C9"',
+        '"microcar"=>"no"',
+        '"traffic_sign"=>"C9"',
+        '"traffic_sign"=>"NL:C9","microcar"=>"yes"',
+        '"traffic_sign"=>"NL:C9, OB65"',
+        '"maxspeed"=>"50"'
+    ])
+    
+    native_c9_mask = (
+        other_tags_series.str.contains(r'traffic_sign.*C9', regex=True, case=False) |
+        other_tags_series.str.contains(r'"microcar"=>"no"', regex=False)
+    )
+    has_exemption = (
+        other_tags_series.str.contains(r'"microcar"=>"yes"', regex=False) |
+        other_tags_series.str.contains(r'uitgezonderd|m\.u\.v\.|OB65|brommobiel.*toegestaan', regex=True, case=False)
+    )
+    native_c9_mask = native_c9_mask & (~has_exemption)
+    
+    matching_indices = list(other_tags_series[native_c9_mask].index)
+    assert matching_indices == [0, 1, 2]
+

@@ -494,11 +494,10 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
     return best_idx, best_snap_pt
 
 def main():
-    force_rebuild = os.environ.get("FORCE_REBUILD") == "true"
     debug_mode = os.environ.get("DEBUG") == "true"
     debug_missing = debug_mode and not os.path.exists("debug_snaps.gpkg")
 
-    if os.path.exists("nl_roads_brom.gpkg") and not force_rebuild and not debug_missing:
+    if os.path.exists("nl_roads_brom.gpkg") and not debug_missing:
         print("nl_roads_brom.gpkg already exists. Skipping.")
         return
 
@@ -694,6 +693,22 @@ def main():
     print(f"-> {len(c9_gdf)} C9s for tagging")
     snapped_ids = c9_gdf["road_index"].dropna().unique()
     new_forbidden_ids = set(snapped_ids)
+
+    # Native OSM C9 tag ingestion: include roads natively tagged with traffic_sign=...C9... or microcar=no in OSM
+    other_tags_series = full_roads_gdf['other_tags'].fillna("").astype(str)
+    native_c9_mask = (
+        other_tags_series.str.contains(r'traffic_sign.*C9', regex=True, case=False) |
+        other_tags_series.str.contains(r'"microcar"=>"no"', regex=False)
+    )
+    # Exclude any native roads that explicitly have microcar=yes tag or exemption subplates
+    has_exemption = (
+        other_tags_series.str.contains(r'"microcar"=>"yes"', regex=False) |
+        other_tags_series.str.contains(r'uitgezonderd|m\.u\.v\.|OB65|brommobiel.*toegestaan', regex=True, case=False)
+    )
+    native_c9_mask = native_c9_mask & (~has_exemption)
+    native_c9_indices = full_roads_gdf[native_c9_mask].index.values
+    print(f"Added {len(native_c9_indices)} native OSM C9/microcar=no tagged roads (total forbidden: {len(new_forbidden_ids | set(native_c9_indices))})")
+    new_forbidden_ids.update(native_c9_indices)
 
     # Output forbidden roads
     forbidden_ids = list(new_forbidden_ids)

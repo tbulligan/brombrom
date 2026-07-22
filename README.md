@@ -166,6 +166,10 @@ docker buildx build -t brombrom-builder .
 docker run --rm -v $(pwd):/app brombrom-builder
 ```
 
+### Reset & Cleanup
+- **Fast Build Reset**: `./reset_build.sh` (resets processed map artifacts and outputs for a fast rebuild while preserving base maps & tools)
+- **Pristine Workspace Reset**: `./clean.sh` (completely wipes all temporary data, downloaded base maps, and installed tools)
+
 ---
 
 ## 📂 Project Structure

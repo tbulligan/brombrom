@@ -69,6 +69,9 @@ Beyond spatial snapping for C9 prohibitions, BromBrom accurately parses "onderbo
 - **Negative Guards**: Prevents false exemptions by identifying explicit prohibitions like *"Geldt ook voor brommobiel"* (Also applies to microcars).
 - **G-Exemption Snapping Pipeline**: NDW traffic sign data is extracted for G12a (*fiets/bromfietspad*), G11 (*verplicht fietspad*), C12, and C9 signs with positive microcar exemptions (`extract_c9.py`). These signs are directionally snapped to candidate OSM ways (`highway=cycleway`, `path`, `track`, `service`, `unclassified`) in [snap_c9_to_roads.py](file:///home/tomaso/projects/brombrom/scripts/snap_c9_to_roads.py) and output to `g_exemptions_ways.json`.
 
+### Native OSM C9 Tag Ingestion
+In addition to spatial snapping of NDW C9 point signs, [snap_c9_to_roads.py](file:///home/tomaso/projects/brombrom/scripts/snap_c9_to_roads.py) automatically ingests all road segments in OpenStreetMap that are natively tagged with `traffic_sign=NL:C9` (or `C9` variants / `microcar=no`). These segments are directly added to the restricted road dataset (`nl_roads_brom.gpkg`) unless they carry an explicit `microcar=yes` override tag. This ensures full coverage across multi-segment highways where NDW point signs might not snap to every individual segment.
+
 ## Custom OSM Tagging & Routing Overrides
 During the PBF tagging pipeline ([tag_c9_roads.py](file:///home/tomaso/projects/brombrom/scripts/tag_c9_roads.py)), custom translation rules and geometry modifications are applied to the OSM data to ensure [OsmAnd](https://www.osmand.net/)'s routing engine respects microcar accessibility correctly:
 

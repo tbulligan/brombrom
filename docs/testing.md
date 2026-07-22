@@ -30,7 +30,12 @@ In addition to unit tests, the `run_full_build.sh` pipeline includes a QA valida
     *   `nl_roads_brom.gpkg`: Roads that are blocked in their entirety.
     *   `c9_exemptions.gpkg`: Signs ignored due to detected brommobiel exemptions.
 
-3. **Forced Rebuild**: Running with `FORCE_REBUILD=true` allows you to re-run the geospatial processing (snapping) logic even if the intermediary files (like `nl_roads_brom.gpkg`) already exist. This is useful for testing logic changes without performing a full `./clean.sh` which would delete your downloaded base maps.
+## Workspace Reset & Cleanup
+
+To reset your workspace or prepare for a fresh build:
+
+* **Fast Build Reset (`reset_build.sh`)**: Running `./reset_build.sh` removes derived build artifacts (`nl_roads_brom.gpkg`, `NL_BromBrom_tagged.osm.pbf`, compiled `.obf` maps, and `dist/`) to trigger a fresh rebuild without deleting your downloaded base maps (`nl_map.osm.pbf`, `ndw_current_state.json`), extracted road network (`nl_roads.gpkg`), or installed tools.
+* **Pristine Workspace Reset (`clean.sh`)**: Running `./clean.sh` wipes all temporary build outputs, downloaded raw datasets (`nl_map.osm.pbf`, `ndw_current_state.json`), extracted geopackages, and tool installations for a complete clean-slate reset.
 
 ## On-Demand Diagnostics
 
