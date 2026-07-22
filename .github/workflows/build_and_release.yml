@@ -80,8 +80,8 @@ jobs:
         if: github.event.inputs.force_fresh != 'true'
         uses: actions/cache/restore@v6
         with:
-          path: ndw_c9_current_state.json
-          key: ndw-c9-${{ steps.date.outputs.year_month }}
+          path: ndw_current_state.json
+          key: ndw-${{ steps.date.outputs.year_month }}
 
       - name: Clean up old caches
         env:
@@ -96,10 +96,10 @@ jobs:
             done
           fi
 
-          echo "Cleaning up old ndw-c9 caches..."
-          CURRENT_NDW_KEY="ndw-c9-${{ steps.date.outputs.year_month }}"
+          echo "Cleaning up old ndw caches..."
+          CURRENT_NDW_KEY="ndw-${{ steps.date.outputs.year_month }}"
           if [ -n "${{ steps.date.outputs.year_month }}" ]; then
-            gh cache list --limit 100 --json id,key | jq -r --arg current "$CURRENT_NDW_KEY" '.[] | select(.key != $current and (.key | startswith("ndw-c9-"))) | .id' | while read -r cache_id; do
+            gh cache list --limit 100 --json id,key | jq -r --arg current "$CURRENT_NDW_KEY" '.[] | select(.key != $current and (.key | startswith("ndw-"))) | .id' | while read -r cache_id; do
               echo "Deleting old NDW cache: $cache_id"
               gh cache delete "$cache_id" || true
             done
@@ -131,8 +131,8 @@ jobs:
         if: steps.cache-ndw.outputs.cache-hit != 'true' && steps.date.outputs.year_month != ''
         uses: actions/cache/save@v6
         with:
-          path: ndw_c9_current_state.json
-          key: ndw-c9-${{ steps.date.outputs.year_month }}
+          path: ndw_current_state.json
+          key: ndw-${{ steps.date.outputs.year_month }}
 
       - name: Generate Release Tag
         id: tag
