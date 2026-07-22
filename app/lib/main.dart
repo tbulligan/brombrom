@@ -1178,6 +1178,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         leading: const Icon(Icons.help_outline, color: Colors.orange),
                         title: Text(
                           _t('troubleshoot_title'),
+                          textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
