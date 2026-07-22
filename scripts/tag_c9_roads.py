@@ -43,7 +43,7 @@ class TagC9Handler(osmium.SimpleHandler):
         is_forbidden = way_id in self.forbidden_ways
         is_ndw_exempted = way_id in self.exemption_ways
         
-        # Fast path check using native C++ key lookup (no dict copying) (Task 3 optimization)
+        # Microcar allowances require an explicit microcar tag or an NDW snapped exemption (OB65 / uitgezonderd brommobielen)
         has_microcar_no = (w.tags.get('microcar') == 'no' and w.tags.get('motor_vehicle') != 'no')
         has_microcar_yes = (w.tags.get('microcar') == 'yes') or is_ndw_exempted
         
