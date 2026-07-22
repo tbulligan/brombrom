@@ -23,6 +23,11 @@ def test_exemption_logic():
     assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': ''})
     assert not snap_c9_to_roads.has_microcar_exemption({})
 
+    # Test numpy array inputs
+    import numpy as np
+    assert snap_c9_to_roads.has_microcar_exemption({'textSigns': np.array(['uitgezonderd brommobielen'])})
+    assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': np.array([])})
+
     # Test explicit prohibitions (Negative Guards)
     assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': 'Geldt ook voor brommobiel'})
     assert not snap_c9_to_roads.has_microcar_exemption({'textSigns': 'Dus geen brommobielen'})
@@ -511,9 +516,29 @@ def test_snapping_interpolation_bearing():
     math_bearing = snap_c9_to_roads.get_bearing_at_distance(line, 10.0)
     assert math_bearing == pytest.approx(270.0)
     
-    # Convert math bearing to geo bearing: (90 - math) % 360 = 180.0 (South)
+    # Convert math bearing to geo bearing: (90 - math_bearing) % 360 = 180.0 (South)
     geo_bearing = (90 - math_bearing) % 360
     assert geo_bearing == pytest.approx(180.0)
 
-
-
+def test_g_exemption_tagging():
+    from unittest.mock import MagicMock
+    from scripts import tag_c9_roads
+    
+    writer = MagicMock()
+    handler = tag_c9_roads.TagC9Handler(writer, forbidden_ways={101}, way_snaps={}, exemption_ways={202})
+    
+    # Mock way 202 (NDW snapped exemption cycleway)
+    mock_way = MagicMock()
+    mock_way.id = 202
+    mock_way.tags = {'highway': 'cycleway', 'access': 'no', 'motor_vehicle': 'no'}
+    
+    handler.way(mock_way)
+    
+    # Verify replaced tags set microcar=yes and motorized access=yes
+    assert mock_way.replace.called
+    called_tags = mock_way.replace.call_args[1]['tags']
+    assert called_tags['microcar'] == 'yes'
+    assert called_tags['motor_vehicle'] == 'yes'
+    assert called_tags['vehicle'] == 'yes'
+    assert called_tags['access'] == 'yes'
+    assert called_tags['motorcar'] == 'yes'

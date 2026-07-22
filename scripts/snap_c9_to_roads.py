@@ -2,6 +2,7 @@
 import math
 import geopandas as gpd
 import pandas as pd
+import numpy as np
 import json
 import os
 os.environ["PROJ_NETWORK"] = "OFF"
@@ -44,9 +45,20 @@ CLEAN_NAME_PATTERN = re.compile(r'[^a-z0-9\s]')
 SPLIT_NAME_PATTERN = re.compile(r'[;/,-]')
 
 def normalize_name(name):
-    if not name or pd.isna(name):
+    if name is None:
         return ""
+    if isinstance(name, (list, tuple, dict, np.ndarray)):
+        if len(name) == 0:
+            return ""
+        name = name[0]
+    try:
+        if pd.isna(name):
+            return ""
+    except (ValueError, TypeError):
+        pass
     name = str(name).lower().strip()
+    if not name:
+        return ""
     name = CLEAN_NAME_PATTERN.sub('', name)
     name = name.replace(" ", "")
     
@@ -57,8 +69,13 @@ def normalize_name(name):
     return name
 
 def check_name_match(ndw_name, osm_name):
-    if pd.isna(ndw_name) or not ndw_name or pd.isna(osm_name) or not osm_name:
+    if ndw_name is None or osm_name is None:
         return True
+    try:
+        if pd.isna(ndw_name) or pd.isna(osm_name):
+            return True
+    except (ValueError, TypeError):
+        pass
     
     ndw_parts = SPLIT_NAME_PATTERN.split(str(ndw_name))
     osm_parts = SPLIT_NAME_PATTERN.split(str(osm_name))
@@ -100,22 +117,57 @@ HIGHWAY_PRIORITY = {
     "living_street": 5,
     "service": 6,
     "track": 7,
+    "cycleway": 8,
+    "path": 8,
+    "footway": 9,
     "road": 8
 }
 
+
+def _get_val(row, key, default=None):
+    if hasattr(row, 'get'):
+        val = row.get(key, default)
+    else:
+        val = getattr(row, key, default)
+    if val is None:
+        return default
+    if isinstance(val, (list, tuple, dict, np.ndarray)):
+        return val if len(val) > 0 else default
+    try:
+        res = pd.isna(val)
+        if isinstance(res, (bool, np.bool_)):
+            return default if res else val
+        elif hasattr(res, '__len__'):
+            return val
+    except (ValueError, TypeError):
+        pass
+    return val
 
 def is_pre_warning(row):
     """
     Check if a sign is a pre-warning (voorwaarschuwing) sign.
     Returns True if the sign's textSigns metadata designates it as a 'VOOR' warning.
     """
-    texts = row.get('textSigns', '')
-    if pd.isna(texts) or not texts:
+    texts = _get_val(row, 'textSigns', None)
+    if texts is None:
+        return False
+    if hasattr(texts, '__len__') and len(texts) == 0:
         return False
     
     try:
+        if not isinstance(texts, str) and not isinstance(texts, (list, tuple, np.ndarray)):
+            try:
+                if pd.isna(texts):
+                    return False
+            except Exception:
+                pass
         if not isinstance(texts, str):
-            texts = str(texts)
+            if isinstance(texts, np.ndarray):
+                texts = json.dumps(texts.tolist())
+            elif isinstance(texts, (list, dict, tuple)):
+                texts = json.dumps(texts)
+            else:
+                texts = str(texts)
         return PRE_WARNING_PATTERN.search(texts) is not None
     except Exception:
         return False
@@ -125,10 +177,10 @@ def get_road_speed(road_row):
     if road_row is None:
         return None
     try:
-        tags_str = road_row.get('other_tags') or ""
+        tags_str = _get_val(road_row, 'other_tags', '') or ""
     except AttributeError:
         return None
-    if not tags_str or pd.isna(tags_str):
+    if not tags_str:
         return None
     match = MAXSPEED_PATTERN.search(tags_str)
     if match:
@@ -146,25 +198,35 @@ def has_microcar_exemption(row):
     Check textSigns for 'brommobielen' exemptions using robust semantic logic.
     Returns True ONLY if an explicit exemption is found.
     """
-    texts = row.get('textSigns', '')
-    if pd.isna(texts) or not texts:
+    texts = _get_val(row, 'textSigns', None)
+    if texts is None:
         return False
-    
+    if hasattr(texts, '__len__') and len(texts) == 0:
+        return False
+    if not isinstance(texts, str) and not isinstance(texts, (list, tuple, np.ndarray)):
+        try:
+            if pd.isna(texts):
+                return False
+        except Exception:
+            pass
+
     try:
-        # Normalize text: stringify, lower, and remove brackets/noise
         if not isinstance(texts, str):
-            texts = str(texts)
+            if isinstance(texts, np.ndarray):
+                texts = json.dumps(texts.tolist())
+            elif isinstance(texts, (list, dict, tuple)):
+                texts = json.dumps(texts)
+            else:
+                texts = str(texts)
         texts = texts.lower()
         
-        # Check logic: (Positive AND Vehicle) AND NOT Negative
+        if 'ob65' in texts:
+            return True
+
         has_pos = POS_EXEMPTION_PATTERN.search(texts) is not None
         has_veh = VEHICLE_KEYWORDS_PATTERN.search(texts) is not None
         has_neg = NEGATIVE_GUARDS_PATTERN.search(texts) is not None
         
-        # Special case: 'ob65' is an official sign code for exemption, treat as safe if present
-        if 'ob65' in texts:
-            return True
-
         return has_pos and has_veh and not has_neg
 
     except Exception:
@@ -299,10 +361,10 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
     if point is None or point.is_empty:
         return None, None
         
-    bearing = row.get("bearing")
+    bearing = _get_val(row, "bearing")
 
     # Optional side stats
-    side = str(row.get('side', '')).upper()
+    side = str(_get_val(row, 'side', '') or '').upper()
     if side in side_count:
         side_count[side] += 1
 
@@ -331,7 +393,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
         return None, None
 
     # Check if any candidate road matches the NDW sign roadName and is roughly aligned
-    ndw_name = row.get("roadName")
+    ndw_name = _get_val(row, "roadName")
     any_name_matched = False
     
     for idx in candidates:
@@ -687,5 +749,97 @@ def main():
     print("NaN->side snaps:",
           (~c9_gdf['bearing'].isna() & c9_gdf['side'].isin(['N', 'O', 'Z', 'W'])).sum())
 
+    # Snap microcar exemption signs (G12a/G11/C12/C9 exemptions)
+    snap_g_exemptions(full_roads_gdf, id_field)
+
+def snap_g_exemptions(full_roads_gdf, id_field):
+    """
+    Snap microcar exemption signs (G12a, G11, C12, C9 exemptions) to candidate paths/roads.
+    G-signs (G12a, G11) are strictly filtered to target cycleways/paths and NEVER car roads.
+    Saves snapped way IDs to g_exemptions_ways.json so tag_c9_roads.py can set microcar=yes and motorized access=yes.
+    """
+    if not os.path.exists("g_exemptions_ndw.gpkg"):
+        print("g_exemptions_ndw.gpkg not found. Skipping exemption snapping.")
+        with open("g_exemptions_ways.json", "w") as f:
+            json.dump([], f)
+        return
+        
+    g_gdf = gpd.read_file("g_exemptions_ndw.gpkg")
+    if len(g_gdf) == 0:
+        print("No microcar exemption signs in g_exemptions_ndw.gpkg. Skipping.")
+        with open("g_exemptions_ways.json", "w") as f:
+            json.dump([], f)
+        return
+
+    print(f"Processing {len(g_gdf)} microcar exemption signs...")
+    active_mask = g_gdf['removedOn'].isna() & (g_gdf['status'] == 'PLACED')
+    g_gdf = g_gdf[active_mask].copy()
+
+    if len(g_gdf) == 0:
+        with open("g_exemptions_ways.json", "w") as f:
+            json.dump([], f)
+        return
+
+    resolved_bearings = g_gdf.apply(
+        lambda r: get_bearing_from_side(r.get('side')) if pd.isna(r.get('bearing')) else r.get('bearing'),
+        axis=1
+    )
+    g_gdf['bearing'] = resolved_bearings
+
+    # Reproject to RD New (EPSG:28992) for metric spatial queries
+    g_gdf = g_gdf.to_crs(epsg=28992)
+    full_roads_rd = full_roads_gdf.to_crs(epsg=28992)
+    roads_sindex = full_roads_rd.sindex
+
+    snapped_osm_ids = set()
+    
+    # Path highway types for G-sign snapping (strictly paths/cycleways, excluding car roads)
+    PATH_HIGHWAYS = {'cycleway', 'path', 'footway', 'track'}
+    
+    for row in g_gdf.itertuples():
+        geom = row.geometry
+        rvv = getattr(row, 'rvvCode', '')
+        
+        # Spatial bbox query: 100m
+        bbox = box(geom.x - 100.0, geom.y - 100.0, geom.x + 100.0, geom.y + 100.0)
+        cand_indices = list(roads_sindex.query(bbox))
+        if not cand_indices:
+            continue
+            
+        cand_roads = full_roads_rd.iloc[cand_indices].copy()
+        
+        # Strict candidate filtering based on sign type:
+        if str(rvv).startswith('G'):
+            # G-signs (G12a, G11): MUST snap to cycleways/paths/tracks and NEVER to car roads
+            path_mask = cand_roads['highway'].isin(PATH_HIGHWAYS)
+            cand_roads = cand_roads[path_mask].copy()
+        else:
+            # C-signs (C12, C9 exemptions): Exclude high-speed motorways/trunks
+            non_car_mask = ~cand_roads['highway'].isin(['motorway', 'motorway_link', 'trunk', 'trunk_link'])
+            cand_roads = cand_roads[non_car_mask].copy()
+
+        if cand_roads.empty:
+            continue
+
+        cand_sindex = cand_roads.sindex
+        side_count = {"N": 0, "O": 0, "Z": 0, "W": 0}
+
+        snap_res = directional_snap(
+            row, cand_roads, cand_sindex, cand_roads.geometry.values, side_count,
+            cand_roads['name'].values, cand_roads['highway'].values, cand_roads['other_tags'].values
+        )
+        road_idx = snap_res[0]
+        if road_idx is not None and pd.notna(road_idx):
+            osm_id = cand_roads.loc[road_idx, id_field]
+            if pd.notna(osm_id):
+                snapped_osm_ids.add(int(osm_id))
+
+    snapped_osm_ids_list = list(snapped_osm_ids)
+    print(f"✓ Snapped {len(snapped_osm_ids_list)} ways to microcar exemption signs (G12a/G11/C12/C9)")
+
+    with open("g_exemptions_ways.json", "w") as f:
+        json.dump(snapped_osm_ids_list, f)
+
 if __name__ == "__main__":
     main()
+

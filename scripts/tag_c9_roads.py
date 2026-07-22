@@ -21,11 +21,12 @@ def distance_meters(lon1, lat1, lon2, lat2):
     return math.sqrt(dx*dx + dy*dy)
 
 class TagC9Handler(osmium.SimpleHandler):
-    def __init__(self, writer, forbidden_ways, way_snaps):
+    def __init__(self, writer, forbidden_ways, way_snaps, exemption_ways=None):
         super().__init__()
         self.writer = writer
         self.forbidden_ways = forbidden_ways
         self.way_snaps = way_snaps
+        self.exemption_ways = exemption_ways or set()
         # Hardcoded ID offset to generate unique synthetic ways. Collision ceiling at 90B+ upstream OSM IDs.
         self.next_way_id = 90000000000
 
@@ -40,10 +41,11 @@ class TagC9Handler(osmium.SimpleHandler):
     def way(self, w):
         way_id = int(w.id)
         is_forbidden = way_id in self.forbidden_ways
+        is_ndw_exempted = way_id in self.exemption_ways
         
         # Fast path check using native C++ key lookup (no dict copying) (Task 3 optimization)
         has_microcar_no = (w.tags.get('microcar') == 'no' and w.tags.get('motor_vehicle') != 'no')
-        has_microcar_yes = (w.tags.get('microcar') == 'yes')
+        has_microcar_yes = (w.tags.get('microcar') == 'yes') or is_ndw_exempted
         
         if not is_forbidden and not has_microcar_no and not has_microcar_yes:
             self.writer.add_way(w)
@@ -58,6 +60,9 @@ class TagC9Handler(osmium.SimpleHandler):
                 if tags.get(tag) != 'yes':
                     tags[tag] = 'yes'
                     modified = True
+            if tags.get('microcar') != 'yes':
+                tags['microcar'] = 'yes'
+                modified = True
         
         # 1. Existing OSM Coverage: Promote 'microcar=no' to 'motor_vehicle=no'
         # This ensures OsmAnd (which mainly looks at motor_vehicle) respects these.
@@ -183,9 +188,19 @@ def main():
                 except Exception:
                     pass
 
+    # Load microcar exemption ways snapped from NDW (G12a/G11/C12/C9 exemptions)
+    exemption_ways = set()
+    if os.path.exists("g_exemptions_ways.json"):
+        try:
+            with open("g_exemptions_ways.json", "r") as f:
+                exemption_ways = set(json.load(f))
+            print(f"Loaded {len(exemption_ways)} microcar exemption ways from g_exemptions_ways.json")
+        except Exception as e:
+            print(f"Warning loading g_exemptions_ways.json: {e}")
+
     print("Tagging OSM PBF...")
     with osmium.SimpleWriter("NL_BromBrom_tagged.osm.pbf", overwrite=True) as writer:
-        handler = TagC9Handler(writer, forbidden_ways, way_snaps)
+        handler = TagC9Handler(writer, forbidden_ways, way_snaps, exemption_ways)
         # Optimization: Use the filtered roads-only PBF as base (huge RAM saving) and cache locations
         handler.apply_file("nl_roads.osm.pbf", locations=True)
     print(f"✓ NL_BromBrom_tagged.osm.pbf created ({len(forbidden_ways)} C9 ways processed)")

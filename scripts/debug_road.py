@@ -24,7 +24,7 @@ from shapely.geometry import Point
 def pull_freshest_data():
     print("\n================ REFRESHING PIPELINE DATA ================")
     files_to_delete = [
-        "ndw_c9_current_state.json",
+        "ndw_current_state.json",
         "c9_ndw.gpkg",
         "nl_map.osm.pbf",
         "nl_roads.osm.pbf",

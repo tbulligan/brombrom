@@ -3,9 +3,9 @@ import subprocess
 import os
 import sys
 
-# NDW 'current-state' endpoint provides a full snapshot that regenerates every month.
-URL = "https://data.ndw.nu/api/rest/static-road-data/traffic-signs/v4/current-state?rvv-code=C9"
-JSON_FILE = "ndw_c9_current_state.json"
+# NDW 'current-state' endpoint provides a full snapshot of traffic signs in NL.
+URL = "https://data.ndw.nu/api/rest/static-road-data/traffic-signs/v4/current-state"
+JSON_FILE = "ndw_current_state.json"
 
 if os.path.exists(JSON_FILE) and os.path.getsize(JSON_FILE) > 1024 * 1024:
     print(f"File {JSON_FILE} already exists. Skipping download.")
