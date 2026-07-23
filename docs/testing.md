@@ -46,14 +46,17 @@ It queries the raw road database (`nl_roads.gpkg`), the blocked road database (`
 ### Usage
 
 ```bash
-# Query a specific OSM Way ID to see its metadata, tags, and snapped signs
+# Query a specific OSM Way ID to see its metadata, tags, OSM URL, and Street View link
 python scripts/debug_road.py --way <OSM_WAY_ID>
 
-# Query a specific NDW Sign UUID to see its attributes, image URL, and where it snapped
+# Query a specific NDW Sign UUID to see its attributes, image URL, Street View link, and snapped ways
 python scripts/debug_road.py --sign <SIGN_UUID>
 
-# Search for roads and C9 signs by name (case-insensitive substring)
+# Search for roads and C9 signs by name with instant SQLite performance and Street View links
 python scripts/debug_road.py --name <ROAD_NAME>
+
+# Export matching unrestricted ways directly in Level0 format for JOSM editing
+python scripts/debug_road.py --name "Deldenerstraat" --level0 --min-speed 80 --highway primary,secondary
 
 # Find the closest road segment to a coordinate and inspect it
 python scripts/debug_road.py --coords <LAT,LON>
@@ -61,6 +64,9 @@ python scripts/debug_road.py --coords <LAT,LON>
 # Force a full refresh (re-download and extract) of the freshest NDW/OSM data before analysis
 python scripts/debug_road.py --name <ROAD_NAME> --pull
 ```
+
+> [!TIP]
+> `debug_road.py` uses direct SQLite queries on `.gpkg` databases for sub-5ms response times, and automatically outputs direct Google Street View URLs (`https://www.google.com/maps?q=&layer=c&cbll=LAT,LON`) for instant visual verification of traffic signs.
 
 If the required geopackage databases are missing when running a query, the tool will automatically pull and rebuild them for you out-of-the-box.
 

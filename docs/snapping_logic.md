@@ -88,3 +88,14 @@ When a road segment is identified as C9-forbidden by the snapping pipeline, it i
   - The split off segment receives a unique synthetic way ID starting at 90,000,000,000 to prevent conflicts with upstream OSM IDs.
 - **Unsplit Ways**: If the way does not meet the splitting criteria (e.g. snaps close to ends or has fewer than 3 nodes), the entire way is restricted with `motor_vehicle=no` and `microcar=no`.
 
+## Point Snapping vs Corridor Propagation Rationale
+
+BromBrom intentionally enforces **strict point-to-segment snapping** rather than automated graph-based corridor propagation for the following critical reasons:
+
+1. **Absence of End-of-Zone Data in NDW**: NDW point data records C9 start signs, but does not track cancellation/end-of-zone signs. Automated downstream propagation cannot determine where a restriction legally ends (e.g. at built-up area boundaries, speed reductions to 50 km/h, or microcar access points).
+2. **Junction & Side-Street Bleed**: Graph propagation across intersection nodes easily bleeds prohibitions onto open crossing roads, turning lanes, and connecting ramps.
+3. **Parallel Road Name Collisions**: Parallel service roads, cycleways, and opposite carriageways often share identical road names (e.g. *Deldenerstraat*). Tracing by name or node connection leads to false-positive closures of accessible local service roads.
+4. **Pre-Warning Amplification**: Propagating pre-warning C9 signs snapped to local urban feeder streets would incorrectly block municipal access roads before drivers ever reach the restricted highway.
+
+**Design Consensus**: Point-to-segment snapping minimizes false-positive closures. For multi-segment highway corridors where physical signs only stand at entry points, upstream tagging in OpenStreetMap (`traffic_sign=NL:C9` or `microcar=no`) is the primary, safest mechanism to block all downstream segments.
+
