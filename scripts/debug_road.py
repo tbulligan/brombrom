@@ -174,7 +174,8 @@ def inspect_sign(sign_id):
     print(f"  Text on Signs:  {texts}")
     print(f"  County/Town:    {county} / {town}")
     print(f"  Bearing:        {bearing}°")
-    print(f"  Coordinates:    ({lat:.5f}, {lon:.5f})")
+    coords_str = f"({lat:.5f}, {lon:.5f})" if lat is not None and lon is not None else "(Unknown, Unknown)"
+    print(f"  Coordinates:    {coords_str}")
     print(f"  NDW Image URL:  {img_url}")
     print(f"  StreetView:     {make_streetview_url(lat, lon)}")
     
@@ -206,7 +207,8 @@ def search_by_name(name, level0_format=False, min_speed=None, highway_types=None
         for r in signs:
             lat, lon = get_lat_lon_from_gpb(r[4])
             sv = make_streetview_url(lat, lon)
-            print(f"  ID: {r[0]} | Road: {r[1]} | Town: {r[2]} | Coords: ({lat:.5f}, {lon:.5f}) | StreetView: {sv}")
+            coords_str = f"({lat:.5f}, {lon:.5f})" if lat is not None and lon is not None else "(Unknown, Unknown)"
+            print(f"  ID: {r[0]} | Road: {r[1]} | Town: {r[2]} | Coords: {coords_str} | StreetView: {sv}")
 
     conn_brom = sqlite3.connect("nl_roads_brom.gpkg")
     cur_brom = conn_brom.cursor()
