@@ -69,17 +69,23 @@ Beyond spatial snapping for C9 prohibitions, BromBrom accurately parses "onderbo
 - **Negative Guards**: Prevents false exemptions by identifying explicit prohibitions like *"Geldt ook voor brommobiel"* (Also applies to microcars).
 - **G-Exemption Snapping Pipeline**: NDW traffic sign data is extracted for G12a (*fiets/bromfietspad*), G11 (*verplicht fietspad*), C12, and C9 signs with positive microcar exemptions (`extract_c9.py`). These signs are directionally snapped to candidate OSM ways (`highway=cycleway`, `path`, `track`, `service`, `unclassified`) in [snap_c9_to_roads.py](file:///home/tomaso/projects/brombrom/scripts/snap_c9_to_roads.py) and output to `g_exemptions_ways.json`.
 
-### Native OSM C9 Tag Ingestion
-In addition to spatial snapping of NDW C9 point signs, [snap_c9_to_roads.py](file:///home/tomaso/projects/brombrom/scripts/snap_c9_to_roads.py) automatically ingests all road segments in OpenStreetMap that are natively tagged with `traffic_sign=NL:C9` (or `C9` variants / `microcar=no`). These segments are directly added to the restricted road dataset (`nl_roads_brom.gpkg`) unless they carry an explicit `microcar=yes` override tag. This ensures full coverage across multi-segment highways where NDW point signs might not snap to every individual segment.
+### Native OSM C9 Tag Ingestion & Trapped Motorway Stub Detection
+In addition to spatial snapping of NDW C9 point signs, [snap_c9_to_roads.py](file:///home/tomaso/projects/brombrom/scripts/snap_c9_to_roads.py) automatically performs two data quality enhancements:
+1. **Native Tag Ingestion**: Ingests all road segments in OpenStreetMap natively tagged with `traffic_sign=NL:C9` (or `C9` variants / `microcar=no`) and adds them directly to the restricted road dataset (`nl_roads_brom.gpkg`) unless they carry an explicit `microcar=yes` override tag.
+2. **Trapped Motorway Stub Detection (`detect_trapped_motorway_stubs`)**: Runs a graph reachability analysis on the road network topology. It identifies road segments (such as misclassified `unclassified` or `tertiary` entry stubs) whose only outgoing directional paths lead exclusively into forbidden motorways, trunks, or C9 roads. These inescapable on-ramp stubs are automatically tagged with `microcar=no` to prevent microcars from being routed onto motorway entrances.
 
 ## Custom OSM Tagging & Routing Overrides
-During the PBF tagging pipeline ([tag_c9_roads.py](file:///home/tomaso/projects/brombrom/scripts/tag_c9_roads.py)), custom translation rules and geometry modifications are applied to the OSM data to ensure [OsmAnd](https://www.osmand.net/)'s routing engine respects microcar accessibility correctly:
+During the PBF tagging pipeline ([tag_c9_roads.py](file:///home/tomaso/projects/brombrom/scripts/tag_c9_roads.py)) and routing profile configuration ([routing.xml](file:///home/tomaso/projects/brombrom/config/routing.xml)), custom translation rules and geometry modifications are applied to the OSM data to ensure [OsmAnd](https://www.osmand.net/)'s routing engine respects microcar accessibility correctly:
 
-### 1. Existing OSM Tag Conversions & NDW Exemption Allowances
+### 1. Roundabout Physical Exit Indexing & Access Cost Calibration
+- In [routing.xml](file:///home/tomaso/projects/brombrom/config/routing.xml), forbidden highway access rules (`microcar=no`, `motorway`, `motorway_link`, `trunk`, `trunk_link`, `motorroad=yes`) use `select value="0"` (impassable routing cost, topologically retained network structure) instead of `value="-1"` (hard drop from graph).
+- **Maneuver Engine Exit Counting**: Hard-dropping edges (`value="-1"`) strips forbidden ramps from OsmAnd's network graph, causing OsmAnd's maneuver engine to skip counting physical roundabout exits (e.g. calling the 2nd physical exit the "1st exit"). Setting `value="0"` retains the road in the topological network so OsmAnd accurately counts all physical exits at roundabouts (*"Neem de 2e afslag naar Keizersveer"*), while ensuring Dijkstra / A* route planning assigns infinite penalty to blocked ramps and NEVER routes microcars onto them.
+
+### 2. Existing OSM Tag Conversions & NDW Exemption Allowances
 - **Microcar Prohibitions (`microcar=no`)**: Promoted to `motor_vehicle=no` (if `motor_vehicle` is not already restricted) to enforce C9 restrictions inside [OsmAnd](https://www.osmand.net/).
 - **Microcar Allowances (`microcar=yes`) & NDW G-Exemption Ways**: Bypasses general motorized restrictions. If a road is tagged with `microcar=yes` or identified in `g_exemptions_ways.json`, the pipeline sets `microcar=yes` **AND** overrides general motorized access tags (`motor_vehicle=yes`, `vehicle=yes`, `access=yes`, `motorcar=yes`) to restore microcar routing access inside [OsmAnd](https://www.osmand.net/).
 
-### 2. NDW Pipeline Way Splitting & Directional Tagging
+### 3. NDW Pipeline Way Splitting & Directional Tagging
 When a road segment is identified as C9-forbidden by the snapping pipeline, it is processed as follows:
 - **Way Splitting**: If the C9 sign snaps in the middle of an OSM way (specifically, at least 5.0 meters away from both the start and end nodes of a way containing at least 3 nodes), the way is split into two separate segments: segment A (from start to split node) and segment B (from split node to end).
 - **Directional Restriction**: The pipeline compares the geographical bearing of the C9 sign to the local bearing of segment B (from split node to next node):
