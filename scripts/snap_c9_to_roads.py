@@ -710,15 +710,19 @@ def main():
     print(f"Added {len(native_c9_indices)} native OSM C9/microcar=no tagged roads (total forbidden: {len(new_forbidden_ids | set(native_c9_indices))})")
     new_forbidden_ids.update(native_c9_indices)
 
-    # Output forbidden roads
-    forbidden_ids = list(new_forbidden_ids)
-    forbidden_roads = full_roads_gdf.loc[forbidden_ids].copy()
-    forbidden_roads["microcar"] = "no"
-
     # Identify the OSM ID field name dynamically
     id_field = config.find_osm_id_field(roads_gdf)
     if id_field is None:
         raise ValueError("No OSM ID column found in roads_gdf")
+
+    # Automated graph analysis to flag trapped motorway on-ramp stubs
+    trapped_stubs = detect_trapped_motorway_stubs(full_roads_gdf, new_forbidden_ids, id_field)
+    new_forbidden_ids.update(trapped_stubs)
+
+    # Output forbidden roads
+    forbidden_ids = list(new_forbidden_ids)
+    forbidden_roads = full_roads_gdf.loc[forbidden_ids].copy()
+    forbidden_roads["microcar"] = "no"
 
     # Reproject snap points to WGS84 for lon/lat
     c9_gdf_wgs84 = c9_gdf.to_crs(epsg=4326)
@@ -766,6 +770,54 @@ def main():
 
     # Snap microcar exemption signs (G12a/G11/C12/C9 exemptions)
     snap_g_exemptions(full_roads_gdf, id_field)
+
+def detect_trapped_motorway_stubs(full_roads_gdf, forbidden_indices, id_field):
+    """
+    Graph-based SOTA algorithm to identify road stubs/ramps (e.g. unclassified/tertiary roads)
+    whose only outgoing directional paths lead exclusively into forbidden motorways, trunks, or C9 roads.
+    """
+    print("Running graph reachability analysis for trapped motorway on-ramps...")
+    import networkx as nx
+    
+    G = nx.DiGraph()
+    forbidden_idx_set = set(forbidden_indices)
+    
+    for row in full_roads_gdf.itertuples():
+        idx = row.Index
+        geom = row.geometry
+        if geom is None or geom.is_empty:
+            continue
+        hw = str(getattr(row, 'highway', '') or '')
+        other_tags = str(getattr(row, 'other_tags', '') or '')
+        is_forbidden = (idx in forbidden_idx_set) or (hw in ['motorway', 'motorway_link', 'trunk', 'trunk_link']) or ('"motorroad"=>"yes"' in other_tags)
+        
+        is_oneway = '"oneway"=>"yes"' in other_tags or '"junction"=>"roundabout"' in other_tags
+        is_oneway_rev = '"oneway"=>"-1"' in other_tags
+        
+        coords = list(geom.coords)
+        if len(coords) < 2:
+            continue
+        n_start = (round(coords[0][1], 5), round(coords[0][0], 5))
+        n_end = (round(coords[-1][1], 5), round(coords[-1][0], 5))
+        
+        if is_oneway_rev:
+            G.add_edge(n_end, n_start, road_idx=idx, is_forbidden=is_forbidden)
+        elif is_oneway:
+            G.add_edge(n_start, n_end, road_idx=idx, is_forbidden=is_forbidden)
+        else:
+            G.add_edge(n_start, n_end, road_idx=idx, is_forbidden=is_forbidden)
+            G.add_edge(n_end, n_start, road_idx=idx, is_forbidden=is_forbidden)
+
+    trapped_indices = set()
+    for u, v, data in G.edges(data=True):
+        if data['is_forbidden']:
+            continue
+        out_edges = list(G.out_edges(v, data=True))
+        if out_edges and all(e_data['is_forbidden'] for _, _, e_data in out_edges):
+            trapped_indices.add(data['road_idx'])
+
+    print(f"✓ Detected {len(trapped_indices)} trapped motorway on-ramp stubs")
+    return trapped_indices
 
 def snap_g_exemptions(full_roads_gdf, id_field):
     """

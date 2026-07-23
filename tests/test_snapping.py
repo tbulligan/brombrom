@@ -568,3 +568,22 @@ def test_native_c9_tag_ingestion():
     matching_indices = list(other_tags_series[native_c9_mask].index)
     assert matching_indices == [0, 1, 2]
 
+def test_detect_trapped_motorway_stubs():
+    import geopandas as gpd
+    from shapely.geometry import LineString
+
+    w1 = LineString([(0, 0), (1, 0)])
+    w2 = LineString([(1, 0), (2, 0)])
+    w3 = LineString([(2, 0), (3, 0)])
+
+    gdf = gpd.GeoDataFrame({
+        'highway': ['tertiary', 'unclassified', 'motorway'],
+        'other_tags': ['', '"oneway"=>"yes"', ''],
+        'geometry': [w1, w2, w3]
+    })
+
+    trapped = snap_c9_to_roads.detect_trapped_motorway_stubs(gdf, {2}, 'osm_id')
+    assert 1 in trapped
+    assert 0 not in trapped
+
+
