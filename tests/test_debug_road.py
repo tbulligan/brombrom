@@ -104,12 +104,12 @@ def mock_read_file(filename, *args, **kwargs):
             'name': ['Erkemederweg'],
             'highway': ['unclassified'],
             'other_tags': ['"maxspeed"=>"80"'],
-            'geometry': [LineString([(5.47257, 52.2643), (5.473, 52.265)])]
-        }, crs="EPSG:4326")
+            'geometry': [LineString([(155000, 463000), (155100, 463100)])]
+        }, crs="EPSG:28992")
     return gpd.GeoDataFrame()
 
 def mock_to_crs(*args, **kwargs):
-    return gpd.GeoSeries([Point(0.5, 0.5)])
+    return gpd.GeoSeries([Point(0.5, 0.5)], crs="EPSG:28992")
 
 def test_inspect_way(memory_db, capsys):
     with patch("sqlite3.connect", side_effect=mock_connect_factory(memory_db)):
