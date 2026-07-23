@@ -199,8 +199,8 @@ def test_aquamarijnweg_routing():
     reason="GPKG databases are required for integration routing tests."
 )
 def test_raamsdonksveer_roundabout_routing():
-    # Load target junction roads via SQL query for reliable test execution
-    gdf_raw = gpd.read_file("nl_roads.gpkg", where="name LIKE '%Keizersveer%' OR other_tags LIKE '%roundabout%' OR name LIKE '%Maasdijk%' OR osm_id IN ('7264139', '7264372', '78278783', '7264388')")
+    # Load target junction roads via bbox query for complete junction topology execution
+    gdf_raw = gpd.read_file("nl_roads.gpkg", bbox=(4.88, 51.70, 4.90, 51.72))
     gdf_brom = gpd.read_file("nl_roads_brom.gpkg")
     blocked_ids = set(gdf_brom['osm_id'].astype(str))
     
