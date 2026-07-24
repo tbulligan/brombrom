@@ -3,6 +3,7 @@ import argparse
 import sys
 import os
 os.environ["PROJ_NETWORK"] = "OFF"
+import re
 import json
 import sqlite3
 import geopandas as gpd
@@ -87,28 +88,66 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
                 continue
             
         # Project geometry to RD New (EPSG:28992) for accurate metric length calculation
-        geom_rd = gpd.GeoSeries([geom], crs="EPSG:4326").to_crs(epsg=28992).iloc[0]
-        length_m = geom_rd.length
-        
         is_oneway = '"oneway"=>"yes"' in other_tags or '"junction"=>"roundabout"' in other_tags
         is_oneway_rev = '"oneway"=>"-1"' in other_tags
-        
         coords = list(geom.coords)
+        geom_rd = gpd.GeoSeries([geom], crs="EPSG:4326").to_crs(epsg=28992).iloc[0]
+        length_m = geom_rd.length
+
+        # Calculate OsmAnd travel time & priority weighting (matching routing.xml)
+        speed_kmh = 45.0
+        if highway == 'residential' or highway == 'service':
+            speed_kmh = 30.0
+        elif highway == 'living_street':
+            speed_kmh = 15.0
+
+        # Parse maxspeed if present
+        maxspeed_match = re.search(r'"maxspeed"=>"(\d+)"', other_tags)
+        if maxspeed_match:
+            try:
+                speed_kmh = min(float(maxspeed_match.group(1)), 45.0)
+            except ValueError:
+                pass
+
+        speed_mps = speed_kmh / 3.6
+        priority = 1.0
+
+        # Destination traffic penalty (routing.xml priority=0.15)
+        if '"motor_vehicle"=>"destination"' in other_tags or '"access"=>"destination"' in other_tags or '"motorcar"=>"destination"' in other_tags:
+            priority *= 0.15
+
+        # Surface penalties (routing.xml)
+        if '"surface"=>"unpaved"' in other_tags or '"surface"=>"gravel"' in other_tags:
+            priority *= 0.5
+
+        # Compute travel time in seconds adjusted for priority
+        travel_time_sec = (length_m / speed_mps) / priority
         part_len = length_m / (len(coords) - 1)
+        part_time = travel_time_sec / (len(coords) - 1)
+
         for i in range(len(coords) - 1):
             n1 = get_node_key(Point(coords[i]))
             n2 = get_node_key(Point(coords[i+1]))
             
+            edge_attrs = {
+                'weight': part_time, # Default to OsmAnd travel time for shortest_path
+                'length': part_len,
+                'time_sec': part_time,
+                'osm_id': osm_id,
+                'name': getattr(row, 'name', None),
+                'highway': highway
+            }
+            
             if is_oneway_rev:
-                G.add_edge(n2, n1, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
+                G.add_edge(n2, n1, **edge_attrs)
             elif is_oneway:
-                G.add_edge(n1, n2, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
+                G.add_edge(n1, n2, **edge_attrs)
             else:
-                G.add_edge(n1, n2, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
-                G.add_edge(n2, n1, weight=part_len, osm_id=osm_id, name=getattr(row, 'name', None), highway=highway)
+                G.add_edge(n1, n2, **edge_attrs)
+                G.add_edge(n2, n1, **edge_attrs)
 
             
-    print(f"Graph built with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
+    print(f"Graph built with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges (OsmAnd Time & Priority weighted).")
     
     if G.number_of_nodes() == 0:
         print("❌ Error: Graph has no nodes.")
@@ -134,35 +173,39 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         print(f"\n✅ Shortest path found: {len(path)} nodes.")
         
         print("\n--- Route Directions ---")
-        total_weight = 0
+        total_length_m = 0
+        total_time_sec = 0
         current_way = None
         current_name = None
         current_highway = None
-        current_weight = 0
+        current_way_len = 0
         
         for i in range(len(path) - 1):
             edge_data = G[path[i]][path[i+1]]
-            weight = edge_data['weight']
+            length = edge_data['length']
+            t_sec = edge_data['time_sec']
             osm_id = edge_data['osm_id']
             name = edge_data['name']
             highway = edge_data['highway']
-            total_weight += weight
+            total_length_m += length
+            total_time_sec += t_sec
             
             if osm_id != current_way:
                 if current_way is not None:
-                    print(f"  OSM Way: {current_way:<12} | Name: {str(current_name):<25} | Highway: {current_highway:<15} | Length: {current_weight:.1f}m")
+                    print(f"  OSM Way: {current_way:<12} | Name: {str(current_name):<25} | Highway: {current_highway:<15} | Length: {current_way_len:.1f}m")
                 current_way = osm_id
                 current_name = name
                 current_highway = highway
-                current_weight = weight
+                current_way_len = length
             else:
-                current_weight += weight
+                current_way_len += length
                 
         if current_way is not None:
-            print(f"  OSM Way: {current_way:<12} | Name: {str(current_name):<25} | Highway: {current_highway:<15} | Length: {current_weight:.1f}m")
+            print(f"  OSM Way: {current_way:<12} | Name: {str(current_name):<25} | Highway: {current_highway:<15} | Length: {current_way_len:.1f}m")
             
-        print(f"\nTotal Route Distance: {total_weight/1000.0:.3f} km")
-        return total_weight, path
+        print(f"\nTotal Route Distance : {total_length_m/1000.0:.3f} km")
+        print(f"OsmAnd Est. Time     : {total_time_sec/60.0:.1f} min")
+        return total_length_m, path
         
     except nx.NetworkXNoPath:
         print("\n❌ Error: No route exists between the start and end nodes!")
