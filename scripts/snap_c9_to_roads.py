@@ -375,6 +375,14 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
     if pd.isna(bearing) and not has_side and candidate_indices is None:
         primary = list(spatial_index.query(box(point.x - PRIMARY_TOL, point.y - PRIMARY_TOL, point.x + PRIMARY_TOL, point.y + PRIMARY_TOL)))
         if len(primary) > 0:
+            # If all primary candidates are minor roads (priority >= 4), check if fallback has higher priority roads
+            has_only_minor = all(HIGHWAY_PRIORITY.get(str(roads_highways[i]), 99) >= 4 for i in primary)
+            if has_only_minor:
+                fallback = list(spatial_index.query(box(point.x - FALLBACK_TOL, point.y - FALLBACK_TOL, point.x + FALLBACK_TOL, point.y + FALLBACK_TOL)))
+                has_major = any(HIGHWAY_PRIORITY.get(str(roads_highways[i]), 99) < 4 for i in fallback)
+                if has_major:
+                    return directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
+                                            roads_names, roads_highways, roads_tags, candidate_indices=fallback)
             return directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
                                     roads_names, roads_highways, roads_tags, candidate_indices=primary)
 
