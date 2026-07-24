@@ -35,6 +35,7 @@ NEGATIVE_GUARDS_PATTERN = re.compile(r'geen|verboden|ook voor')
 PRE_WARNING_PATTERN = re.compile(r"['\"]type['\"]\s*:\s*['\"]VOOR['\"]", re.IGNORECASE)
 
 MAXSPEED_PATTERN = re.compile(r'"maxspeed"=>"([^"]+)"')
+REF_PATTERN = re.compile(r'"ref"=>"([^"]+)"')
 # Pre-sorted once at import time to avoid rebuilding in the hot loop
 _NAME_SUFFIXES = tuple(sorted(
     ['straatweg', 'straat', 'weg', 'wei', 'dijk', 'dyk', 'laan', 'leane', 'singel', 'polder', 'pad', 'plein', 'steeg'],
@@ -407,13 +408,16 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
     for idx in candidates:
         line = roads_geoms[idx]
         osm_name = roads_names[idx]
-        if pd.notna(osm_name) and check_name_match(ndw_name, osm_name):
+        tags = str(roads_tags[idx]) if pd.notna(roads_tags[idx]) else ""
+        ref_match = REF_PATTERN.search(tags)
+        osm_ref = ref_match.group(1) if ref_match else None
+        
+        if (pd.notna(osm_name) and check_name_match(ndw_name, osm_name)) or (osm_ref and check_name_match(ndw_name, osm_ref)):
             if not pd.isna(bearing):
                 proj_dist = line.project(point)
                 seg_bearing = get_bearing_at_distance(line, proj_dist)
                 seg_geo_bearing = (90 - seg_bearing) % 360
                 
-                tags = str(roads_tags[idx]) if pd.notna(roads_tags[idx]) else ""
                 is_oneway = '"oneway"=>"yes"' in tags or '"junction"=>"roundabout"' in tags or '"highway"=>"motorway"' in tags
                 
                 angle_diff = min(abs(bearing - seg_geo_bearing), 360 - abs(bearing - seg_geo_bearing))
@@ -479,7 +483,9 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
         dist = proj_pt.distance(point)
         # Name match penalty
         osm_name = roads_names[idx]
-        name_matched = check_name_match(ndw_name, osm_name)
+        ref_match = REF_PATTERN.search(tags)
+        osm_ref = ref_match.group(1) if ref_match else None
+        name_matched = check_name_match(ndw_name, osm_name) or (osm_ref and check_name_match(ndw_name, osm_ref))
         name_penalty = 0.0 if name_matched else 30.0
 
         if not name_matched and not any_name_matched:
