@@ -4,6 +4,7 @@ import sys
 import os
 os.environ["PROJ_NETWORK"] = "OFF"
 import json
+import sqlite3
 import geopandas as gpd
 import pandas as pd
 import networkx as nx
@@ -37,9 +38,9 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
     # 2. Load databases (optimizing raw roads load with bbox to avoid reading 527MB table)
     print("Loading databases...")
     gdf_raw = gpd.read_file("nl_roads.gpkg", bbox=bbox)
-    gdf_brom = gpd.read_file("nl_roads_brom.gpkg")
-    
-    blocked_ids = set(gdf_brom['osm_id'].astype(str))
+    with sqlite3.connect("nl_roads_brom.gpkg") as conn:
+        tbl = conn.execute("SELECT table_name FROM gpkg_contents WHERE data_type='features'").fetchone()[0]
+        blocked_ids = {str(r[0]) for r in conn.execute(f"SELECT osm_id FROM {tbl}")}
     print(f"Loaded {len(gdf_raw)} raw roads in search area and {len(blocked_ids)} blocked roads.")
     gdf_area = gdf_raw.copy()
     print(f"Road segments in search area: {len(gdf_area)}")
