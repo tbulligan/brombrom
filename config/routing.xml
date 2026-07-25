@@ -197,13 +197,13 @@
 		</way>
 
 	<way attribute="penalty_transition">
-			<!-- Prohibit Restricted Highways (A27, A44, N44 autoweg, Motorways, Trunk) with 100,000s (~27h) penalty to bypass OsmAnd minSpeed clamping while preserving roundabout exit voice topology -->
-			<select value="100000" t="highway" v="motorway"/>
-			<select value="100000" t="highway" v="motorway_link"/>
-			<select value="100000" t="highway" v="trunk"/>
-			<select value="100000" t="highway" v="trunk_link"/>
-			<select value="100000" t="motorroad" v="yes"/>
-			<select value="100000" t="microcar" v="no"/>
+			<!-- Transition penalty (36,000s / 10h) for restricted highway classes to bypass OsmAnd minSpeed clamping while preserving roundabout exit voice topology -->
+			<select value="36000" t="highway" v="motorway"/>
+			<select value="36000" t="highway" v="motorway_link"/>
+			<select value="36000" t="highway" v="trunk"/>
+			<select value="36000" t="highway" v="trunk_link"/>
+			<select value="36000" t="motorroad" v="yes"/>
+			<select value="36000" t="microcar" v="no"/>
 
 			<select value="10" t="highway" v="primary"/>
 			<select value="10" t="highway" v="primary_link"/>
@@ -286,7 +286,7 @@
 				<select t="barrier" v="border_control" value="0.1"/>
 			</if>
 
-			<!-- Prohibit Restricted Highways (A27, Autowegen, Motorways, Trunk) while keeping them in graph for roundabout voice guidance -->
+			<!-- Restricted highway classes priority penalty while keeping them in graph for roundabout voice guidance -->
 			<select value="0.0" t="highway" v="motorway"/>
 			<select value="0.0" t="highway" v="motorway_link"/>
 			<select value="0.0" t="highway" v="trunk"/>
