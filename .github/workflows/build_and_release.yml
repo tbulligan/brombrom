@@ -9,6 +9,9 @@ on:
     branches: [ main ]
     paths:
       - 'scripts/**'
+      - '!scripts/diagnose_route.py'
+      - '!scripts/debug_road.py'
+      - '!scripts/generate_store_assets.py'
       - 'config/**'
       - 'tests/**'
       - 'Dockerfile'
