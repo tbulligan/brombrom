@@ -256,6 +256,14 @@
 			<select value="15" t="highway" v="living_street"/>
 			<select value="10" t="route" v="ferry"/>
 			<select value="45" t="route" v="shuttle_train"/>
+
+			<!-- Minimum speed for restricted highways to preserve roundabout topology while preventing navigation -->
+			<select value="1" t="highway" v="motorway"/>
+			<select value="1" t="highway" v="motorway_link"/>
+			<select value="1" t="highway" v="trunk"/>
+			<select value="1" t="highway" v="trunk_link"/>
+			<select value="1" t="motorroad" v="yes"/>
+			<select value="1" t="microcar" v="no"/>
 		</way>
 
 		<way attribute="priority">
@@ -272,8 +280,14 @@
 				<select t="barrier" v="border_control" value="0.1"/>
 			</if>
 
-			<!-- Safety: De-prioritize high-speed roads -->
-			<!-- Even though speed is capped at 45, we 'dislike' interacting with 80km/h traffic -->
+			<!-- Prohibit Restricted Highways (A27, Autowegen, Motorways, Trunk) while keeping them in graph for roundabout voice guidance -->
+			<select value="0.0" t="highway" v="motorway"/>
+			<select value="0.0" t="highway" v="motorway_link"/>
+			<select value="0.0" t="highway" v="trunk"/>
+			<select value="0.0" t="highway" v="trunk_link"/>
+			<select value="0.0" t="motorroad" v="yes"/>
+			<select value="0.0" t="microcar" v="no"/>
+
 			<select value="0.6" t="maxspeed" v="130"/>
 			<select value="0.6" t="maxspeed" v="120"/>
 			<select value="0.6" t="maxspeed" v="100"/>
