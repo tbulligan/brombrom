@@ -67,23 +67,19 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         highway = str(getattr(row, 'highway', '') or '')
         other_tags = str(getattr(row, 'other_tags', '') or '')
         
-        # Apply routing.xml BromBrom restrictions
-        # A. Blocked by snapped NDW C9 signs
-        if osm_id in blocked_ids:
-            continue
-            
-        # B. Blocked by class (motorway, motorway_link, trunk, trunk_link)
-        if highway in ['motorway', 'motorway_link', 'trunk', 'trunk_link']:
-            continue
-            
-        # C. Blocked by motorroad=yes tag
-        if '"motorroad"=>"yes"' in other_tags:
-            continue
-            
-        # D. Allow microcar=yes overrides by bypassing general access/motor_vehicle/cycleway blocks
+        # Restricted highways: set minimum speed (1 km/h) and extreme priority penalty (0.0001) matching routing.xml
+        is_restricted = (
+            osm_id in blocked_ids or
+            highway in ['motorway', 'motorway_link', 'trunk', 'trunk_link'] or
+            '"motorroad"=>"yes"' in other_tags or
+            '"microcar"=>"no"' in other_tags
+        )
+
+        # Allow microcar=yes overrides by bypassing general access/motor_vehicle/cycleway blocks
         if '"microcar"=>"yes"' not in other_tags:
             if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
-                continue
+                if not is_restricted:
+                    continue
             if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
                 continue
             
@@ -96,33 +92,37 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         length_m = row.length_m
 
         # Calculate OsmAnd travel time & priority weighting (matching routing.xml)
-        speed_kmh = 45.0
-        if highway == 'residential' or highway == 'service':
-            speed_kmh = 30.0
-        elif highway == 'living_street':
-            speed_kmh = 15.0
+        if is_restricted:
+            speed_kmh = 1.0
+            priority = 0.0
+            speed_mps = speed_kmh / 3.6
+            travel_time_sec = float('inf')
+        else:
+            speed_kmh = 45.0
+            if highway == 'residential' or highway == 'service':
+                speed_kmh = 30.0
+            elif highway == 'living_street':
+                speed_kmh = 15.0
 
-        # Parse maxspeed if present
-        maxspeed_match = re.search(r'"maxspeed"=>"(\d+)"', other_tags)
-        if maxspeed_match:
-            try:
-                speed_kmh = max(5.0, min(float(maxspeed_match.group(1)), 45.0))
-            except ValueError:
-                pass
+            # Parse maxspeed if present
+            maxspeed_match = re.search(r'"maxspeed"=>"(\d+)"', other_tags)
+            if maxspeed_match:
+                try:
+                    speed_kmh = max(5.0, min(float(maxspeed_match.group(1)), 45.0))
+                except ValueError:
+                    pass
+            priority = 1.0
 
-        speed_mps = speed_kmh / 3.6
-        priority = 1.0
+            # Destination traffic penalty (routing.xml priority=0.15)
+            if '"motor_vehicle"=>"destination"' in other_tags or '"access"=>"destination"' in other_tags or '"motorcar"=>"destination"' in other_tags:
+                priority *= 0.15
 
-        # Destination traffic penalty (routing.xml priority=0.15)
-        if '"motor_vehicle"=>"destination"' in other_tags or '"access"=>"destination"' in other_tags or '"motorcar"=>"destination"' in other_tags:
-            priority *= 0.15
+            # Surface penalties (routing.xml)
+            if '"surface"=>"unpaved"' in other_tags or '"surface"=>"gravel"' in other_tags:
+                priority *= 0.5
 
-        # Surface penalties (routing.xml)
-        if '"surface"=>"unpaved"' in other_tags or '"surface"=>"gravel"' in other_tags:
-            priority *= 0.5
-
-        # Compute travel time in seconds adjusted for priority
-        travel_time_sec = (length_m / speed_mps) / priority
+            speed_mps = speed_kmh / 3.6
+            travel_time_sec = (length_m / speed_mps) / priority
         part_len = length_m / (len(coords) - 1)
         part_time = travel_time_sec / (len(coords) - 1)
 
