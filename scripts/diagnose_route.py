@@ -44,11 +44,11 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         blocked_ids = {str(r[0]) for r in conn.execute(f"SELECT osm_id FROM {tbl}")}
     print(f"Loaded {len(gdf_raw)} raw roads in search area and {len(blocked_ids)} blocked roads.")
     gdf_area = gdf_raw.copy()
-    print(f"Road segments in search area: {len(gdf_area)}")
-    
     if len(gdf_area) == 0:
         print("❌ Error: No road segments found in the bounding box.")
         sys.exit(1)
+    gdf_area['length_m'] = gdf_area.to_crs(epsg=28992).length
+    print(f"Road segments in search area: {len(gdf_area)}")
         
     # 3. Build NetworkX Graph
     print("Building NetworkX routing graph...")
@@ -91,8 +91,9 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         is_oneway = '"oneway"=>"yes"' in other_tags or '"junction"=>"roundabout"' in other_tags
         is_oneway_rev = '"oneway"=>"-1"' in other_tags
         coords = list(geom.coords)
-        geom_rd = gpd.GeoSeries([geom], crs="EPSG:4326").to_crs(epsg=28992).iloc[0]
-        length_m = geom_rd.length
+        if len(coords) < 2:
+            continue
+        length_m = row.length_m
 
         # Calculate OsmAnd travel time & priority weighting (matching routing.xml)
         speed_kmh = 45.0
@@ -105,7 +106,7 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         maxspeed_match = re.search(r'"maxspeed"=>"(\d+)"', other_tags)
         if maxspeed_match:
             try:
-                speed_kmh = min(float(maxspeed_match.group(1)), 45.0)
+                speed_kmh = max(5.0, min(float(maxspeed_match.group(1)), 45.0))
             except ValueError:
                 pass
 
@@ -246,10 +247,17 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         print(f"  Start Component: {len(start_comp):,} reachable nodes")
         print(f"  End Component:   {len(end_comp):,} reachable nodes\n")
         
-        # Fast O(N log M) spatial lookup using scipy cKDTree
+        # Fast O(N log M) spatial lookup using scipy cKDTree (scaled for latitude)
+        import math
         from scipy.spatial import cKDTree
-        tree = cKDTree(end_comp)
-        distances, indices = tree.query(start_comp)
+        mid_lat_rad = math.radians((start_node[0] + end_node[0]) / 2.0)
+        cos_lat = math.cos(mid_lat_rad)
+        
+        start_scaled = [(n[0], n[1] * cos_lat) for n in start_comp]
+        end_scaled = [(n[0], n[1] * cos_lat) for n in end_comp]
+        
+        tree = cKDTree(end_scaled)
+        distances, indices = tree.query(start_scaled)
         min_idx = distances.argmin()
         best_pair = (start_comp[min_idx], end_comp[indices[min_idx]])
         min_sq = distances[min_idx] ** 2
