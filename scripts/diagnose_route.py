@@ -93,10 +93,10 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
 
         # Calculate OsmAnd travel time & priority weighting (matching routing.xml)
         if is_restricted:
-            speed_kmh = 45.0
-            priority = 1.0
+            speed_kmh = 1.0
+            priority = 0.0001
             speed_mps = speed_kmh / 3.6
-            travel_time_sec = (length_m / speed_mps) + 36000.0
+            travel_time_sec = (length_m / speed_mps) / priority + 100000.0
         else:
             speed_kmh = 45.0
             if highway == 'residential' or highway == 'service':
