@@ -404,6 +404,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
     # Check if any candidate road matches the NDW sign roadName and is roughly aligned
     ndw_name = _get_val(row, "roadName")
     any_name_matched = False
+    any_major_name_matched = False
     
     for idx in candidates:
         line = roads_geoms[idx]
@@ -411,6 +412,9 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
         tags = str(roads_tags[idx]) if pd.notna(roads_tags[idx]) else ""
         ref_match = REF_PATTERN.search(tags)
         osm_ref = ref_match.group(1) if ref_match else None
+        
+        highway = str(roads_highways[idx]) if pd.notna(roads_highways[idx]) else ""
+        priority = HIGHWAY_PRIORITY.get(highway, 99)
         
         if (pd.notna(osm_name) and check_name_match(ndw_name, osm_name)) or (osm_ref and check_name_match(ndw_name, osm_ref)):
             if not pd.isna(bearing):
@@ -427,9 +431,13 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
                 
                 if angle_diff <= 45.0:
                     any_name_matched = True
+                    if priority <= 2:
+                        any_major_name_matched = True
                     break
             else:
                 any_name_matched = True
+                if priority <= 2:
+                    any_major_name_matched = True
                 break
 
     best_idx, best_score = None, float("inf")
@@ -488,7 +496,9 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
         name_matched = check_name_match(ndw_name, osm_name) or (osm_ref and check_name_match(ndw_name, osm_ref))
         name_penalty = 0.0 if name_matched else 30.0
 
-        if not name_matched and not any_name_matched:
+        eff_angle_diff = angle_diff
+
+        if not name_matched and not any_major_name_matched:
             if priority <= 2 and dist <= 50.0 and angle_diff <= 30.0:
                 if not highway.endswith('_link'):
                     road_row_dict = {'highway': highway, 'other_tags': tags, 'name': osm_name}
@@ -498,7 +508,7 @@ def directional_snap(row, roads_gdf, spatial_index, roads_geoms, side_count,
                     if not is_dual:
                         name_penalty = 0.0
 
-        score = dist * 0.7 + angle_diff * 0.15 + side_penalty + priority_penalty + name_penalty
+        score = dist * 0.7 + eff_angle_diff * 0.15 + side_penalty + priority_penalty + name_penalty
 
         if score < best_score:
             best_score = score

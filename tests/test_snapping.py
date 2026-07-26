@@ -569,3 +569,38 @@ def test_native_c9_tag_ingestion():
     assert matching_indices == [0, 1, 2]
 
 
+def test_minor_road_name_match_does_not_block_major_bonus():
+    """When a sign's roadName matches a minor street (priority >= 4), a single-carriageway
+    major highway (priority <= 2) within 50m must still receive the intersection bonus.
+    """
+    import geopandas as gpd
+    import pandas as pd
+    from shapely.geometry import Point, LineString
+
+    sign = pd.Series({
+        'roadName': 'Het Elferman',
+        'bearing': 0.0,
+        'side': 'L',
+        'geometry': Point(0, 0)
+    })
+
+    # Minor residential road matching sign name, plus major primary road within 20m
+    roads = gpd.GeoDataFrame([
+        {
+            'osm_id': 601, 'name': 'Het Elferman', 'highway': 'residential', 'priority': 4,
+            'geometry': LineString([(7, -10), (7, 10)]),
+            'other_tags': ''
+        },
+        {
+            'osm_id': 602, 'name': 'Scandinavië-route', 'highway': 'primary', 'priority': 1,
+            'geometry': LineString([(16, -10), (16, 10)]),
+            'other_tags': ''
+        }
+    ], crs="EPSG:28992")
+    idx, _ = snap_c9_to_roads.directional_snap(sign, roads, roads.sindex, roads.geometry.values, {})
+    assert roads.loc[idx]['name'] == 'Scandinavië-route', (
+        "Major primary highway must win snap over minor residential street even if sign has minor street's name"
+    )
+
+
+
