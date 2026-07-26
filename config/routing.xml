@@ -31,7 +31,7 @@
 		<parameter id="motor_type" name="Motor type" description="For CO2 computation" type="numeric" values="0,1,2,3,4,5,6" valueDescriptions="-,Petrol,Diesel,Lpg,Gas,Electric,Hybrid"/>
 
 		<way attribute="access">
-			<select value="0" t="microcar" v="no"/>
+			<select value="-1" t="microcar" v="no"/>
 			<select value="1" t="microcar" v="yes"/>
 			<select value="-1" t="osmand_change" v="delete"/>
 			<select value="-1" t="highway" v="proposed"/>
@@ -153,11 +153,11 @@
 				<gt value1=":width" value2="$maxwidth" type="length"/>
 			</select>
 
-			<select value="0" t="highway" v="motorway"/>
+			<select value="-1" t="highway" v="motorway"/>
 			<select value="0" t="highway" v="motorway_link"/>
-			<select value="0" t="motorroad" v="yes"/>
+			<select value="-1" t="motorroad" v="yes"/>
 			<select value="1" t="junction" v="roundabout"/>
-			<select value="0" t="highway" v="trunk"/>
+			<select value="-1" t="highway" v="trunk"/>
 			<select value="0" t="highway" v="trunk_link"/>
 			<select value="1" t="highway" v="primary"/>
 			<select value="1" t="highway" v="primary_link"/>
@@ -197,6 +197,9 @@
 		</way>
 
 	<way attribute="penalty_transition">
+			<!-- Link ramps transition penalty (36,000s / 10h) to prevent navigation while preserving roundabout exit counting -->
+			<select value="36000" t="highway" v="motorway_link"/>
+			<select value="36000" t="highway" v="trunk_link"/>
 			<!-- Consolidated transition penalties (removed short_way switch) -->
 			<!-- roughly based on minimizing turn penalties for faster roads -->
 			<select value="10" t="highway" v="primary"/>

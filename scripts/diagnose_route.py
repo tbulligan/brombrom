@@ -68,19 +68,17 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
         other_tags = str(getattr(row, 'other_tags', '') or '')
         
         # Apply routing.xml BromBrom restrictions
-        # A. Blocked by snapped NDW C9 signs
-        if osm_id in blocked_ids:
+        # A. Blocked by snapped NDW C9 signs or explicit microcar=no
+        if osm_id in blocked_ids or '"microcar"=>"no"' in other_tags:
             continue
             
-        # B. Blocked by class (motorway, motorway_link, trunk, trunk_link)
-        if highway in ['motorway', 'motorway_link', 'trunk', 'trunk_link']:
+        # B. Blocked by main highway class (motorway, trunk, motorroad=yes)
+        if highway in ['motorway', 'trunk'] or '"motorroad"=>"yes"' in other_tags:
             continue
             
-        # C. Blocked by motorroad=yes tag
-        if '"motorroad"=>"yes"' in other_tags:
-            continue
+        is_link_ramp = highway in ['motorway_link', 'trunk_link']
             
-        # D. Allow microcar=yes overrides by bypassing general access/motor_vehicle/cycleway blocks
+        # C. Allow microcar=yes overrides by bypassing general access/motor_vehicle/cycleway blocks
         if '"microcar"=>"yes"' not in other_tags:
             if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
                 continue
@@ -123,6 +121,8 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
 
         # Compute travel time in seconds adjusted for priority
         travel_time_sec = (length_m / speed_mps) / priority
+        if is_link_ramp:
+            travel_time_sec += 36000.0  # matching routing.xml penalty_transition=36000 for link ramps
         part_len = length_m / (len(coords) - 1)
         part_time = travel_time_sec / (len(coords) - 1)
 
