@@ -27,13 +27,16 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
     print(f"Start: ({start_lat}, {start_lon})")
     print(f"End:   ({end_lat}, {end_lon})")
     
-    # 1. Calculate bounding box containing start and end coordinates with padding
-    min_lon = min(start_lon, end_lon) - 0.05
-    max_lon = max(start_lon, end_lon) + 0.05
-    min_lat = min(start_lat, end_lat) - 0.05
-    max_lat = max(start_lat, end_lat) + 0.05
+    # 1. Calculate adaptive bounding box containing start and end coordinates
+    dist_deg = ((start_lat - end_lat)**2 + (start_lon - end_lon)**2)**0.5
+    padding = max(0.015, min(0.05, dist_deg * 0.6))
     
-    print(f"Filtering roads to bounding box: Lon [{min_lon:.4f}, {max_lon:.4f}], Lat [{min_lat:.4f}, {max_lat:.4f}]...")
+    min_lon = min(start_lon, end_lon) - padding
+    max_lon = max(start_lon, end_lon) + padding
+    min_lat = min(start_lat, end_lat) - padding
+    max_lat = max(start_lat, end_lat) + padding
+    
+    print(f"Filtering roads to bounding box: Lon [{min_lon:.4f}, {max_lon:.4f}], Lat [{min_lat:.4f}, {max_lat:.4f}] (padding: {padding:.4f})...")
     bbox = (min_lon, min_lat, max_lon, max_lat)
     
     # 2. Load databases (optimizing raw roads load with bbox to avoid reading 527MB table)
@@ -50,9 +53,10 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
     gdf_area['length_m'] = gdf_area.to_crs(epsg=28992).length
     print(f"Road segments in search area: {len(gdf_area)}")
         
-    # 3. Build NetworkX Graph
-    print("Building NetworkX routing graph...")
+    # 3. Build NetworkX Routing Graph with OsmAnd Node/Turn Penalties
+    print("Building NetworkX routing graph (including OsmAnd traffic signal & turn penalties)...")
     G = nx.DiGraph()
+    signal_nodes = set()
     
     def get_node_key(pt):
         # Round to 5 decimal places (~1.1 meter precision) to match intersection vertices
@@ -66,6 +70,9 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
             
         highway = str(getattr(row, 'highway', '') or '')
         other_tags = str(getattr(row, 'other_tags', '') or '')
+        
+        # Track traffic signal indicators
+        has_signal = '"highway"=>"traffic_signals"' in other_tags or '"traffic_signals"' in other_tags
         
         # Apply routing.xml BromBrom restrictions
         # A. Blocked by snapped NDW C9 signs or explicit microcar=no
@@ -130,6 +137,10 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
             n1 = get_node_key(Point(coords[i]))
             n2 = get_node_key(Point(coords[i+1]))
             
+            if has_signal:
+                signal_nodes.add(n1)
+                signal_nodes.add(n2)
+            
             edge_attrs = {
                 'weight': part_time, # Default to OsmAnd travel time for shortest_path
                 'length': part_len,
@@ -146,6 +157,13 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
             else:
                 G.add_edge(n1, n2, **edge_attrs)
                 G.add_edge(n2, n1, **edge_attrs)
+
+    # Apply OsmAnd traffic signal node penalties (routing.xml: 15s penalty)
+    for snode in signal_nodes:
+        if snode in G:
+            for nbr in G.successors(snode):
+                G[snode][nbr]['weight'] += 15.0
+                G[snode][nbr]['time_sec'] += 15.0
 
             
     print(f"Graph built with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges (OsmAnd Time & Priority weighted).")
