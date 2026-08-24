@@ -592,22 +592,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                                 style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              _t('profile_screenshot_caption'),
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[850], fontSize: 14),
-                            ),
-                            const SizedBox(height: 8),
-                            Center(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.asset(
-                                  'assets/images/brombrom_osmand_profile.webp',
-                                  fit: BoxFit.contain,
-                                  height: 220,
-                                ),
-                              ),
-                            ),
                           ],
                         ];
                       })(),
