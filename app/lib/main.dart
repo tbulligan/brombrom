@@ -570,7 +570,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         final stepStyle = TextStyle(fontSize: 14, color: Colors.grey[800]);
                         final steps = wasUpdate
                             ? ['osf_dialog_step1_update', 'osf_dialog_step2_update', 'osf_dialog_step3_update', 'osf_dialog_step4_update']
-                            : ['osf_dialog_step1', 'osf_dialog_step2', 'osf_dialog_step3', 'osf_dialog_step4', 'osf_dialog_step5', 'osf_dialog_step6', 'osf_dialog_step7', 'osf_dialog_step8'];
+                            : ['osf_dialog_step1', 'osf_dialog_step2', 'osf_dialog_step3', 'osf_dialog_step4', 'osf_dialog_step5', 'osf_dialog_step6', 'osf_dialog_step7'];
                         return <Widget>[
                           Text(_t(wasUpdate ? 'osf_dialog_p1_update' : 'osf_dialog_p1'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
                           const SizedBox(height: 12),
