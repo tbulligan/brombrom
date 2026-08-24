@@ -23,7 +23,7 @@ The iOS version of [OsmAnd](https://www.osmand.net/) natively supports OsmAnd Sm
 #### Phase 2: Profile Activation (First-Time Installation Only)
 7. Open the [OsmAnd](https://www.osmand.net/) menu (three lines button in the corner).
 8. Go to **Settings** -> **Configure profiles**.
-9. **Enable BromBrom & Disable Others** — Switch **BromBrom** to **ON (orange)** and turn all other profiles **OFF (grey)**. OsmAnd will now exclusively use BromBrom for navigation.
+9. **Enable BromBrom & Disable Others** — Set **BromBrom** to **ON** (orange) and switch all other profiles to **OFF** (grey). OsmAnd will now exclusively use BromBrom for navigation.
 
 > ⚠️ **Do not skip steps 7–9** — [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
 
@@ -46,7 +46,7 @@ If you prefer not to use the BromBrom Manager app, you can achieve the exact sam
 #### Phase 2: Profile Activation (First-Time Installation Only)
 8. Open the [OsmAnd](https://www.osmand.net/) menu (three lines button in the corner).
 9. Go to **Settings** -> **Configure profiles**.
-10. **Enable BromBrom & Disable Others** — Switch **BromBrom** to **ON (orange)** and turn all other profiles **OFF (grey)**. OsmAnd will now exclusively use BromBrom for navigation.
+10. **Enable BromBrom & Disable Others** — Set **BromBrom** to **ON** (orange) and switch all other profiles to **OFF** (grey). OsmAnd will now exclusively use BromBrom for navigation.
 
 > ⚠️ **Do not skip steps 8–10** — [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
 

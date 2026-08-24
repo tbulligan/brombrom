@@ -76,7 +76,7 @@ If this is your first time installing BromBrom, you must activate the profile:
 
 7.  Open the [OsmAnd](https://www.osmand.net/) menu (three lines button in the corner).
 8.  Go to **Settings** -> **Configure profiles**.
-9.  **Enable BromBrom & Disable Others** — Switch **BromBrom** to **ON (orange)** and turn all other profiles **OFF (grey)**. OsmAnd will now exclusively use BromBrom for navigation.
+9.  **Enable BromBrom & Disable Others** — Set **BromBrom** to **ON** (orange) and switch all other profiles to **OFF** (grey). OsmAnd will now exclusively use BromBrom for navigation.
 
 <details>
   <summary>📸 Step-by-Step Screenshots: Phase 2 (Profile Activation)</summary>
@@ -100,7 +100,7 @@ Because the entire BromBrom profile is packaged into a Smart Folder (`.osf`), ma
 5. Tap **"Replace all"** (update) or **"Apply"** (first time) and wait for the import to finish.
 6. On the **"Import complete"** screen, tap **"Close"**.
 7. Open the [OsmAnd](https://www.osmand.net/) menu (three lines in the corner) and go to **Settings** -> **Configure profiles**.
-8. **Enable BromBrom & Disable Others** — Switch **BromBrom** to **ON (orange)** and turn all other profiles **OFF (grey)**.
+8. **Enable BromBrom & Disable Others** — Set **BromBrom** to **ON** (orange) and switch all other profiles to **OFF** (grey).
 
 > ⚠️ Do not skip steps 6–8. [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
 
