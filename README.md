@@ -68,7 +68,7 @@ The fastest way to install and keep your navigation updated automatically.
 
   | 4. Confirm Replacement (If asked) | 5. Import Complete (Tap Close) |
   | :---: | :---: |
-  | ![Confirm Replacement](assets/bbm-screenshots/bbm-2.5-replace.png) | ![Import Complete](assets/bbm-screenshots/bbm-3-import-complete.png) |
+  | ![Confirm Replacement](assets/bbm-screenshots/bbm-3-replace.png) | ![Import Complete](assets/bbm-screenshots/bbm-4-import-complete.png) |
 </details>
 
 #### Phase 2: Profile Activation (First-Time Installation Only)
@@ -76,19 +76,14 @@ If this is your first time installing BromBrom, you must activate the profile:
 
 7.  Open the [OsmAnd](https://www.osmand.net/) menu (three lines button in the corner).
 8.  Go to **Settings** -> **Configure profiles**.
-9.  **Enable BromBrom** — Scroll down to the profiles list, find **BromBrom** and toggle it **ON**.
-10. Tap the navigation icon and select the **BromBrom** profile (orange microcar icon).
+9.  **Enable BromBrom & Disable Others** — Switch **BromBrom** to **ON (orange)** and turn all other profiles **OFF (grey)**. OsmAnd will now exclusively use BromBrom for navigation.
 
 <details>
   <summary>📸 Step-by-Step Screenshots: Phase 2 (Profile Activation)</summary>
 
-  | 1. Open Menu | 2. Open Settings |
-  | :---: | :---: |
-  | ![Open Menu](assets/bbm-screenshots/bbm-4-open-menu.png) | ![Open Settings](assets/bbm-screenshots/bbm-5-open-settings.png) |
-
-  | 3. Enable BromBrom | 4. Select BromBrom Profile |
-  | :---: | :---: |
-  | ![Enable BromBrom](assets/bbm-screenshots/bbm-6-enable-brombrom.png) | ![Select BromBrom](assets/bbm-screenshots/bbm-7-set-brombrom.png) |
+  | 1. Open Menu | 2. Open Settings | 3. Enable BromBrom & Disable Others |
+  | :---: | :---: | :---: |
+  | ![Open Menu](assets/bbm-screenshots/bbm-5-open-menu.png) | ![Open Settings](assets/bbm-screenshots/bbm-6-open-settings.png) | ![Enable BromBrom](assets/bbm-screenshots/bbm-7-enable-brombrom.png) |
 </details>
 
 
@@ -104,11 +99,10 @@ Because the entire BromBrom profile is packaged into a Smart Folder (`.osf`), ma
 4. Check both **"Settings"** and **"Resources"**, then tap **"Continue"**.
 5. Tap **"Replace all"** (update) or **"Apply"** (first time) and wait for the import to finish.
 6. On the **"Import complete"** screen, tap **"Close"**.
-7. Open the [OsmAnd](https://www.osmand.net/) menu (three lines in the corner) and go to **Settings**.
-8.  **Enable BromBrom** — Scroll down to the profiles list, find **BromBrom** and toggle it **ON**.
-9.  In the navigation menu, select the **BromBrom** profile (orange microcar icon).
+7. Open the [OsmAnd](https://www.osmand.net/) menu (three lines in the corner) and go to **Settings** -> **Configure profiles**.
+8. **Enable BromBrom & Disable Others** — Switch **BromBrom** to **ON (orange)** and turn all other profiles **OFF (grey)**.
 
-> ⚠️ Do not skip steps 6–9. [OsmAnd](https://www.osmand.net/) does not enable or activate new profiles automatically.
+> ⚠️ Do not skip steps 6–8. [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
 
 See the [Manual Install Guide](docs/manual_install.md) for deeper troubleshooting.
 

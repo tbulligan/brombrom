@@ -23,10 +23,9 @@ The iOS version of [OsmAnd](https://www.osmand.net/) natively supports OsmAnd Sm
 #### Phase 2: Profile Activation (First-Time Installation Only)
 7. Open the [OsmAnd](https://www.osmand.net/) menu (three lines button in the corner).
 8. Go to **Settings** -> **Configure profiles**.
-9. **Enable BromBrom** — Scroll down to the profiles list, find the BromBrom profile, and toggle the switch to **ON**.
-10. Tap the navigation icon and select the **BromBrom** profile (orange microcar icon).
+9. **Enable BromBrom & Disable Others** — Switch **BromBrom** to **ON (orange)** and turn all other profiles **OFF (grey)**. OsmAnd will now exclusively use BromBrom for navigation.
 
-> ⚠️ **Do not skip steps 7–10** — [OsmAnd](https://www.osmand.net/) does not enable or activate new profiles automatically.
+> ⚠️ **Do not skip steps 7–9** — [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
 
 ## 🤖 Android Devices (Without Manager App)
 
@@ -47,10 +46,9 @@ If you prefer not to use the BromBrom Manager app, you can achieve the exact sam
 #### Phase 2: Profile Activation (First-Time Installation Only)
 8. Open the [OsmAnd](https://www.osmand.net/) menu (three lines button in the corner).
 9. Go to **Settings** -> **Configure profiles**.
-10. **Enable BromBrom** — Scroll down to the profiles list, find the BromBrom profile, and toggle the switch to **ON**.
-11. Tap the navigation icon and select the **BromBrom** profile (orange microcar icon).
+10. **Enable BromBrom & Disable Others** — Switch **BromBrom** to **ON (orange)** and turn all other profiles **OFF (grey)**. OsmAnd will now exclusively use BromBrom for navigation.
 
-> ⚠️ **Do not skip steps 8–11** — [OsmAnd](https://www.osmand.net/) does not enable or activate new profiles automatically.
+> ⚠️ **Do not skip steps 8–10** — [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
 
 ## 📸 Visual Setup Guide
 
@@ -61,23 +59,19 @@ Refer to these screenshots to verify your setup steps.
 
   | 1. Open with [OsmAnd](https://www.osmand.net/) | 2. Select Resources to Import | 3. Confirm Replacement (If asked) |
   | :---: | :---: | :---: |
-  | ![Open with OsmAnd](../assets/bbm-screenshots/bbm-1-open-with-osmand.png) | ![Select Resources](../assets/bbm-screenshots/bbm-2-import.png) | ![Confirm Replacement](../assets/bbm-screenshots/bbm-2.5-replace.png) |
+  | ![Open with OsmAnd](../assets/bbm-screenshots/bbm-1-open-with-osmand.png) | ![Select Resources](../assets/bbm-screenshots/bbm-2-import.png) | ![Confirm Replacement](../assets/bbm-screenshots/bbm-3-replace.png) |
 
   | 4. Import Complete (Tap Close) |
   | :---: |
-  | ![Import Complete](../assets/bbm-screenshots/bbm-3-import-complete.png) |
+  | ![Import Complete](../assets/bbm-screenshots/bbm-4-import-complete.png) |
 </details>
 
 <details>
   <summary>Phase 2: Activating the BromBrom Profile</summary>
 
-  | 1. Open Menu | 2. Open Settings |
-  | :---: | :---: |
-  | ![Open Menu](../assets/bbm-screenshots/bbm-4-open-menu.png) | ![Open Settings](../assets/bbm-screenshots/bbm-5-open-settings.png) |
-
-  | 3. Enable BromBrom | 4. Select BromBrom Profile |
-  | :---: | :---: |
-  | ![Enable BromBrom](../assets/bbm-screenshots/bbm-6-enable-brombrom.png) | ![Select BromBrom](../assets/bbm-screenshots/bbm-7-set-brombrom.png) |
+  | 1. Open Menu | 2. Open Settings | 3. Enable BromBrom & Disable Others |
+  | :---: | :---: | :---: |
+  | ![Open Menu](../assets/bbm-screenshots/bbm-5-open-menu.png) | ![Open Settings](../assets/bbm-screenshots/bbm-6-open-settings.png) | ![Enable BromBrom](../assets/bbm-screenshots/bbm-7-enable-brombrom.png) |
 </details>
 
 

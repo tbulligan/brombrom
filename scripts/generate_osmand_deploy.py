@@ -95,7 +95,7 @@ def create_osmand_deploy_package():
             "iconName": "mx_activities_car",
             "locIcon": "STATIC_CAR",
             "navIcon": "MOVEMENT_DEFAULT",
-            "order": 13,
+            "order": 0,
             "parent": "car",
             "routeService": "OSMAND",
             "routingProfile": "routing.xml/BromBrom",
