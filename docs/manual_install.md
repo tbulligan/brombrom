@@ -83,11 +83,11 @@ To update, simply download the newest `BromBrom.osf` and tap it. When [OsmAnd](h
 
 ---
 
-## 🧭 Optional: Scenic & Quiet Routes (Avoid 80 km/h)
+## 🧭 Optional: Scenic & Quiet Routes (Avoid Busy Roads)
 
-To avoid busy 80 km/h provincial roads and prioritize scenic polder routes:
+To avoid busy provincial roads and prioritize scenic polder routes:
 1. Start route navigation in OsmAnd with the **BromBrom** profile selected.
 2. Tap **Options** (gear icon in the route navigation sheet).
 3. Open **Route parameters** (or *Avoid roads...*).
-4. Enable **"80 km/u en drukke wegen vermijden"**.
+4. Enable **"Drukke en provinciale wegen vermijden"**.
 5. OsmAnd will automatically calculate calm routes along secondary roads and dykes.
