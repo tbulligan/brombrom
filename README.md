@@ -29,11 +29,11 @@
 
 ## 📸 Routing Comparison (Auto vs. Brommobiel)
 
-See the difference: standard car navigation would route you onto expressways or forbidden C9 roads (left), whereas BromBrom routing avoids them automatically (right).
+See the difference: standard car navigation routes you onto forbidden motorways like the A7 (left), whereas BromBrom automatically guides you over safe legal service roads (middle), or quiet scenic routes when avoiding busy 80 km/h roads (right).
 
-| Car Routing (Forbidden) | BromBrom Routing (Legal & Safe) |
-| :---: | :---: |
-| ![Car Routing](assets/bbm-screenshots/bbm-8.1-vs-car.png) | ![BromBrom Routing](assets/bbm-screenshots/bbm-8.2-vs-microcar.png) |
+| Car Routing (Forbidden A7) | BromBrom Direct (Legal & Safe) | BromBrom Scenic (Avoid 80 km/u) |
+| :---: | :---: | :---: |
+| ![Car Routing](assets/bbm-screenshots/bbm-8.1-vs-car.png) | ![BromBrom Direct](assets/bbm-screenshots/bbm-8.2-vs-microcar.png) | ![BromBrom Scenic](assets/bbm-screenshots/bbm-8.3-scenic.png) |
 
 ---
 
