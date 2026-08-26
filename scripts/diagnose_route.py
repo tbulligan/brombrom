@@ -22,10 +22,12 @@ def check_files():
         print("Please build or fetch the databases first.")
         sys.exit(1)
 
-def simulate_route(start_lat, start_lon, end_lat, end_lon):
+def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_80=False):
     print(f"\n================ SIMULATING ROUTE ================")
     print(f"Start: ({start_lat}, {start_lon})")
     print(f"End:   ({end_lat}, {end_lon})")
+    if avoid_80:
+        print("Avoid 80 km/h roads: ENABLED (penalty active)")
     
     # 1. Calculate adaptive bounding box containing start and end coordinates
     dist_deg = ((start_lat - end_lat)**2 + (start_lon - end_lon)**2)**0.5
@@ -108,15 +110,30 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon):
             speed_kmh = 15.0
 
         # Parse maxspeed if present
-        maxspeed_match = re.search(r'"maxspeed"=>"(\d+)"', other_tags)
+        raw_maxspeed = None
+        maxspeed_match = re.search(r'"maxspeed(?:|:motorcar)"=>"(\d+)"', other_tags)
         if maxspeed_match:
             try:
-                speed_kmh = max(5.0, min(float(maxspeed_match.group(1)), 45.0))
+                raw_maxspeed = int(maxspeed_match.group(1))
+                speed_kmh = max(5.0, min(float(raw_maxspeed), 45.0))
             except ValueError:
                 pass
 
         speed_mps = speed_kmh / 3.6
         priority = 1.0
+
+        # Maxspeed / Avoid-80 priority penalties (matching routing.xml)
+        if avoid_80 and raw_maxspeed is not None and raw_maxspeed >= 80:
+            priority = 0.05
+        elif raw_maxspeed is not None:
+            if raw_maxspeed >= 100:
+                priority = 0.6
+            elif raw_maxspeed >= 80:
+                priority = 0.7
+            elif raw_maxspeed == 70:
+                priority = 0.8
+            elif raw_maxspeed == 60:
+                priority = 0.9
 
         # Destination traffic penalty (routing.xml priority=0.15)
         if '"motor_vehicle"=>"destination"' in other_tags or '"access"=>"destination"' in other_tags or '"motorcar"=>"destination"' in other_tags:
@@ -324,6 +341,7 @@ def main():
     parser = argparse.ArgumentParser(description="BromBrom Map Routing Simulator & Diagnostics CLI")
     parser.add_argument("--start", required=True, help="Start coordinates as 'lat,lon' (e.g. '52.2300,5.4950')")
     parser.add_argument("--end", required=True, help="End coordinates as 'lat,lon' (e.g. '52.3680,5.3090')")
+    parser.add_argument("--avoid-80", action="store_true", help="Simulate routing with Avoid 80 km/h roads toggle enabled")
     
     args = parser.parse_args()
     
@@ -336,7 +354,7 @@ def main():
         print(f"❌ Error parsing coordinates. Must be 'lat,lon'. Details: {e}")
         sys.exit(1)
         
-    simulate_route(start_lat, start_lon, end_lat, end_lon)
+    simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_80=args.avoid_80)
 
 if __name__ == "__main__":
     main()

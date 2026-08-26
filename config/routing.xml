@@ -23,6 +23,7 @@
 		<parameter id="avoid_borders" name="Avoid border crossing" description="Avoid crossing a border into another country" type="boolean"/>
 		<parameter id="avoid_ice_roads_fords" name="Avoid ice roads, fords" description="Avoid ice roads and fords" type="boolean"/>
 		<parameter id="goods_restrictions" name="Goods restrictions" description="Respect goods restrictions" type="boolean"/>
+		<parameter id="avoid_80kmh" name="Avoid 80 km/h roads" description="Avoid roads with 80 km/h or higher speed limits" type="boolean"/>
 		<parameter id="avoid_4wd_only" name="Avoid 4WD roads" description="Avoid roads only suitable for 4WD only vehicles" type="boolean"/>
 		<parameter id="weight" name="Weight" description="Maximum vehicle weight to be permitted on the route" type="numeric" values="0,0.349,0.449,0.599,0.799,3.49" valueDescriptions="-,350kg,450kg,600kg,800kg,3.5t"/>
 		<parameter id="height" name="Height" description="Maximum vehicle height to be permitted on the route" type="numeric" values="0,1.49,1.99,2.49,2.99" valueDescriptions="-,1.5m,2m,2.5m,3m"/>
@@ -273,6 +274,23 @@
 			</if>
 			<if param="avoid_borders">
 				<select t="barrier" v="border_control" value="0.1"/>
+			</if>
+
+			<if param="avoid_80kmh">
+				<select value="0.05" t="maxspeed" v="130"/>
+				<select value="0.05" t="maxspeed" v="120"/>
+				<select value="0.05" t="maxspeed" v="110"/>
+				<select value="0.05" t="maxspeed" v="100"/>
+				<select value="0.05" t="maxspeed" v="90"/>
+				<select value="0.05" t="maxspeed" v="80"/>
+				<select value="0.05" t="maxspeed:motorcar" v="130"/>
+				<select value="0.05" t="maxspeed:motorcar" v="120"/>
+				<select value="0.05" t="maxspeed:motorcar" v="110"/>
+				<select value="0.05" t="maxspeed:motorcar" v="100"/>
+				<select value="0.05" t="maxspeed:motorcar" v="90"/>
+				<select value="0.05" t="maxspeed:motorcar" v="80"/>
+				<select value="0.05" t="zone:maxspeed" v="NL:100"/>
+				<select value="0.05" t="zone:maxspeed" v="NL:80"/>
 			</if>
 
 			<!-- Safety: De-prioritize high-speed roads -->
