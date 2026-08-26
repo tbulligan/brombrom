@@ -117,7 +117,11 @@ def create_osmand_deploy_package():
 
         # 2. Map data at root
         if not map_src.exists():
-            raise FileNotFoundError(f"OsmAnd OBF map file not found at {map_src}")
+            raise FileNotFoundError(
+                f"OsmAnd OBF map file not found at '{map_src}'.\n"
+                "Stage 1 ETL creates 'NL_BromBrom_tagged.osm.pbf'.\n"
+                "Run './run_full_build.sh' (or execute OsmAndMapCreator) to compile PBF into OBF before packaging."
+            )
         osf_zip.write(map_src, "NL_BromBrom_tagged.obf")
         print(f"  Added NL_BromBrom_tagged.obf")
 
