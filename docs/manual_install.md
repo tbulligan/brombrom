@@ -80,3 +80,14 @@ Refer to these screenshots to verify your setup steps.
 To update, simply download the newest `BromBrom.osf` and tap it. When [OsmAnd](https://www.osmand.net/) prompts you during the import, check both **"Settings"** and **"Resources"**, then tap **"Continue"** → **"Replace all"**. It will automatically overwrite the old map and routing rules with the fresh data.
 
 > **Troubleshooting Import/Open Failures**: If nothing happens or the import dialog fails to appear when opening the file, ensure that **[OsmAnd](https://www.osmand.net/) is completely closed** (swiped away from your phone's recent/background apps) before trying again. This ensures [OsmAnd](https://www.osmand.net/) starts fresh and processes the file import intent immediately.
+
+---
+
+## 🧭 Optional: Scenic & Quiet Routes (Avoid 80 km/h)
+
+To avoid busy 80 km/h provincial roads and prioritize scenic polder routes:
+1. Start route navigation in OsmAnd with the **BromBrom** profile selected.
+2. Tap **Options** (gear icon in the route navigation sheet).
+3. Open **Route parameters** (or *Avoid roads...*).
+4. Enable **"80 km/u en drukke wegen vermijden"**.
+5. OsmAnd will automatically calculate calm routes along secondary roads and dykes.
