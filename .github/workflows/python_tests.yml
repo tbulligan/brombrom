@@ -18,6 +18,10 @@ on:
       - 'requirements.txt'
       - '.github/workflows/python_tests.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   python_test:
     runs-on: ubuntu-latest
