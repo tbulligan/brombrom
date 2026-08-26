@@ -89,7 +89,10 @@ const translations = {
     carousel_step_8_title: "BromBrom Inschakelen",
     carousel_step_8_desc: "Zet <strong>BromBrom</strong> op <strong>AAN</strong> (oranje) en zet alle overige profielen op <strong>UIT</strong> (grijs). BromBrom is nu direct je enige actieve navigatieprofiel.",
     comparison_title: "Auto vs. Brommobiel Route",
-    comparison_desc: "Zie het verschil: standaard autonavigatie stuurt je over verboden snelwegen en C9-wegen (links), terwijl BromBrom je over veilige en legale service-wegen routeert (rechts)."
+    comparison_desc: "Zie het verschil: standaard autonavigatie stuurt je over verboden snelwegen zoals de A7 (links), terwijl BromBrom je over veilige en legale parallelwegen leidt (midden), of over rustige polderroutes met de optie '80 km/u vermijden' (rechts).",
+    label_car: "Auto (Niet toegestaan)",
+    label_brombrom: "BromBrom (Legaal)",
+    label_scenic: "BromBrom (Rustige route)"
   },
   en: {
     hero_title: "Navigate <br/> with Confidence.",
@@ -176,7 +179,10 @@ const translations = {
     carousel_step_8_title: "Enable BromBrom & Disable Others",
     carousel_step_8_desc: "Set <strong>BromBrom</strong> to <strong>ON</strong> (orange) and switch all other profiles to <strong>OFF</strong> (grey). BromBrom is now your sole active navigation profile.",
     comparison_title: "Car vs. Microcar Routing",
-    comparison_desc: "See the difference: standard car navigation routes you onto forbidden motorways and C9 roads (left), whereas BromBrom routes you over safe and legal service roads (right)."
+    comparison_desc: "See the difference: standard car navigation routes you onto forbidden motorways like the A7 (left), whereas BromBrom guides you over safe legal service roads (middle), or quiet scenic routes when avoiding 80 km/h roads (right).",
+    label_car: "Car (Forbidden)",
+    label_brombrom: "BromBrom (Legal)",
+    label_scenic: "BromBrom (Scenic & Quiet)"
   }
 };
 
