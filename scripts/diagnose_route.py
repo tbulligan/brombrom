@@ -22,12 +22,12 @@ def check_files():
         print("Please build or fetch the databases first.")
         sys.exit(1)
 
-def simulate_route(start_lat, start_lon, end_lat, end_lon, prefer_scenic=False):
+def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=False):
     print(f"\n================ SIMULATING ROUTE ================")
     print(f"Start: ({start_lat}, {start_lon})")
     print(f"End:   ({end_lat}, {end_lon})")
-    if prefer_scenic:
-        print("Prefer scenic roads: ENABLED (scenic dyke/waterway preference active)")
+    if avoid_busy_roads:
+        print("Avoid busy and high-speed roads: ENABLED (avoid_busy_roads active)")
     
     # 1. Calculate adaptive bounding box containing start and end coordinates
     dist_deg = ((start_lat - end_lat)**2 + (start_lon - end_lon)**2)**0.5
@@ -120,8 +120,8 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, prefer_scenic=False):
                 pass
 
         speed_mps = speed_kmh / 3.6
-        # Maxspeed / Scenic priority penalties (matching routing.xml Strategy 3)
-        if prefer_scenic and raw_maxspeed is not None and raw_maxspeed >= 80:
+        # Maxspeed / Scenic priority penalties (matching routing.xml avoid_busy_roads)
+        if avoid_busy_roads and raw_maxspeed is not None and raw_maxspeed >= 80:
             priority = 0.05
         elif raw_maxspeed is not None:
             if raw_maxspeed >= 100:
@@ -133,8 +133,8 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, prefer_scenic=False):
             elif raw_maxspeed == 60:
                 priority = 0.9
 
-        # Scenic road hierarchy adjustments (matching routing.xml prefer_scenic)
-        if prefer_scenic:
+        # Scenic road hierarchy adjustments (matching routing.xml avoid_busy_roads)
+        if avoid_busy_roads:
             if highway in ['primary', 'primary_link']:
                 priority *= 0.4
             elif highway in ['secondary', 'secondary_link']:
@@ -184,8 +184,8 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, prefer_scenic=False):
                 G.add_edge(n1, n2, **edge_attrs)
                 G.add_edge(n2, n1, **edge_attrs)
 
-    # Apply OsmAnd traffic signal node penalties (routing.xml: 20s base, 35s if scenic)
-    sig_pen = 35.0 if prefer_scenic else 20.0
+    # Apply OsmAnd traffic signal node penalties (routing.xml: 20s base, 35s if avoid_busy_roads)
+    sig_pen = 35.0 if avoid_busy_roads else 20.0
     for snode in signal_nodes:
         if snode in G:
             for nbr in G.successors(snode):
@@ -351,7 +351,7 @@ def main():
     parser = argparse.ArgumentParser(description="BromBrom Map Routing Simulator & Diagnostics CLI")
     parser.add_argument("--start", required=True, help="Start coordinates as 'lat,lon' (e.g. '52.2300,5.4950')")
     parser.add_argument("--end", required=True, help="End coordinates as 'lat,lon' (e.g. '52.3680,5.3090')")
-    parser.add_argument("--scenic", action="store_true", help="Simulate routing with Prefer scenic roads toggle enabled")
+    parser.add_argument("--avoid-busy", "--scenic", dest="avoid_busy", action="store_true", help="Simulate routing with Avoid busy and high-speed roads toggle enabled")
     
     args = parser.parse_args()
     
@@ -364,7 +364,7 @@ def main():
         print(f"❌ Error parsing coordinates. Must be 'lat,lon'. Details: {e}")
         sys.exit(1)
         
-    simulate_route(start_lat, start_lon, end_lat, end_lon, prefer_scenic=args.scenic)
+    simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=args.avoid_busy)
 
 if __name__ == "__main__":
     main()

@@ -23,7 +23,7 @@
 		<parameter id="avoid_borders" name="Avoid border crossing" description="Avoid crossing a border into another country" type="boolean"/>
 		<parameter id="avoid_ice_roads_fords" name="Avoid ice roads, fords" description="Avoid ice roads and fords" type="boolean"/>
 		<parameter id="goods_restrictions" name="Goods restrictions" description="Respect goods restrictions" type="boolean"/>
-		<parameter id="prefer_scenic" name="Prefer scenic and winding roads" description="Prefer quiet rural roads, dykes, and waterways over busy thoroughfares" type="boolean"/>
+		<parameter id="avoid_busy_roads" name="Avoid busy and high-speed roads" description="Avoid 80 km/h roads and busy thoroughfares in favor of quiet dykes and rural roads" type="boolean"/>
 		<parameter id="avoid_4wd_only" name="Avoid 4WD roads" description="Avoid roads only suitable for 4WD only vehicles" type="boolean"/>
 		<parameter id="weight" name="Weight" description="Maximum vehicle weight to be permitted on the route" type="numeric" values="0,0.349,0.449,0.599,0.799,3.49" valueDescriptions="-,350kg,450kg,600kg,800kg,3.5t"/>
 		<parameter id="height" name="Height" description="Maximum vehicle height to be permitted on the route" type="numeric" values="0,1.49,1.99,2.49,2.99" valueDescriptions="-,1.5m,2m,2.5m,3m"/>
@@ -276,7 +276,7 @@
 				<select t="barrier" v="border_control" value="0.1"/>
 			</if>
 
-			<if param="prefer_scenic">
+			<if param="avoid_busy_roads">
 				<select value="0.05" t="maxspeed" v="130"/>
 				<select value="0.05" t="maxspeed" v="120"/>
 				<select value="0.05" t="maxspeed" v="110"/>
@@ -392,7 +392,7 @@
 			<!-- Fallback for generic or other traffic calming -->
 			<select value="2" t="traffic_calming"/>
 			
-			<if param="prefer_scenic">
+			<if param="avoid_busy_roads">
 				<select value="35" t="highway" v="traffic_signals"/>
 			</if>
 			<select value="20" t="highway" v="traffic_signals"/>

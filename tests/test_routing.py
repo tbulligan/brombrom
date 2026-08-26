@@ -215,7 +215,7 @@ def test_strategy3_balanced_default_and_scenic_routing():
 
     gdf_area = gdf_raw.copy()
 
-    def build_graph_and_route(prefer_scenic=False):
+    def build_graph_and_route(avoid_busy_roads=False):
         G = nx.DiGraph()
 
         def get_node_key(pt):
@@ -262,8 +262,8 @@ def test_strategy3_balanced_default_and_scenic_routing():
             speed_mps = speed_kmh / 3.6
             priority = 1.0
 
-            # Strategy 3: Balanced default and prefer_scenic
-            if prefer_scenic and raw_maxspeed is not None and raw_maxspeed >= 80:
+            # Strategy 3: Balanced default and avoid_busy_roads
+            if avoid_busy_roads and raw_maxspeed is not None and raw_maxspeed >= 80:
                 priority = 0.05
             elif raw_maxspeed is not None:
                 if raw_maxspeed >= 100:
@@ -275,7 +275,7 @@ def test_strategy3_balanced_default_and_scenic_routing():
                 elif raw_maxspeed == 60:
                     priority = 0.9
 
-            if prefer_scenic:
+            if avoid_busy_roads:
                 if highway in ['primary', 'primary_link']:
                     priority *= 0.4
                 elif highway in ['secondary', 'secondary_link']:
@@ -321,14 +321,14 @@ def test_strategy3_balanced_default_and_scenic_routing():
         return names
 
     # Under Strategy 3 balanced default (priority=0.3 on 80kmh), 80km/h Middenweg is avoided automatically
-    names_default = build_graph_and_route(prefer_scenic=False)
+    names_default = build_graph_and_route(avoid_busy_roads=False)
     assert not any("middenweg" in n for n in names_default), f"Expected no Middenweg in balanced default: {names_default}"
     assert any("zomerdijk" in n or "beets" in n for n in names_default), f"Expected polder bypass route: {names_default}"
 
-    # Under prefer_scenic=True, quiet dyke route is also chosen
-    names_scenic = build_graph_and_route(prefer_scenic=True)
-    assert not any("middenweg" in n for n in names_scenic), f"Expected no Middenweg in scenic mode: {names_scenic}"
-    assert any("zomerdijk" in n or "beets" in n for n in names_scenic), f"Expected polder bypass route: {names_scenic}"
+    # Under avoid_busy_roads=True, quiet dyke route is also chosen
+    names_avoid_busy = build_graph_and_route(avoid_busy_roads=True)
+    assert not any("middenweg" in n for n in names_avoid_busy), f"Expected no Middenweg when avoiding busy roads: {names_avoid_busy}"
+    assert any("zomerdijk" in n or "beets" in n for n in names_avoid_busy), f"Expected polder bypass route: {names_avoid_busy}"
 
 
 
