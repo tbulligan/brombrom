@@ -22,12 +22,12 @@ def check_files():
         print("Please build or fetch the databases first.")
         sys.exit(1)
 
-def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_80=False):
+def simulate_route(start_lat, start_lon, end_lat, end_lon, prefer_scenic=False):
     print(f"\n================ SIMULATING ROUTE ================")
     print(f"Start: ({start_lat}, {start_lon})")
     print(f"End:   ({end_lat}, {end_lon})")
-    if avoid_80:
-        print("Avoid 80 km/h roads: ENABLED (penalty active)")
+    if prefer_scenic:
+        print("Prefer scenic roads: ENABLED (scenic dyke/waterway preference active)")
     
     # 1. Calculate adaptive bounding box containing start and end coordinates
     dist_deg = ((start_lat - end_lat)**2 + (start_lon - end_lon)**2)**0.5
@@ -120,20 +120,29 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_80=False):
                 pass
 
         speed_mps = speed_kmh / 3.6
-        priority = 1.0
-
-        # Maxspeed / Avoid-80 priority penalties (matching routing.xml)
-        if avoid_80 and raw_maxspeed is not None and raw_maxspeed >= 80:
+        # Maxspeed / Scenic priority penalties (matching routing.xml Strategy 3)
+        if prefer_scenic and raw_maxspeed is not None and raw_maxspeed >= 80:
             priority = 0.05
         elif raw_maxspeed is not None:
             if raw_maxspeed >= 100:
-                priority = 0.6
+                priority = 0.25
             elif raw_maxspeed >= 80:
-                priority = 0.7
+                priority = 0.3
             elif raw_maxspeed == 70:
                 priority = 0.8
             elif raw_maxspeed == 60:
                 priority = 0.9
+
+        # Scenic road hierarchy adjustments (matching routing.xml prefer_scenic)
+        if prefer_scenic:
+            if highway in ['primary', 'primary_link']:
+                priority *= 0.4
+            elif highway in ['secondary', 'secondary_link']:
+                priority *= 0.7
+            elif highway in ['tertiary', 'tertiary_link', 'unclassified']:
+                priority *= 1.25
+            elif highway == 'residential':
+                priority *= 1.15
 
         # Destination traffic penalty (routing.xml priority=0.15)
         if '"motor_vehicle"=>"destination"' in other_tags or '"access"=>"destination"' in other_tags or '"motorcar"=>"destination"' in other_tags:
@@ -175,12 +184,13 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_80=False):
                 G.add_edge(n1, n2, **edge_attrs)
                 G.add_edge(n2, n1, **edge_attrs)
 
-    # Apply OsmAnd traffic signal node penalties (routing.xml: 15s penalty)
+    # Apply OsmAnd traffic signal node penalties (routing.xml: 20s base, 35s if scenic)
+    sig_pen = 35.0 if prefer_scenic else 20.0
     for snode in signal_nodes:
         if snode in G:
             for nbr in G.successors(snode):
-                G[snode][nbr]['weight'] += 15.0
-                G[snode][nbr]['time_sec'] += 15.0
+                G[snode][nbr]['weight'] += sig_pen
+                G[snode][nbr]['time_sec'] += sig_pen
 
             
     print(f"Graph built with {G.number_of_nodes()} nodes and {G.number_of_edges()} edges (OsmAnd Time & Priority weighted).")
@@ -341,7 +351,7 @@ def main():
     parser = argparse.ArgumentParser(description="BromBrom Map Routing Simulator & Diagnostics CLI")
     parser.add_argument("--start", required=True, help="Start coordinates as 'lat,lon' (e.g. '52.2300,5.4950')")
     parser.add_argument("--end", required=True, help="End coordinates as 'lat,lon' (e.g. '52.3680,5.3090')")
-    parser.add_argument("--avoid-80", action="store_true", help="Simulate routing with Avoid 80 km/h roads toggle enabled")
+    parser.add_argument("--scenic", action="store_true", help="Simulate routing with Prefer scenic roads toggle enabled")
     
     args = parser.parse_args()
     
@@ -354,7 +364,7 @@ def main():
         print(f"❌ Error parsing coordinates. Must be 'lat,lon'. Details: {e}")
         sys.exit(1)
         
-    simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_80=args.avoid_80)
+    simulate_route(start_lat, start_lon, end_lat, end_lon, prefer_scenic=args.scenic)
 
 if __name__ == "__main__":
     main()

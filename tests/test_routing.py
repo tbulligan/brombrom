@@ -200,8 +200,8 @@ def test_aquamarijnweg_routing():
     not os.path.exists("nl_roads.gpkg") or not os.path.exists("nl_roads_brom.gpkg"),
     reason="GPKG databases are required for integration routing tests."
 )
-def test_avoid_80kmh_routing_avenhorn_purmerend():
-    # Coords Avenhorn -> Purmerend
+def test_strategy3_balanced_default_and_scenic_routing():
+    # Coords Avenhorn -> Purmerend (Linda's polder corridor)
     start_lat, start_lon = 52.607, 4.957
     end_lat, end_lon = 52.505, 4.959
 
@@ -215,7 +215,7 @@ def test_avoid_80kmh_routing_avenhorn_purmerend():
 
     gdf_area = gdf_raw.copy()
 
-    def build_graph_and_route(avoid_80=False):
+    def build_graph_and_route(prefer_scenic=False):
         G = nx.DiGraph()
 
         def get_node_key(pt):
@@ -262,17 +262,28 @@ def test_avoid_80kmh_routing_avenhorn_purmerend():
             speed_mps = speed_kmh / 3.6
             priority = 1.0
 
-            if avoid_80 and raw_maxspeed is not None and raw_maxspeed >= 80:
+            # Strategy 3: Balanced default and prefer_scenic
+            if prefer_scenic and raw_maxspeed is not None and raw_maxspeed >= 80:
                 priority = 0.05
             elif raw_maxspeed is not None:
                 if raw_maxspeed >= 100:
-                    priority = 0.6
+                    priority = 0.25
                 elif raw_maxspeed >= 80:
-                    priority = 0.7
+                    priority = 0.3
                 elif raw_maxspeed == 70:
                     priority = 0.8
                 elif raw_maxspeed == 60:
                     priority = 0.9
+
+            if prefer_scenic:
+                if highway in ['primary', 'primary_link']:
+                    priority *= 0.4
+                elif highway in ['secondary', 'secondary_link']:
+                    priority *= 0.7
+                elif highway in ['tertiary', 'tertiary_link', 'unclassified']:
+                    priority *= 1.25
+                elif highway == 'residential':
+                    priority *= 1.15
 
             if '"motor_vehicle"=>"destination"' in other_tags or '"access"=>"destination"' in other_tags or '"motorcar"=>"destination"' in other_tags:
                 priority *= 0.15
@@ -309,14 +320,15 @@ def test_avoid_80kmh_routing_avenhorn_purmerend():
                 names.append(e['name'].lower())
         return names
 
-    # Default route uses Middenweg (N243 / 80 km/h)
-    names_default = build_graph_and_route(avoid_80=False)
-    assert any("middenweg" in n for n in names_default), f"Expected Middenweg in default route: {names_default}"
+    # Under Strategy 3 balanced default (priority=0.3 on 80kmh), 80km/h Middenweg is avoided automatically
+    names_default = build_graph_and_route(prefer_scenic=False)
+    assert not any("middenweg" in n for n in names_default), f"Expected no Middenweg in balanced default: {names_default}"
+    assert any("zomerdijk" in n or "beets" in n for n in names_default), f"Expected polder bypass route: {names_default}"
 
-    # With avoid_80=True, Middenweg is bypassed for quiet polder roads (Zomerdijk, Beets, Nekkerweg)
-    names_avoid = build_graph_and_route(avoid_80=True)
-    assert not any("middenweg" in n for n in names_avoid), f"Expected no Middenweg when avoiding 80kmh: {names_avoid}"
-    assert any("zomerdijk" in n or "beets" in n for n in names_avoid), f"Expected polder bypass route: {names_avoid}"
+    # Under prefer_scenic=True, quiet dyke route is also chosen
+    names_scenic = build_graph_and_route(prefer_scenic=True)
+    assert not any("middenweg" in n for n in names_scenic), f"Expected no Middenweg in scenic mode: {names_scenic}"
+    assert any("zomerdijk" in n or "beets" in n for n in names_scenic), f"Expected polder bypass route: {names_scenic}"
 
 
 
