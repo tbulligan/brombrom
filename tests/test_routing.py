@@ -1,5 +1,6 @@
 import pytest
 import os
+import re
 os.environ["PROJ_NETWORK"] = "OFF"
 import geopandas as gpd
 from shapely.geometry import Point
@@ -193,5 +194,141 @@ def test_aquamarijnweg_routing():
         # Since Kiltunnelweg entry points from Dordrecht (trunk Rondweg/Rijksstraatweg and tertiary Aquamarijnweg)
         # are blocked, no directed route for microcars is legally possible.
         pass
+
+
+@pytest.mark.skipif(
+    not os.path.exists("nl_roads.gpkg") or not os.path.exists("nl_roads_brom.gpkg"),
+    reason="GPKG databases are required for integration routing tests."
+)
+def test_strategy3_balanced_default_and_scenic_routing():
+    # Coords Avenhorn -> Purmerend (Linda's polder corridor)
+    start_lat, start_lon = 52.607, 4.957
+    end_lat, end_lon = 52.505, 4.959
+
+    min_lon, max_lon = min(start_lon, end_lon) - 0.05, max(start_lon, end_lon) + 0.05
+    min_lat, max_lat = min(start_lat, end_lat) - 0.05, max(start_lat, end_lat) + 0.05
+    bbox = (min_lon, min_lat, max_lon, max_lat)
+
+    gdf_raw = gpd.read_file("nl_roads.gpkg", bbox=bbox)
+    gdf_brom = gpd.read_file("nl_roads_brom.gpkg")
+    blocked_ids = set(gdf_brom['osm_id'].astype(str))
+
+    gdf_area = gdf_raw.copy()
+
+    def build_graph_and_route(avoid_busy_roads=False):
+        G = nx.DiGraph()
+
+        def get_node_key(pt):
+            return (round(pt.y, 5), round(pt.x, 5))
+
+        for row in gdf_area.itertuples():
+            osm_id = str(row.osm_id)
+            geom = row.geometry
+            if geom is None or geom.is_empty:
+                continue
+
+            highway = str(getattr(row, 'highway', '') or '')
+            other_tags = str(getattr(row, 'other_tags', '') or '')
+
+            if osm_id in blocked_ids or '"microcar"=>"no"' in other_tags:
+                continue
+            if highway in ['motorway', 'trunk'] or '"motorroad"=>"yes"' in other_tags:
+                continue
+
+            if '"microcar"=>"yes"' not in other_tags:
+                if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
+                    continue
+                if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
+                    continue
+
+            geom_rd = gpd.GeoSeries([geom], crs="EPSG:4326").to_crs(epsg=28992).iloc[0]
+            length_m = geom_rd.length
+
+            speed_kmh = 45.0
+            if highway in ['residential', 'service']:
+                speed_kmh = 30.0
+            elif highway == 'living_street':
+                speed_kmh = 15.0
+
+            raw_maxspeed = None
+            maxspeed_match = re.search(r'"maxspeed(?:|:motorcar)"=>"(\d+)"', other_tags)
+            if maxspeed_match:
+                try:
+                    raw_maxspeed = int(maxspeed_match.group(1))
+                    speed_kmh = max(5.0, min(float(raw_maxspeed), 45.0))
+                except ValueError:
+                    pass
+
+            speed_mps = speed_kmh / 3.6
+            priority = 1.0
+
+            # Strategy 3: Balanced default and avoid_busy_roads
+            if avoid_busy_roads and raw_maxspeed is not None and raw_maxspeed >= 80:
+                priority = 0.05
+            elif raw_maxspeed is not None:
+                if raw_maxspeed >= 100:
+                    priority = 0.25
+                elif raw_maxspeed >= 80:
+                    priority = 0.3
+                elif raw_maxspeed == 70:
+                    priority = 0.8
+                elif raw_maxspeed == 60:
+                    priority = 0.9
+
+            if avoid_busy_roads:
+                if highway in ['primary', 'primary_link']:
+                    priority *= 0.4
+                elif highway in ['secondary', 'secondary_link']:
+                    priority *= 0.7
+                elif highway in ['tertiary', 'tertiary_link', 'unclassified']:
+                    priority *= 1.25
+                elif highway == 'residential':
+                    priority *= 1.15
+
+            if '"motor_vehicle"=>"destination"' in other_tags or '"access"=>"destination"' in other_tags or '"motorcar"=>"destination"' in other_tags:
+                priority *= 0.15
+
+            travel_time_sec = (length_m / speed_mps) / priority
+
+            is_oneway = '"oneway"=>"yes"' in other_tags or '"junction"=>"roundabout"' in other_tags
+            is_oneway_rev = '"oneway"=>"-1"' in other_tags
+
+            coords = list(geom.coords)
+            part_time = travel_time_sec / (len(coords) - 1)
+            for i in range(len(coords) - 1):
+                n1 = get_node_key(Point(coords[i]))
+                n2 = get_node_key(Point(coords[i+1]))
+
+                if is_oneway_rev:
+                    G.add_edge(n2, n1, weight=part_time, osm_id=osm_id, name=row.name, highway=highway)
+                elif is_oneway:
+                    G.add_edge(n1, n2, weight=part_time, osm_id=osm_id, name=row.name, highway=highway)
+                else:
+                    G.add_edge(n1, n2, weight=part_time, osm_id=osm_id, name=row.name, highway=highway)
+                    G.add_edge(n2, n1, weight=part_time, osm_id=osm_id, name=row.name, highway=highway)
+
+        start_pt = (start_lat, start_lon)
+        end_pt = (end_lat, end_lon)
+        start_node = min(G.nodes, key=lambda n: (n[0]-start_pt[0])**2 + (n[1]-start_pt[1])**2)
+        end_node = min(G.nodes, key=lambda n: (n[0]-end_pt[0])**2 + (n[1]-end_pt[1])**2)
+
+        path = nx.shortest_path(G, source=start_node, target=end_node, weight='weight')
+        names = []
+        for i in range(len(path) - 1):
+            e = G[path[i]][path[i+1]]
+            if e['name']:
+                names.append(e['name'].lower())
+        return names
+
+    # Under Strategy 3 balanced default (priority=0.3 on 80kmh), 80km/h Middenweg is avoided automatically
+    names_default = build_graph_and_route(avoid_busy_roads=False)
+    assert not any("middenweg" in n for n in names_default), f"Expected no Middenweg in balanced default: {names_default}"
+    assert any("zomerdijk" in n or "beets" in n for n in names_default), f"Expected polder bypass route: {names_default}"
+
+    # Under avoid_busy_roads=True, quiet dyke route is also chosen
+    names_avoid_busy = build_graph_and_route(avoid_busy_roads=True)
+    assert not any("middenweg" in n for n in names_avoid_busy), f"Expected no Middenweg when avoiding busy roads: {names_avoid_busy}"
+    assert any("zomerdijk" in n or "beets" in n for n in names_avoid_busy), f"Expected polder bypass route: {names_avoid_busy}"
+
 
 
