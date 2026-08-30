@@ -41,7 +41,7 @@ Multi-component system:
     *   **Merge Commits**: Use conventional commit type for combined changes (e.g. `perf(etl): integrate optimized road snapping and C9 tagging scripts` or `chore(release): integrate version check fix into main`).
 
 ## ⚠️ Known Complexities
-*   **NDK Versioning**: Flutter plugins require **Android NDK 27.0.12077973**. Do not downgrade in `app/android/app/build.gradle.kts`.
+*   **NDK Versioning**: Flutter plugins require **Android NDK 28.2.13676358**. Do not downgrade in `app/android/app/build.gradle.kts`.
 *   **OsmAnd State Limitations**: OsmAnd hides new `.osf` profiles by default. Manager app uses onboarding dialogs. Do not force "visible" state via `.osf` metadata.
 *   **Memory Usage**: OBF generation (Java) needs **6GB+ RAM**.
 
