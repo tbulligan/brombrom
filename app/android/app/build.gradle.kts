@@ -44,6 +44,12 @@ android {
 
     buildTypes {
         release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             val keystoreFile = System.getenv("ANDROID_KEYSTORE_FILE")
             if (keystoreFile != null) {
                 signingConfig = signingConfigs.getByName("release")
