@@ -4,7 +4,7 @@ Dictates AI agent interaction with BromBrom repo.
 
 ## ⚡ Runtime Environment
 *   **Data Processing**: Python 3.14+ (`environment.yml` dependencies) + OpenJDK 17.
-*   **App Development**: Flutter stable (3.47+ / AGP 9.0+) + Android SDK/NDK v27 for native builds.
+*   **App Development**: Flutter stable (3.47+ / AGP 9.0+) + Android SDK/NDK v28 for native builds.
 *   **Execution Strategy**:
     1.  **Native (ETL)**: Conda-like manager (`micromamba`/`conda`) with `brombrom` environment on Linux/WSL.
     2.  **Docker (Map Build)**: `Dockerfile` for map compilation.
