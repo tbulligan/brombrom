@@ -45,7 +45,8 @@ class TagC9Handler(osmium.SimpleHandler):
         
         # Microcar allowances require an explicit microcar tag or an NDW snapped exemption (OB65 / uitgezonderd brommobielen)
         has_microcar_no = (w.tags.get('microcar') == 'no' and w.tags.get('motor_vehicle') != 'no')
-        has_microcar_yes = (w.tags.get('microcar') == 'yes') or is_ndw_exempted
+        is_cycleway = w.tags.get('highway') in ('cycleway', 'path', 'footway', 'pedestrian')
+        has_microcar_yes = is_ndw_exempted or (w.tags.get('microcar') == 'yes' and not is_cycleway)
         
         if not is_forbidden and not has_microcar_no and not has_microcar_yes:
             self.writer.add_way(w)

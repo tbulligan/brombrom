@@ -88,7 +88,10 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=Fals
         is_link_ramp = highway in ['motorway_link', 'trunk_link']
             
         # C. Allow microcar=yes overrides by bypassing general access/motor_vehicle/cycleway blocks
-        if '"microcar"=>"yes"' not in other_tags:
+        has_microcar_yes_tag = '"microcar"=>"yes"' in other_tags
+        is_cycleway_type = highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']
+        microcar_override = has_microcar_yes_tag and not is_cycleway_type
+        if not microcar_override:
             if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
                 continue
             if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
@@ -120,6 +123,7 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=Fals
                 pass
 
         speed_mps = speed_kmh / 3.6
+        priority = 1.0
         # Maxspeed / Scenic priority penalties (matching routing.xml avoid_busy_roads)
         if avoid_busy_roads and raw_maxspeed is not None and raw_maxspeed >= 80:
             priority = 0.05
@@ -334,7 +338,7 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=Fals
                         reasons.append(f"CLASS_BLOCKED({hway})")
                     if '"motorroad"=>"yes"' in tags:
                         reasons.append("MOTORROAD_YES")
-                    if '"microcar"=>"yes"' not in tags:
+                    if '"microcar"=>"yes"' not in tags or hway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
                         if '"motor_vehicle"=>"no"' in tags or '"motorcar"=>"no"' in tags or '"access"=>"no"' in tags:
                             reasons.append("MOTOR_VEHICLE_NO")
                         if hway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:

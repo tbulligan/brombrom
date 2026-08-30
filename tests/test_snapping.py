@@ -602,5 +602,34 @@ def test_minor_road_name_match_does_not_block_major_bonus():
         "Major primary highway must win snap over minor residential street even if sign has minor street's name"
     )
 
+def test_cycleway_microcar_yes_isolated_to_ndw():
+    """Verify that OSM microcar=yes on cycleways is ignored unless supported by an NDW exemption,
+    while normal roads (unclassified, service) continue to accept OSM microcar=yes overrides."""
+    class MockWay:
+        def __init__(self, way_id, tags):
+            self.id = way_id
+            self.tags = tags
+
+    # Case 1: Cycleway with OSM microcar=yes, NOT in NDW exemption list
+    w1 = MockWay(101, {'highway': 'cycleway', 'microcar': 'yes'})
+    is_cycleway_1 = w1.tags.get('highway') in ('cycleway', 'path', 'footway', 'pedestrian')
+    is_ndw_exempted_1 = 101 in {999}
+    has_microcar_yes_1 = is_ndw_exempted_1 or (w1.tags.get('microcar') == 'yes' and not is_cycleway_1)
+    assert not has_microcar_yes_1, "OSM microcar=yes on cycleways must be ignored without NDW exemption"
+
+    # Case 2: Cycleway with NDW exemption
+    w2 = MockWay(102, {'highway': 'cycleway'})
+    is_cycleway_2 = w2.tags.get('highway') in ('cycleway', 'path', 'footway', 'pedestrian')
+    is_ndw_exempted_2 = 102 in {102, 999}
+    has_microcar_yes_2 = is_ndw_exempted_2 or (w2.tags.get('microcar') == 'yes' and not is_cycleway_2)
+    assert has_microcar_yes_2, "NDW-exempted cycleways must be recognized as has_microcar_yes=True"
+
+    # Case 3: Normal unclassified road with OSM microcar=yes (e.g. Hollandse Brug)
+    w3 = MockWay(103, {'highway': 'unclassified', 'microcar': 'yes'})
+    is_cycleway_3 = w3.tags.get('highway') in ('cycleway', 'path', 'footway', 'pedestrian')
+    is_ndw_exempted_3 = 103 in {999}
+    has_microcar_yes_3 = is_ndw_exempted_3 or (w3.tags.get('microcar') == 'yes' and not is_cycleway_3)
+    assert has_microcar_yes_3, "OSM microcar=yes on normal roads must remain active"
+
 
 

@@ -81,7 +81,7 @@ During the PBF tagging pipeline ([tag_c9_roads.py](file:///home/tomaso/projects/
 
 ### 2. Existing OSM Tag Conversions & NDW Exemption Allowances
 - **Microcar Prohibitions (`microcar=no`)**: Promoted to `motor_vehicle=no` (if `motor_vehicle` is not already restricted) to enforce C9 restrictions inside [OsmAnd](https://www.osmand.net/).
-- **Microcar Allowances (`microcar=yes`) & NDW G-Exemption Ways**: Bypasses general motorized restrictions. If a road is tagged with `microcar=yes` or identified in `g_exemptions_ways.json`, the pipeline sets `microcar=yes` **AND** overrides general motorized access tags (`motor_vehicle=yes`, `vehicle=yes`, `access=yes`, `motorcar=yes`) to restore microcar routing access inside [OsmAnd](https://www.osmand.net/).
+- **Microcar Allowances & NDW G-Exemption Ways**: Cycleways and paths (`cycleway`, `path`, `footway`, `pedestrian`) strictly require verification via NDW government exemption signs (`g_exemptions_ways.json`) to prevent routing over illegally narrow or revoked cycle paths. For normal drivable roads (`unclassified`, `service`, `residential`, `track`), OSM `microcar=yes` override tags continue to be respected alongside NDW exemptions. When verified, the pipeline sets `microcar=yes` **AND** overrides general motorized access tags (`motor_vehicle=yes`, `vehicle=yes`, `access=yes`, `motorcar=yes`) to restore microcar routing access inside [OsmAnd](https://www.osmand.net/).
 
 ### 3. NDW Pipeline Way Splitting & Directional Tagging
 When a road segment is identified as C9-forbidden by the snapping pipeline, it is processed as follows:
