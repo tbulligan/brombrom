@@ -12,7 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background_downloader/background_downloader.dart' hide PermissionStatus;
 import 'package:path_provider/path_provider.dart';
-import 'package:workmanager/workmanager.dart';
+import 'package:workmanager/workmanager.dart' hide TaskStatus;
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'translations.dart';
@@ -130,7 +130,7 @@ Future<void> _showUpdateNotification() async {
       AndroidInitializationSettings('@mipmap/launcher_icon');
   const InitializationSettings initSettings =
       InitializationSettings(android: androidSettings);
-  await notificationsPlugin.initialize(initSettings);
+  await notificationsPlugin.initialize(settings: initSettings);
 
   const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
     'brombrom_updates',
@@ -145,10 +145,10 @@ Future<void> _showUpdateNotification() async {
       NotificationDetails(android: androidDetails);
 
   await notificationsPlugin.show(
-    0,
-    'BromBrom: Nieuwe kaartdata beschikbaar! 🗺️',
-    'Open BromBrom Manager om je navigatie bij te werken.',
-    platformDetails,
+    id: 0,
+    title: 'BromBrom: Nieuwe kaartdata beschikbaar! 🗺️',
+    body: 'Open BromBrom Manager om je navigatie bij te werken.',
+    notificationDetails: platformDetails,
   );
 }
 
@@ -334,7 +334,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
         constraints: Constraints(
           networkType: NetworkType.connected,
         ),
-        existingWorkPolicy: ExistingWorkPolicy.keep,
+        existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
       );
       await prefs.setBool(_prefBgScheduled, true);
       _log("Background update check scheduled (every 24h).");
