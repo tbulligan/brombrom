@@ -166,8 +166,19 @@ class BromBromApp extends StatelessWidget {
     return MaterialApp(
       title: 'BromBrom Installer',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF8FAFC), // Slate 50
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFE65100), // Deep warm orange
+          primary: const Color(0xFFE65100),
+          surface: Colors.white,
+        ),
+        appBarTheme: const AppBarTheme(
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: Color(0xFF0F172A), // Slate 900
+        ),
       ),
       home: const InstallerScreen(),
     );
@@ -242,11 +253,36 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   Widget _buildLanguageSwitcher() {
     final bool isNL = _locale == 'nl';
-    return TextButton(
-      onPressed: () => _saveLocale(isNL ? 'en' : 'nl'),
-      child: Text(
-        isNL ? "🇬🇧" : "🇳🇱",
-        style: const TextStyle(fontSize: 24),
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9), // Slate 100
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => _saveLocale(isNL ? 'en' : 'nl'),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isNL ? "🇳🇱" : "🇬🇧",
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                isNL ? "NL" : "EN",
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF475569),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -534,9 +570,9 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
         return Dialog(
           backgroundColor: Colors.white,
           clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
+            constraints: const BoxConstraints(maxWidth: 460),
             child: Scrollbar(
               thumbVisibility: true,
               child: SingleChildScrollView(
@@ -548,75 +584,135 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            wasUpdate ? Icons.update : Icons.cloud_download,
-                            color: Colors.orange[800],
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF7ED), // Orange 50
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              wasUpdate ? Icons.update : Icons.map_outlined,
+                              color: const Color(0xFFE65100),
+                              size: 26,
+                            ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 14),
                           Expanded(
                             child: Text(
                               wasUpdate ? _t('osf_dialog_title_update') : _t('osf_dialog_title'),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.grey[850],
-                                fontSize: 20,
+                                color: Color(0xFF0F172A),
+                                fontSize: 19,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 18),
+                      Text(
+                        _t(wasUpdate ? 'osf_dialog_p1_update' : 'osf_dialog_p1'),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF334155),
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
                       ...(() {
-                        final stepStyle = TextStyle(fontSize: 14, color: Colors.grey[800]);
                         final steps = wasUpdate
                             ? ['osf_dialog_step1_update', 'osf_dialog_step2_update', 'osf_dialog_step3_update', 'osf_dialog_step4_update']
                             : ['osf_dialog_step1', 'osf_dialog_step2', 'osf_dialog_step3', 'osf_dialog_step4', 'osf_dialog_step5', 'osf_dialog_step6', 'osf_dialog_step7'];
                         return <Widget>[
-                          Text(_t(wasUpdate ? 'osf_dialog_p1_update' : 'osf_dialog_p1'), style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[800], fontSize: 15)),
-                          const SizedBox(height: 12),
-                          for (final key in steps) ...[
-                            Text(_t(key), style: stepStyle),
-                            const SizedBox(height: 6),
+                          for (int i = 0; i < steps.length; i++) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 22,
+                                    height: 22,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(11),
+                                    ),
+                                    child: Text(
+                                      "${i + 1}",
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF475569),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      _t(steps[i]).replaceFirst(RegExp(r'^\d+\.\s*'), ''),
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF334155),
+                                        height: 1.35,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                           if (!wasUpdate) ...[
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 6),
                             Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.orange[50],
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.orange[200]!),
+                                color: const Color(0xFFFFF7ED),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFFFFEDD5)),
                               ),
                               child: Text(
                                 _t('osf_dialog_warning'),
-                                style: TextStyle(fontSize: 13, color: Colors.orange[900], fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFFC2410C),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
                         ];
                       })(),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange[800],
+                          backgroundColor: const Color(0xFFE65100),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          elevation: 2,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 0,
                         ),
-                        child: Text(_t('osf_dialog_btn'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        child: Text(
+                          _t('osf_dialog_btn'),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
                         onPressed: () {
                           Navigator.of(context).pop();
                           _openOsfInOsmAnd(filePath);
                         },
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       TextButton.icon(
                         onPressed: () => _launchUrl('https://brombrom.bulligan.com/#visual-guide'),
-                        icon: const Icon(Icons.menu_book, size: 18, color: Colors.blue),
+                        icon: const Icon(Icons.menu_book_outlined, size: 18, color: Color(0xFF1D4ED8)),
                         label: Text(
-                          _locale == 'nl' ? 'Visuele Gids' : 'Visual Guide',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                          _locale == 'nl' ? 'Visuele handleiding openen' : 'Open Visual Setup Guide',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1D4ED8),
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],
@@ -635,119 +731,183 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: Colors.white,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.help_outline, color: Colors.orange[800], size: 28),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            _t('help_dialog_title'),
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.grey),
-                          onPressed: () => Navigator.of(context).pop(),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.orange[50],
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.orange[200]!),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Scrollbar(
+              thumbVisibility: true,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
                         children: [
-                          Text(
-                            _t('troubleshoot_title'),
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: Colors.orange[900],
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF7ED),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.support_agent_outlined,
+                              color: Color(0xFFE65100),
+                              size: 24,
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _t('troubleshoot_desc'),
-                            style: TextStyle(fontSize: 13, color: Colors.grey[800]),
-                          ),
-                          const SizedBox(height: 10),
-                          Center(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.asset(
-                                'assets/images/brombrom_osmand_profile.webp',
-                                fit: BoxFit.contain,
-                                height: 180,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _t('help_dialog_title'),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Color(0xFF0F172A),
                               ),
                             ),
                           ),
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Color(0xFF94A3B8)),
+                            onPressed: () => Navigator.of(context).pop(),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
                         ],
                       ),
-                    ),
-                    if (_osmandInstalled) ...[
-                      const SizedBox(height: 16),
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          foregroundColor: Colors.grey[800],
-                          side: BorderSide(color: Colors.grey[400]!),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      const SizedBox(height: 18),
+                      // Card 1: OsmAnd profile check
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF7ED),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFFFEDD5)),
                         ),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          _forceReinstall();
-                        },
-                        icon: const Icon(Icons.build_outlined, size: 18),
-                        label: Text(
-                          _t('btn_reinstall_help'),
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                          textAlign: TextAlign.center,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              _t('troubleshoot_title'),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Color(0xFFC2410C),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              _t('troubleshoot_desc'),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF475569),
+                                height: 1.35,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset(
+                                  'assets/images/brombrom_osmand_profile.webp',
+                                  fit: BoxFit.contain,
+                                  height: 170,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton.icon(
-                            onPressed: () => _launchUrl('https://brombrom.bulligan.com/#visual-guide'),
-                            icon: const Icon(Icons.language, size: 18, color: Colors.blue),
-                            label: Text(
-                              _t('visit_website'),
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 13),
-                            ),
+                      if (_osmandInstalled) ...[
+                        const SizedBox(height: 14),
+                        // Reinstall action
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            foregroundColor: const Color(0xFF475569),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            backgroundColor: const Color(0xFFF8FAFC),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
-                        ),
-                        Expanded(
-                          child: TextButton.icon(
-                            onPressed: () => _launchUrl('https://brombrom.bulligan.com/#faq'),
-                            icon: const Icon(Icons.question_answer_outlined, size: 18, color: Colors.blue),
-                            label: Text(
-                              _t('faq_title'),
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 13),
-                            ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _forceReinstall();
+                          },
+                          icon: const Icon(Icons.build_circle_outlined, size: 18, color: Color(0xFF475569)),
+                          label: Text(
+                            _t('btn_reinstall_help'),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ],
-                    ),
-                  ],
+                      const SizedBox(height: 14),
+                      // Card 2: Visual Guide Link (Vertical item with distinct styling)
+                      InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => _launchUrl('https://brombrom.bulligan.com/#visual-guide'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF), // Blue 50
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFDBEAFE)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.menu_book_outlined, color: Color(0xFF1D4ED8), size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _t('visit_website'),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1D4ED8),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios, color: Color(0xFF1D4ED8), size: 13),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Card 3: FAQ Link (Vertical item with distinct styling)
+                      InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => _launchUrl('https://brombrom.bulligan.com/#faq'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0FDF4), // Green 50
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFDCFCE7)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.question_answer_outlined, color: Color(0xFF15803D), size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _t('faq_title'),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF15803D),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios, color: Color(0xFF15803D), size: 13),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -857,11 +1017,12 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       children: [
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            backgroundColor: Colors.orange[800],
+            padding: const EdgeInsets.symmetric(vertical: 22),
+            backgroundColor: const Color(0xFFE65100),
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 3,
+            shadowColor: const Color(0xFFE65100).withOpacity(0.3),
           ),
           onPressed: () async {
             try {
@@ -874,32 +1035,31 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
               _log("Could not launch Play Store: $e");
             }
           },
-          icon: const Icon(Icons.download_outlined, size: 24),
+          icon: const Icon(Icons.download_rounded, size: 26),
           label: Text(
             _t('install_osmand'),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
           ),
         ),
         const SizedBox(height: 12),
-        Card(
-          color: Colors.orange[50],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.orange[200]!, width: 1.5),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF7ED),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFFFEDD5)),
           ),
-          elevation: 0,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                Icon(Icons.info_outline, color: Colors.orange[800]),
+                const Icon(Icons.info_outline_rounded, color: Color(0xFFE65100), size: 22),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     _t('osmand_required_desc'),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.orange[900],
+                      color: Color(0xFF9A3412),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1154,35 +1314,41 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       appBar: AppBar(
         title: GestureDetector(
           onTap: _handleTitleTap,
-          child: Text(_t('app_name'), style: const TextStyle(fontWeight: FontWeight.bold)),
-        ),
-        backgroundColor: Colors.orange[800],
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            tooltip: _t('help'),
-            onPressed: _showHelpModal,
+          child: Text(
+            _t('app_name'),
+            style: const TextStyle(fontWeight: FontWeight.w800, letterSpacing: -0.5),
           ),
+        ),
+        actions: [
           _buildLanguageSwitcher(),
-          const SizedBox(width: 8),
+          const SizedBox(width: 16),
         ],
       ),
       body: RefreshIndicator(
+        color: const Color(0xFFE65100),
         onRefresh: _checkVersions,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 (() {
                   if (_isDownloading) {
-                    return Card(
-                      color: Colors.white,
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(24),
                         child: Column(
@@ -1190,28 +1356,28 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                             const SizedBox(
                               width: 28,
                               height: 28,
-                              child: CircularProgressIndicator(color: Colors.orange),
+                              child: CircularProgressIndicator(color: Color(0xFFE65100), strokeWidth: 3),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               _statusMessage,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0F172A)),
                             ),
                             const SizedBox(height: 16),
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: LinearProgressIndicator(
                                 value: _progress,
-                                backgroundColor: Colors.orange[100],
-                                color: Colors.orange[800],
+                                backgroundColor: const Color(0xFFFFEDD5),
+                                color: const Color(0xFFE65100),
                                 minHeight: 8,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               "${(_progress * 100).toStringAsFixed(1)}%",
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange[800]),
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFE65100)),
                             ),
                           ],
                         ),
@@ -1220,20 +1386,22 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                   }
 
                   if (_isChecking) {
-                    return Card(
-                      color: Colors.white,
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 32),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const CircularProgressIndicator(color: Colors.orange),
+                            const CircularProgressIndicator(color: Color(0xFFE65100), strokeWidth: 3),
                             const SizedBox(height: 16),
                             Text(
                               _locale == 'nl' ? 'Controleren op updates...' : 'Checking for updates...',
-                              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF475569)),
                             ),
                           ],
                         ),
@@ -1244,18 +1412,18 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                   if (_checkError != null) {
                     return ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        backgroundColor: Colors.orange[50],
-                        foregroundColor: Colors.orange[800],
-                        side: BorderSide(color: Colors.orange[200]!, width: 2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        backgroundColor: const Color(0xFFFFF7ED),
+                        foregroundColor: const Color(0xFFC2410C),
+                        side: const BorderSide(color: Color(0xFFFFEDD5), width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         elevation: 0,
                       ),
                       onPressed: _checkVersions,
                       icon: const Icon(Icons.refresh),
                       label: Text(
                         _locale == 'nl' ? 'Fout bij controle (Tik om te herstarten)' : 'Check failed (Tap to retry)',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                     );
@@ -1265,67 +1433,67 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     return _buildInstallOsmAndAction();
                   }
 
-                  // Show single Navigate button
+                  // Hero primary Navigate action (Big, bold, inviting)
                   return ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      backgroundColor: Colors.orange[800],
+                      padding: const EdgeInsets.symmetric(vertical: 22),
+                      backgroundColor: const Color(0xFFE65100), // Rich warm orange
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 4,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 3,
+                      shadowColor: const Color(0xFFE65100).withOpacity(0.4),
                     ),
                     onPressed: () => _openOsmAnd(),
-                    icon: const Icon(Icons.navigation_outlined, size: 24),
+                    icon: const Icon(Icons.navigation_rounded, size: 26),
                     label: Text(
                       _t('btn_navigate'), // "Navigeren" / "Navigate"
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                     ),
                   );
                 })(),
-                const SizedBox(height: 16),
-                // Dedicated, clear Help / Troubleshooting button for non-tech users
+                const SizedBox(height: 14),
+                // Dedicated Secondary Troubleshooting action
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                    foregroundColor: Colors.orange[900],
-                    side: BorderSide(color: Colors.orange[300]!, width: 1.5),
-                    backgroundColor: Colors.orange[50],
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    foregroundColor: const Color(0xFF334155),
+                    side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: _showHelpModal,
-                  icon: Icon(Icons.help_outline, color: Colors.orange[900], size: 22),
+                  icon: const Icon(Icons.help_outline_rounded, color: Color(0xFFE65100), size: 20),
                   label: Text(
                     _t('help_dialog_title'),
-                    style: TextStyle(
-                      color: Colors.orange[900],
+                    style: const TextStyle(
+                      color: Color(0xFF334155),
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 // Happy path support: Buy Me A Coffee card
-                Card(
-                  color: Colors.amber[50],
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.amber[300]!, width: 1.5),
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB), // Amber 50
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFFDE68A)),
                   ),
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     onTap: () => _launchUrl('https://buymeacoffee.com/brombrom'),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.coffee, color: Color(0xFF795548), size: 22),
+                          const Icon(Icons.coffee_rounded, color: Color(0xFF92400E), size: 22),
                           const SizedBox(width: 10),
                           Text(
                             _t('buy_coffee'),
                             style: const TextStyle(
-                              color: Color(0xFF5D4037),
+                              color: Color(0xFF92400E),
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),
@@ -1335,38 +1503,24 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                // Distinct, prominent footer links on separate lines with high-contrast text
-                Column(
-                  children: [
-                    TextButton.icon(
-                      onPressed: () => _launchUrl('https://brombrom.bulligan.com/#visual-guide'),
-                      icon: Icon(Icons.menu_book, color: Colors.blue[800], size: 18),
-                      label: Text(
-                        _t('visit_website'),
-                        style: TextStyle(
-                          color: Colors.blue[800],
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          decoration: TextDecoration.underline,
+                const SizedBox(height: 28),
+                // Calm, quiet status reassurance at bottom (No duplicate external links)
+                Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF16A34A), size: 16),
+                      const SizedBox(width: 6),
+                      Text(
+                        _t('map_uptodate'),
+                        style: const TextStyle(
+                          color: Color(0xFF64748B),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    TextButton.icon(
-                      onPressed: () => _launchUrl('https://brombrom.bulligan.com/#faq'),
-                      icon: Icon(Icons.question_answer_outlined, color: Colors.blue[800], size: 18),
-                      label: Text(
-                        _t('faq_title'),
-                        style: TextStyle(
-                          color: Colors.blue[800],
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 if (_showLogs)
                   Container(

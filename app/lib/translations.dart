@@ -57,7 +57,8 @@ const Map<String, Map<String, String>> translations = {
     'osmand_required_desc': 'OsmAnd is vereist om BromBrom te gebruiken.',
     'troubleshoot_title': 'Tip: Controleer je profiel in OsmAnd',
     'troubleshoot_desc': 'Als OsmAnd je naar wegen stuurt die niet geschikt zijn voor brommobielen, controleer dan of het BromBrom-profiel is geselecteerd:',
-    'help_dialog_title': 'Hulp & Veelgestelde Vragen',
+    'help_dialog_title': 'Hulp & Probleemoplossing',
+    'map_uptodate': 'Kaart is up-to-date en actief',
   },
   'en': {
     'app_name': 'BromBrom Manager',
@@ -117,6 +118,7 @@ const Map<String, Map<String, String>> translations = {
     'osmand_required_desc': 'OsmAnd is required to use BromBrom.',
     'troubleshoot_title': 'Tip: Check your profile in OsmAnd',
     'troubleshoot_desc': 'If OsmAnd is sending you on roads that are not suitable for microcars, verify that the BromBrom profile is selected:',
-    'help_dialog_title': 'Help & Support',
+    'help_dialog_title': 'Help & Troubleshooting',
+    'map_uptodate': 'Map is up to date and active',
   },
 };
