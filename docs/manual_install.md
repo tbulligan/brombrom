@@ -91,3 +91,15 @@ To avoid busy roads and prioritize calm, scenic routes:
 3. Open **Route parameters** (or *Avoid roads...*).
 4. Enable **"Drukke wegen vermijden"**.
 5. OsmAnd will automatically calculate calm routes along secondary roads and dykes.
+
+---
+
+## 🔊 Voice Guidance & Announcements (Drempels & Warnings)
+
+In areas with many speed bumps or crosswalks, voice announcements can become repetitive. You can customize which warnings are spoken:
+1. In OsmAnd, go to **Settings** (three lines menu -> Settings).
+2. Under **App profiles**, select **BromBrom**.
+3. Tap **Navigation settings** -> **Voice prompts**.
+4. Customize your announcements under **Report**:
+   - **Traffic warnings**: Enable or disable alerts for speed bumps, railway crossings, etc.
+   - **Pedestrian crosswalks**: Toggle alerts for pedestrian crossings.
