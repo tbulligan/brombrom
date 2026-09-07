@@ -1293,7 +1293,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                   ),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    onPressed: () => _launchUrl('https://buymeacoffee.com/brombrom'),
+                    onTap: () => _launchUrl('https://buymeacoffee.com/brombrom'),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                       child: Row(
@@ -1338,7 +1338,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     ),
                   ],
                 ),
-                    if (_showLogs)
+                if (_showLogs)
                   Container(
                     margin: const EdgeInsets.only(top: 24),
                     padding: const EdgeInsets.all(16),
@@ -1398,13 +1398,11 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       ],
                     ),
                   ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
