@@ -52,7 +52,7 @@ const Map<String, Map<String, String>> translations = {
     'ob_next': 'Volgende',
     'ob_finish': 'Starten',
     'btn_navigate': 'Navigeren',
-    'btn_reinstall_help': 'BromBrom opnieuw koppelen aan OsmAnd',
+    'btn_reinstall_help': 'BromBrom opnieuw installeren in OsmAnd',
     'ob_install_osmand_required': 'Installeer eerst OsmAnd om verder te gaan',
     'ob_notification_permission_required': 'Geef toestemming voor meldingen om verder te gaan',
     'ob_osmand_installed_checkmark': 'OsmAnd is aanwezig ✓',
