@@ -60,6 +60,15 @@ flutter {
     source = "../.."
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("androidx.datastore:datastore:1.1.7")
+        force("androidx.datastore:datastore-core:1.1.7")
+        force("androidx.datastore:datastore-preferences:1.1.7")
+        force("androidx.datastore:datastore-preferences-core:1.1.7")
+    }
+}
+
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
