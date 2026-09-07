@@ -233,12 +233,21 @@ function getActiveScreenshotIndex() {
   return visibleIndices[carouselMode][activeIndex];
 }
 
+function getScreenshotSrc(screenshotIndex) {
+  if (screenshotIndex === 0) {
+    return currentLang === 'nl'
+      ? '/assets/bbm-screenshots/bbm-0-updates-available-nl.png'
+      : '/assets/bbm-screenshots/bbm-0-updates-available.png';
+  }
+  return screenshots[screenshotIndex];
+}
+
 function updateCarousel() {
   if (!carouselImg) return;
   
   const activeSubset = visibleIndices[carouselMode];
   const screenshotIndex = getActiveScreenshotIndex();
-  const item = screenshots[screenshotIndex];
+  const item = getScreenshotSrc(screenshotIndex);
   
   carouselImg.classList.add('fade-out');
   
