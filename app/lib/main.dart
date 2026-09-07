@@ -1282,14 +1282,35 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     ),
                   );
                 })(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+                // Dedicated, clear Help / Troubleshooting button for non-tech users
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    foregroundColor: Colors.orange[900],
+                    side: BorderSide(color: Colors.orange[300]!, width: 1.5),
+                    backgroundColor: Colors.orange[50],
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: _showHelpModal,
+                  icon: Icon(Icons.help_outline, color: Colors.orange[900], size: 22),
+                  label: Text(
+                    _t('help_dialog_title'),
+                    style: TextStyle(
+                      color: Colors.orange[900],
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 // Happy path support: Buy Me A Coffee card
                 Card(
                   color: Colors.amber[50],
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.amber[200]!),
+                    side: BorderSide(color: Colors.amber[300]!, width: 1.5),
                   ),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
@@ -1314,26 +1335,35 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Subtle footer links
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                const SizedBox(height: 20),
+                // Distinct, prominent footer links on separate lines with high-contrast text
+                Column(
                   children: [
                     TextButton.icon(
                       onPressed: () => _launchUrl('https://brombrom.bulligan.com/#visual-guide'),
-                      icon: const Icon(Icons.language, color: Colors.grey, size: 16),
+                      icon: Icon(Icons.menu_book, color: Colors.blue[800], size: 18),
                       label: Text(
                         _t('visit_website'),
-                        style: const TextStyle(color: Colors.grey, fontSize: 13),
+                        style: TextStyle(
+                          color: Colors.blue[800],
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
-                    const Text(" • ", style: TextStyle(color: Colors.grey)),
+                    const SizedBox(height: 4),
                     TextButton.icon(
                       onPressed: () => _launchUrl('https://brombrom.bulligan.com/#faq'),
-                      icon: const Icon(Icons.help_outline, color: Colors.grey, size: 16),
+                      icon: Icon(Icons.question_answer_outlined, color: Colors.blue[800], size: 18),
                       label: Text(
                         _t('faq_title'),
-                        style: const TextStyle(color: Colors.grey, fontSize: 13),
+                        style: TextStyle(
+                          color: Colors.blue[800],
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ],
