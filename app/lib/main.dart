@@ -134,8 +134,8 @@ Future<void> _showUpdateNotification() async {
 
   const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
     'brombrom_updates',
-    'BromBrom Updates',
-    channelDescription: 'Notifications when new BromBrom map data is available',
+    'BromBrom Kaartmeldingen',
+    channelDescription: 'Meldingen wanneer er een nieuwe BromBrom-kaart klaarstaat',
     importance: Importance.high,
     priority: Priority.high,
     icon: '@mipmap/launcher_icon',
@@ -146,8 +146,8 @@ Future<void> _showUpdateNotification() async {
 
   await notificationsPlugin.show(
     id: 0,
-    title: 'BromBrom: Nieuwe kaartdata beschikbaar! 🗺️',
-    body: 'Open BromBrom Manager om je navigatie bij te werken.',
+    title: 'BromBrom: Nieuwe kaart beschikbaar! 🗺️',
+    body: 'Open de app om je routekaart bij te werken.',
     notificationDetails: platformDetails,
   );
 }
@@ -201,7 +201,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   String? _targetDir;
   
   // STATE
-  String _statusMessage = 'Checking configuration...';
+  String _statusMessage = '';
   bool _isDownloading = false;
   double _progress = 0.0;
   bool _isChecking = true;
@@ -707,7 +707,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         onPressed: () => _launchUrl('https://brombrom.bulligan.com/#visual-guide'),
                         icon: const Icon(Icons.menu_book_outlined, size: 18, color: Color(0xFF1D4ED8)),
                         label: Text(
-                          _locale == 'nl' ? 'Visuele handleiding openen' : 'Open Visual Setup Guide',
+                          _t('visit_website'),
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF1D4ED8),
@@ -1400,7 +1400,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                             const CircularProgressIndicator(color: Color(0xFFE65100), strokeWidth: 3),
                             const SizedBox(height: 16),
                             Text(
-                              _locale == 'nl' ? 'Controleren op updates...' : 'Checking for updates...',
+                              _t('status_checking'),
                               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF475569)),
                             ),
                           ],
@@ -1422,7 +1422,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       onPressed: _checkVersions,
                       icon: const Icon(Icons.refresh),
                       label: Text(
-                        _locale == 'nl' ? 'Fout bij controle (Tik om te herstarten)' : 'Check failed (Tap to retry)',
+                        _t('check_failed_retry'),
                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
