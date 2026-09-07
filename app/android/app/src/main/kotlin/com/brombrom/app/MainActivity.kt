@@ -5,9 +5,16 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import android.content.pm.PackageManager
 import android.content.Intent
+import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.brombrom.app/package_check"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
