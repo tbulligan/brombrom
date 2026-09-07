@@ -116,7 +116,7 @@ const Map<String, Map<String, String>> translations = {
     'ob_next': 'Next',
     'ob_finish': 'Get Started',
     'btn_navigate': 'Navigate',
-    'btn_reinstall_help': 'Re-link BromBrom to OsmAnd',
+    'btn_reinstall_help': 'Re-install BromBrom in OsmAnd',
     'ob_install_osmand_required': 'Install OsmAnd first to continue',
     'ob_notification_permission_required': 'Grant notification permission to finish',
     'ob_osmand_installed_checkmark': 'OsmAnd is installed ✓',
