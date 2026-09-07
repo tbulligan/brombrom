@@ -630,6 +630,133 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     );
   }
   
+  void _showHelpModal() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.help_outline, color: Colors.orange[800], size: 28),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _t('help_dialog_title'),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: () => Navigator.of(context).pop(),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange[50],
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.orange[200]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            _t('troubleshoot_title'),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: Colors.orange[900],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _t('troubleshoot_desc'),
+                            style: TextStyle(fontSize: 13, color: Colors.grey[800]),
+                          ),
+                          const SizedBox(height: 10),
+                          Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(
+                                'assets/images/brombrom_osmand_profile.webp',
+                                fit: BoxFit.contain,
+                                height: 180,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_osmandInstalled) ...[
+                      const SizedBox(height: 16),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          foregroundColor: Colors.grey[800],
+                          side: BorderSide(color: Colors.grey[400]!),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _forceReinstall();
+                        },
+                        icon: const Icon(Icons.build_outlined, size: 18),
+                        label: Text(
+                          _t('btn_reinstall_help'),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton.icon(
+                            onPressed: () => _launchUrl('https://brombrom.bulligan.com/#visual-guide'),
+                            icon: const Icon(Icons.language, size: 18, color: Colors.blue),
+                            label: Text(
+                              _t('visit_website'),
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 13),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: TextButton.icon(
+                            onPressed: () => _launchUrl('https://brombrom.bulligan.com/#faq'),
+                            icon: const Icon(Icons.question_answer_outlined, size: 18, color: Colors.blue),
+                            label: Text(
+                              _t('faq_title'),
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 13),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _scanFile(String path) {
     try {
       final AndroidIntent intent = AndroidIntent(
@@ -1032,9 +1159,14 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
         backgroundColor: Colors.orange[800],
         foregroundColor: Colors.white,
         actions: [
-            _buildLanguageSwitcher(),
-            const SizedBox(width: 8),
-          ],
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: _t('help'),
+            onPressed: _showHelpModal,
+          ),
+          _buildLanguageSwitcher(),
+          const SizedBox(width: 8),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _checkVersions,
@@ -1151,139 +1283,61 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                   );
                 })(),
                 const SizedBox(height: 24),
-                if (_osmandInstalled) ...[
-                  Card(
-                    color: Colors.white,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Theme(
-                      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                      child: ExpansionTile(
-                        leading: const Icon(Icons.help_outline, color: Colors.orange),
-                        title: Text(
-                          _t('troubleshoot_title'),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: Colors.black87,
-                          ),
-                        ),
+                // Happy path support: Buy Me A Coffee card
+                Card(
+                  color: Colors.amber[50],
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.amber[200]!),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onPressed: () => _launchUrl('https://buymeacoffee.com/brombrom'),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Text(
-                                  _t('troubleshoot_desc'),
-                                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                                ),
-                                const SizedBox(height: 12),
-                                Center(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.asset(
-                                      'assets/images/brombrom_osmand_profile.webp',
-                                      fit: BoxFit.contain,
-                                      height: 220,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          const Icon(Icons.coffee, color: Color(0xFF795548), size: 22),
+                          const SizedBox(width: 10),
+                          Text(
+                            _t('buy_coffee'),
+                            style: const TextStyle(
+                              color: Color(0xFF5D4037),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
-                // Support Project & Website Links
-                Column(
+                ),
+                const SizedBox(height: 16),
+                // Subtle footer links
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (_osmandInstalled) ...[
-                      TextButton(
-                        onPressed: _forceReinstall,
-                        child: Text.rich(
-                          TextSpan(
-                            children: [
-                              const WidgetSpan(
-                                alignment: PlaceholderAlignment.middle,
-                                child: Icon(Icons.build_outlined, color: Colors.grey, size: 20),
-                              ),
-                              const WidgetSpan(child: SizedBox(width: 8)),
-                              TextSpan(
-                                text: _t('btn_reinstall_help'),
-                                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                    TextButton(
+                    TextButton.icon(
                       onPressed: () => _launchUrl('https://brombrom.bulligan.com/#visual-guide'),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            const WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: Icon(Icons.language, color: Colors.blue, size: 20),
-                            ),
-                            const WidgetSpan(child: SizedBox(width: 8)),
-                            TextSpan(
-                              text: _t('visit_website'),
-                              style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
+                      icon: const Icon(Icons.language, color: Colors.grey, size: 16),
+                      label: Text(
+                        _t('visit_website'),
+                        style: const TextStyle(color: Colors.grey, fontSize: 13),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    TextButton(
+                    const Text(" • ", style: TextStyle(color: Colors.grey)),
+                    TextButton.icon(
                       onPressed: () => _launchUrl('https://brombrom.bulligan.com/#faq'),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            const WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: Icon(Icons.help_outline, color: Colors.blue, size: 20),
-                            ),
-                            const WidgetSpan(child: SizedBox(width: 8)),
-                            TextSpan(
-                              text: _t('faq_title'),
-                              style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
+                      icon: const Icon(Icons.help_outline, color: Colors.grey, size: 16),
+                      label: Text(
+                        _t('faq_title'),
+                        style: const TextStyle(color: Colors.grey, fontSize: 13),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () => _launchUrl('https://buymeacoffee.com/brombrom'),
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            const WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: Icon(Icons.coffee, color: Colors.brown, size: 20),
-                            ),
-                            const WidgetSpan(child: SizedBox(width: 8)),
-                            TextSpan(
-                              text: _t('buy_coffee'),
-                              style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                  ],
+                ),
                     if (_showLogs)
                   Container(
                     margin: const EdgeInsets.only(top: 24),
