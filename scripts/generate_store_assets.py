@@ -18,8 +18,11 @@ def generate_assets():
     src_logo = os.path.join(logo_dir, "brombrom-logo.jpg")
     src_banner = os.path.join(assets_dir, "brombrom-banner-EN.png")
     
-    dest_icon = os.path.join(assets_dir, "play_store_icon.png")
-    dest_feature = os.path.join(assets_dir, "play_store_feature_graphic.png")
+    playstore_dir = os.path.join(assets_dir, "playstore")
+    os.makedirs(playstore_dir, exist_ok=True)
+
+    dest_icon = os.path.join(playstore_dir, "bbm-play_store_icon.png")
+    dest_feature = os.path.join(playstore_dir, "bbm-play_store_feature_graphic.png")
 
     # Check source files
     if not os.path.exists(src_logo):
