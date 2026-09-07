@@ -15,11 +15,12 @@ print("Fetching NDW traffic signs...")
 cmd = [
     "curl", "-fL", "--compressed",
     "--connect-timeout", "15",
-    "--retry", "5",
-    "--retry-delay", "5",
+    "--retry", "10",
+    "--retry-delay", "20",
     "--retry-connrefused",
-    "--speed-limit", "10240",
-    "--speed-time", "30",
+    "--retry-all-errors",
+    "--speed-limit", "1024",
+    "--speed-time", "60",
     URL,
     "-o", JSON_FILE
 ]

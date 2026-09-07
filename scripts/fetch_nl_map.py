@@ -13,12 +13,14 @@ if os.path.exists(PBF_FILE) and os.path.getsize(PBF_FILE) > 1024 * 1024:
 print("Fetching Netherlands OSM...")
 cmd = [
     "curl", "-fL",
+    "-C", "-",
     "--connect-timeout", "15",
-    "--retry", "5",
-    "--retry-delay", "5",
+    "--retry", "10",
+    "--retry-delay", "20",
     "--retry-connrefused",
-    "--speed-limit", "10240",
-    "--speed-time", "30",
+    "--retry-all-errors",
+    "--speed-limit", "1024",
+    "--speed-time", "60",
     URL,
     "-o", PBF_FILE
 ]
