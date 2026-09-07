@@ -822,29 +822,42 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         ),
                       ),
                       if (_osmandInstalled) ...[
-                        const SizedBox(height: 14),
-                        // Reinstall action
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            foregroundColor: const Color(0xFF475569),
-                            side: const BorderSide(color: Color(0xFFCBD5E1)),
-                            backgroundColor: const Color(0xFFF8FAFC),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                          onPressed: () {
+                        const SizedBox(height: 12),
+                        // Action 1: Reinstall action
+                        InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () {
                             Navigator.of(context).pop();
                             _forceReinstall();
                           },
-                          icon: const Icon(Icons.build_circle_outlined, size: 18, color: Color(0xFF475569)),
-                          label: Text(
-                            _t('btn_reinstall_help'),
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                            textAlign: TextAlign.center,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC), // Slate 50
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.build_circle_outlined, color: Color(0xFF475569), size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _t('btn_reinstall_help'),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF334155),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                                const Icon(Icons.arrow_forward_ios, color: Color(0xFF94A3B8), size: 13),
+                              ],
+                            ),
                           ),
                         ),
                       ],
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 8),
                       // Card 2: Visual Guide Link (Vertical item with distinct styling)
                       InkWell(
                         borderRadius: BorderRadius.circular(10),
@@ -1526,13 +1539,25 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                   Container(
                     margin: const EdgeInsets.only(top: 24),
                     padding: const EdgeInsets.all(16),
-                    color: Colors.black.withOpacity(0.05),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text("DEVELOPER TOOLS", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey)),
+                        const Text(
+                          "DEVELOPER TOOLS",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                            letterSpacing: 1.0,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
                         const SizedBox(height: 12),
-                        ElevatedButton(
+                        OutlinedButton.icon(
                           onPressed: () async {
                             final prefs = await SharedPreferences.getInstance();
                             await prefs.remove(_prefLastKnownRelease);
@@ -1540,43 +1565,72 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                             _log("Update cache cleared.");
                             _checkVersions();
                           },
-                          child: const Text("Clear Update Cache"),
+                          style: OutlinedButton.styleFrom(
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            foregroundColor: const Color(0xFF334155),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          icon: const Icon(Icons.cached_rounded, size: 18, color: Color(0xFF475569)),
+                          label: const Text("Clear Update Cache", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                         ),
                         const SizedBox(height: 8),
-                        ElevatedButton(
+                        OutlinedButton.icon(
                           onPressed: () async {
-                             try {
-                               final file = File('$_targetDir/$OSF_FILENAME');
-                               if (await file.exists()) {
-                                 await file.delete();
-                                 _log("Local OSF deleted.");
-                                 _checkVersions();
-                               } else {
-                                 _log("No local OSF found to delete.");
-                               }
-                             } catch (e) {
-                               _log("Delete error: $e");
-                             }
+                            try {
+                              final file = File('$_targetDir/$OSF_FILENAME');
+                              if (await file.exists()) {
+                                await file.delete();
+                                _log("Local OSF deleted.");
+                                _checkVersions();
+                              } else {
+                                _log("No local OSF found to delete.");
+                              }
+                            } catch (e) {
+                              _log("Delete error: $e");
+                            }
                           },
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red[50], foregroundColor: Colors.red[900]),
-                          child: const Text("Delete Local OSF (Force Update)"),
+                          style: OutlinedButton.styleFrom(
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            foregroundColor: const Color(0xFFB91C1C),
+                            side: const BorderSide(color: Color(0xFFFECACA)),
+                            backgroundColor: const Color(0xFFFEF2F2),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFDC2626)),
+                          label: const Text("Delete Local OSF (Force Update)", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                         ),
                         const SizedBox(height: 8),
-                        ElevatedButton(
+                        OutlinedButton.icon(
                           onPressed: () async {
-                             _log("Forcing notification...");
-                             await _showUpdateNotification();
+                            _log("Forcing notification...");
+                            await _showUpdateNotification();
                           },
-                          child: const Text("Force Notification (Test UI)"),
+                          style: OutlinedButton.styleFrom(
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            foregroundColor: const Color(0xFF334155),
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          icon: const Icon(Icons.notifications_active_outlined, size: 18, color: Color(0xFF475569)),
+                          label: const Text("Force Notification (Test UI)", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                         ),
-                        const SizedBox(height: 12),
-                        const Divider(),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 14),
+                        const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                        const SizedBox(height: 10),
                         SizedBox(
                           height: 150,
                           child: ListView.builder(
-                             itemCount: _logs.length,
-                             itemBuilder: (ctx, i) => Text(_logs[i], style: const TextStyle(fontSize: 10, fontFamily: 'monospace')),
+                            itemCount: _logs.length,
+                            itemBuilder: (ctx, i) => Text(
+                              _logs[i],
+                              style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: Color(0xFF334155)),
+                            ),
                           ),
                         ),
                       ],
