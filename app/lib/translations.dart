@@ -10,8 +10,6 @@ const Map<String, Map<String, String>> translations = {
     'status_dl': 'Bezig met downloaden van {file}...',
     'status_dl_done': 'Nieuwe kaart succesvol gedownload!',
     'status_dl_error': 'Downloaden mislukt: {error}',
-    'status_updates': 'Nieuwe kaart beschikbaar',
-    'status_uptodate_brief': 'Kaart is actueel',
     'check_failed_retry': 'Controle mislukt (Tik om opnieuw te proberen)',
     'latest_release': 'Nieuwste kaartversie',
     'btn_osf_update': 'Kaart bijwerken',
@@ -61,7 +59,6 @@ const Map<String, Map<String, String>> translations = {
     'troubleshoot_title': 'Tip: Controleer je profiel in OsmAnd',
     'troubleshoot_desc': 'Stuurt de navigatie je toch over een autoweg of C9-weg? Controleer of het BromBrom-profiel aan staat:',
     'help_dialog_title': 'Hulp & Probleemoplossing',
-    'map_uptodate': 'Kaart is actueel',
   },
   'en': {
     'app_name': 'BromBrom Manager',
@@ -74,8 +71,6 @@ const Map<String, Map<String, String>> translations = {
     'status_dl': 'Downloading {file}...',
     'status_dl_done': 'Download complete!',
     'status_dl_error': 'Download failed: {error}',
-    'status_updates': 'New map available',
-    'status_uptodate_brief': 'Map is up to date',
     'check_failed_retry': 'Check failed (Tap to retry)',
     'latest_release': 'Latest Release',
     'btn_osf_update': 'Update Map',
@@ -125,6 +120,5 @@ const Map<String, Map<String, String>> translations = {
     'troubleshoot_title': 'Tip: Check your profile in OsmAnd',
     'troubleshoot_desc': 'Is navigation directing you onto a motorway or C9 road? Check if the BromBrom profile is turned on:',
     'help_dialog_title': 'Help & Troubleshooting',
-    'map_uptodate': 'Map is up to date',
   },
 };

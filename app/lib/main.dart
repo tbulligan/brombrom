@@ -459,9 +459,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       setState(() {
         _isChecking = false;
         _checkError = null;
-        _statusMessage = _osfUpdateAvailable 
-            ? _t('status_updates') 
-            : _t('status_uptodate_brief');
       });
 
       if (_osfUpdateAvailable && _osmandInstalled && !_isDownloading) {
@@ -1464,7 +1461,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     ),
                   );
                 })(),
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
                 // Dedicated Secondary Troubleshooting action
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
@@ -1485,13 +1482,13 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                     ),
                   ),
                 ),
-                const SizedBox(height: 14),
-                // Happy path support: Buy Me A Coffee card
+                const SizedBox(height: 18),
+                // Happy path support: Buy Me A Coffee card (Delft Blue)
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEB), // Amber 50
+                    color: const Color(0xFFF0F9FF), // Delft Blue 50
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFFDE68A)),
+                    border: Border.all(color: const Color(0xFFBAE6FD)), // Delft Blue 200
                   ),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(14),
@@ -1501,12 +1498,12 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.coffee_rounded, color: Color(0xFF92400E), size: 22),
+                          const Icon(Icons.coffee_rounded, color: Color(0xFF075985), size: 22),
                           const SizedBox(width: 10),
                           Text(
                             _t('buy_coffee'),
                             style: const TextStyle(
-                              color: Color(0xFF92400E),
+                              color: Color(0xFF075985),
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),
@@ -1514,25 +1511,6 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         ],
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 28),
-                // Calm, quiet status reassurance at bottom (No duplicate external links)
-                Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF16A34A), size: 16),
-                      const SizedBox(width: 6),
-                      Text(
-                        _t('map_uptodate'),
-                        style: const TextStyle(
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w500,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
                 if (_showLogs)
