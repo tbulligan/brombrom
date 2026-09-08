@@ -169,7 +169,7 @@ docker run --rm -v $(pwd):/app brombrom-builder
 
 ## 📂 Project Structure
 - `scripts/`: Python ETL pipelines (Fetching, Snapping, Tagging).
-- `config/`: Routing profiles (`.brf`) and XML configurations.
+- `config/`: Routing rules and XML configurations (`routing.xml`).
 - `app/`: Source code for the BromBrom Manager (Flutter).
 - `tests/`: Unit tests for critical spatial logic.
 
