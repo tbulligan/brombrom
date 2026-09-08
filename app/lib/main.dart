@@ -1337,13 +1337,17 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       body: RefreshIndicator(
         color: const Color(0xFFE65100),
         onRefresh: _checkVersions,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Container(
+                color: Colors.transparent,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                 (() {
                   if (_isDownloading) {
                     return Container(
@@ -1484,14 +1488,14 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                 ),
                 const SizedBox(height: 18),
                 // Happy path support: Buy Me A Coffee card (Delft Blue)
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0F9FF), // Delft Blue 50
+                Material(
+                  color: const Color(0xFFF0F9FF), // Delft Blue 50
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFBAE6FD)), // Delft Blue 200
+                    side: const BorderSide(color: Color(0xFFBAE6FD)), // Delft Blue 200
                   ),
+                  clipBehavior: Clip.antiAlias,
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
                     onTap: () => _launchUrl('https://buymeacoffee.com/brombrom'),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
@@ -1619,6 +1623,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
           ),
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 }
