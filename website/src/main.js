@@ -17,6 +17,7 @@ const translations = {
     feat_2_desc: "Navigeer ontspannen met duidelijke stemaanwijzingen en rijstrookbegeleiding die je precies vertellen waar je moet voorsorteren.",
     feat_3_title: "Offline & Op je Dashboard",
     feat_3_desc: "Volledig offline navigeren zonder internet of dataverbruik. Werkt naadloos op je telefoonscherm of direct op het dashboard via Android Auto*.",
+    feat_3_footnote: "* Android Auto vereist OsmAnd Maps+ (<a href=\"#faq\" class=\"js-open-faq-auto\" style=\"text-decoration: underline; color: inherit;\">zie FAQ</a>).",
     feat_4_title: "Rustige & Kronkelige Routes",
     feat_4_desc: "Schakel optioneel 'Drukke wegen vermijden' in om verkeersaders te omzeilen en ontspannen binnendoor te rijden.",
     install_title: "Start binnen enkele minuten",
@@ -115,6 +116,7 @@ const translations = {
     feat_2_desc: "Drive stress-free with turn-by-turn spoken guidance and lane assistance telling you exactly where to merge or turn.",
     feat_3_title: "Offline & Dashboard-Ready",
     feat_3_desc: "Navigate fully offline without internet or data usage. Works seamlessly on your phone screen or directly on your dashboard via Android Auto*.",
+    feat_3_footnote: "* Requires OsmAnd Maps+ (<a href=\"#faq\" class=\"js-open-faq-auto\" style=\"text-decoration: underline; color: inherit;\">see FAQ</a>).",
     feat_4_title: "Scenic & Quiet Routes",
     feat_4_desc: "Optionally enable 'Avoid busy roads' to bypass arterial traffic and enjoy relaxed cruising along calm countryside roads.",
     install_title: "Get Started in Minutes",
@@ -443,6 +445,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const item = btn.parentElement;
       item.classList.toggle('active');
     });
+  });
+
+  // Smooth scroll and auto-expand for Android Auto FAQ from card footnote
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('.js-open-faq-auto');
+    if (trigger) {
+      e.preventDefault();
+      const autoBtn = document.getElementById('faq-btn-auto');
+      if (autoBtn) {
+        const item = autoBtn.parentElement;
+        item.classList.add('active');
+        autoBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
   });
 
   // Contact Modal Logic
