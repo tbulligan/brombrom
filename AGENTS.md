@@ -30,7 +30,7 @@ Multi-component system:
 *   `docs/snapping_logic.md`: Spatial snapping + exemptions docs. Keep updated on snapping logic edits.
 
 ## 🚀 Release Strategy
-*   **Schedule**: Weekly automated builds **Mondays 05:00 UTC**.
+*   **Schedule**: Weekly automated builds **Mondays 03:17 UTC**.
 *   **Data Freshness & Caching**:
     *   CI caches raw datasets (OSM Netherlands extract, NDW traffic sign data).
     *   **Automated Releases**: Monday build uses cache. OSM key uses Geofabrik daily MD5 (auto-invalidates weekly). NDW key month-based (refreshes 1st build of month).
