@@ -27,6 +27,9 @@ The iOS version of [OsmAnd](https://www.osmand.net/) natively supports OsmAnd Sm
 
 > ⚠️ **Do not skip steps 7–9** — [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
 
+> [!NOTE]
+> **Apple CarPlay**: Navigating directly on your iPhone is completely free. Displaying OsmAnd on your car screen via Apple CarPlay requires an OsmAnd paid license (**Maps+** or **Pro**). **Maps+ is fully sufficient** (Pro is not required). OsmAnd regularly runs seasonal discounts in the App Store.
+
 ## 🤖 Android Devices (Without Manager App)
 
 If you prefer not to use the BromBrom Manager app, you can achieve the exact same result manually.
@@ -49,6 +52,9 @@ If you prefer not to use the BromBrom Manager app, you can achieve the exact sam
 10. **Enable BromBrom & Disable Others** — Set **BromBrom** to **ON** (orange) and switch all other profiles to **OFF** (grey). OsmAnd will now exclusively use BromBrom for navigation.
 
 > ⚠️ **Do not skip steps 8–10** — [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
+
+> [!NOTE]
+> **Android Auto**: Navigating directly on your phone screen is completely free. Projecting OsmAnd onto your car dashboard via Android Auto requires an OsmAnd paid license (**Maps+** or **Pro**). **Maps+ is fully sufficient** (Pro is not required). OsmAnd regularly runs seasonal discounts in the Google Play Store.
 
 ## 📸 Visual Setup Guide
 
