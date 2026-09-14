@@ -130,7 +130,7 @@ const translations = {
     tip_btn: "Download BromBrom.osf",
     footer_copy: "&copy; 2026 BromBrom Project.",
     footer_sub: "Open source and free. Data based on OpenStreetMap & NDW.",
-    footer_disclaimer: "BromBrom is an independent community project and is not affiliated with OsmAnd.",
+    footer_disclaimer: "BromBrom is an independent open-source project and is not affiliated with OsmAnd.",
     badge_label: "Available Now",
     support_title: "Support the Project",
     support_desc: "BromBrom is free for personal, non-commercial use (open-source). If you find it useful, support me with a cup of coffee to help cover hosting and map update costs!",
