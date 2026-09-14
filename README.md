@@ -11,7 +11,7 @@
 [![Website](https://img.shields.io/badge/Website-Live-brightgreen?logo=google-chrome)](https://brombrom.bulligan.com/)
 [![Google Play](https://img.shields.io/badge/Google_Play-App-004D40?logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.brombrom.app)
 
-**BromBrom** creates a professional-grade **[OsmAnd](https://www.osmand.net/)** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways) from the map data using official NDW traffic data and OpenStreetMap.
+**BromBrom** creates a professional-grade **[OsmAnd](https://www.osmand.net/)** navigation package specifically for L6e microcars (*Brommobielen*) in the Netherlands. It solves the unique routing challenges of microcars by rigorously excluding forbidden roads (C9 signs, motorways, expressways) from the map data using official NDW traffic data and OpenStreetMap.
 
 [OsmAnd](https://www.osmand.net/) is a free and open-source offline navigation app for Android and iOS: https://osmand.net.
 
