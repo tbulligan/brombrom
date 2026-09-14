@@ -109,7 +109,7 @@ Because the entire BromBrom profile is packaged into a Smart Folder (`.osf`), ma
 
 > ⚠️ Do not skip steps 6–8. [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
 
-See the [Manual Install Guide](docs/manual_install.md) for deeper troubleshooting.
+See the [Manual Install Guide](docs/manual_install.md) ([Nederlandse handleiding](docs/manual_install.nl.md)) for deeper troubleshooting.
 
 ---
 

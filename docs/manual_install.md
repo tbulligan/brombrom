@@ -1,5 +1,7 @@
 # Manual Installation Guide (Advanced / iOS)
 
+[🇳🇱 Nederlandse handleiding](manual_install.nl.md)
+
 > [!IMPORTANT]
 > **Prerequisite**: Ensure **[OsmAnd](https://www.osmand.net/)** is installed before proceeding.
 
