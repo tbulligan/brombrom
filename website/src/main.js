@@ -28,7 +28,7 @@ const translations = {
     step_3_title: "Eén-klik Update",
     step_3_desc: "Open BromBrom Manager. De app controleert automatisch op updates en start de download. Tik na het downloaden op <strong>Open OsmAnd</strong>. OsmAnd opent: vink zowel <em>Instellingen</em> als <em>Bronnen</em> aan, tik op <em>Doorgaan</em> en kies <em>Alles vervangen</em>. Tik na de import op <em>Sluiten</em>.",
     tip_title: "iOS / Apple Gebruikers",
-    tip_desc: "Geen app nodig! Voor iOS (iPhone) kun je het BromBrom.osf-bestand direct downloaden en openen in OsmAnd. Let op: handmatige installaties worden <strong>niet automatisch bijgewerkt</strong>; je zult de nieuwste versie zelf moeten downloaden voor updates. Bekijk de <a href='https://github.com/tbulligan/brombrom/blob/main/docs/manual_install.md' target='_blank' class='link-subtle' style='text-decoration: underline;'>Manual Installation Guide</a> (Engels) op GitHub voor alle details.",
+    tip_desc: "Geen app nodig! Voor iOS (iPhone) kun je het BromBrom.osf-bestand direct downloaden en openen in OsmAnd. Let op: handmatige installaties worden <strong>niet automatisch bijgewerkt</strong>; je zult de nieuwste versie zelf moeten downloaden voor updates. Bekijk de <a href='https://github.com/tbulligan/brombrom/blob/main/docs/manual_install.nl.md' target='_blank' class='link-subtle' style='text-decoration: underline;'>Handleiding Handmatige Installatie</a> op GitHub voor alle details.",
     tip_btn: "Download BromBrom.osf",
     footer_copy: "&copy; 2026 BromBrom Project.",
     footer_sub: "Open source en gratis. Data gebaseerd op OpenStreetMap & NDW.",
