@@ -29,6 +29,8 @@ The iOS version of [OsmAnd](https://www.osmand.net/) natively supports OsmAnd Sm
 
 > [!NOTE]
 > **Apple CarPlay**: Navigating directly on your iPhone is completely free. Displaying OsmAnd on your car screen via Apple CarPlay requires an OsmAnd paid license (**Maps+** or **Pro**). **Maps+ is fully sufficient** (Pro is not required). OsmAnd regularly runs seasonal discounts in the App Store.
+>
+> *(BromBrom is an independent community project not affiliated with or commissioned by OsmAnd; all fees go directly to OsmAnd).*
 
 ## 🤖 Android Devices (Without Manager App)
 
@@ -55,6 +57,8 @@ If you prefer not to use the BromBrom Manager app, you can achieve the exact sam
 
 > [!NOTE]
 > **Android Auto**: Navigating directly on your phone screen is completely free. Projecting OsmAnd onto your car dashboard via Android Auto requires an OsmAnd paid license (**Maps+** or **Pro**). **Maps+ is fully sufficient** (Pro is not required). OsmAnd regularly runs seasonal discounts in the Google Play Store.
+>
+> *(BromBrom is an independent community project not affiliated with or commissioned by OsmAnd; all fees go directly to OsmAnd).*
 
 ## 📸 Visual Setup Guide
 

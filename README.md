@@ -45,6 +45,8 @@ See the difference: standard car navigation routes you onto forbidden motorways 
 > **Prerequisite**: You must have **[OsmAnd](https://www.osmand.net/)** installed on your device first. Download it from the [Google Play Store](https://play.google.com/store/apps/details?id=net.osmand) or [iOS App Store](https://apps.apple.com/app/osmand-maps-navigation/id934850257).
 >
 > *Note on Android Auto*: Navigation directly on your phone screen is 100% free. Projecting OsmAnd onto a car dashboard via **Android Auto** requires a paid OsmAnd purchase (**Maps+** or **Pro**). **Maps+ is fully sufficient** (Pro is not required for BromBrom). OsmAnd regularly runs seasonal discounts in app stores, so keep an eye out for sales.
+>
+> *Non-Affiliation Disclaimer*: BromBrom is an independent open-source project and is not affiliated with, endorsed by, or earning commission from OsmAnd. All purchase fees go directly to the OsmAnd developers.
 
 ### ✅ Option A: BromBrom Manager (Android Recommended)
 The fastest way to install and keep your navigation updated automatically.
