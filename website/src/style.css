@@ -169,6 +169,7 @@ header {
   align-items: center;
   position: relative;
   padding-top: 2rem;
+  overflow: hidden;
 }
 
 .hero::before {
@@ -212,6 +213,7 @@ header {
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 .hero-actions {
