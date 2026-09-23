@@ -510,74 +510,26 @@ footer {
 /* Phone Mockup Frame */
 .phone-mockup {
   position: relative;
-  width: 290px;
-  max-width: 100%;
-  height: 580px;
-  background: #1e293b;
-  border: 12px solid #0f172a;
-  border-radius: 40px;
+  width: 270px;
+  max-width: calc(100% - 20px);
+  aspect-ratio: 9 / 20;
+  box-sizing: content-box;
+  background: #000;
+  border: 10px solid #0f172a;
+  border-radius: 36px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 107, 53, 0.1);
   overflow: hidden;
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
 }
 
-.phone-speaker {
-  position: absolute;
-  top: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 5px;
-  background: #334155;
-  border-radius: 99px;
-  z-index: 10;
-}
-
-.phone-screen {
-  position: relative;
+.phone-mockup img {
   width: 100%;
   height: 100%;
-  background: #000;
-  border-radius: 28px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.phone-status-bar {
-  height: 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px 0 20px;
-  background: #000;
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 500;
-  z-index: 9;
-}
-
-.phone-status-icons {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.carousel-slides {
-  flex: 1;
-  width: 100%;
-  height: calc(100% - 60px);
-  position: relative;
-  background: #000;
-  overflow: hidden;
+  object-fit: cover;
+  display: block;
 }
 
 #carousel-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
   transition: opacity 0.3s ease-in-out, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 1;
 }
@@ -585,18 +537,6 @@ footer {
 #carousel-img.fade-out {
   opacity: 0;
   transform: scale(0.97);
-}
-
-.phone-home-indicator {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 4px;
-  background: #334155;
-  border-radius: 99px;
-  z-index: 10;
 }
 
 /* Carousel Information and Controls */
@@ -740,7 +680,7 @@ footer {
 /* Phone Mockup Floating Label */
 .phone-label {
   position: absolute;
-  top: 48px;
+  top: 36px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(15, 23, 42, 0.9);
