@@ -12,9 +12,7 @@ dependencies:
   - gdal
   - geopandas
   - osmium-tool
-  - requests
   - shapely
-  - tqdm
   - networkx
   - pip
   - pip:

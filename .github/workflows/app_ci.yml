@@ -19,6 +19,8 @@ concurrency:
 jobs:
   test_and_build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
@@ -83,5 +85,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Uploading APK to 'stable' release..."
-          gh release upload stable app/build/app/outputs/flutter-apk/BromBrom.apk --clobber || echo "Release 'stable' not found yet. Map build will create it."
+          gh release upload stable app/build/app/outputs/flutter-apk/BromBrom.apk --clobber
 

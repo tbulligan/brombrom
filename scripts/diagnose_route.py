@@ -131,10 +131,10 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=Fals
             
         is_link_ramp = highway in ['motorway_link', 'trunk_link']
             
-        # C. Allow microcar=yes overrides by bypassing general access/motor_vehicle/cycleway blocks
+        # C. Allow microcar=yes overrides (incl. permitted cycleways/paths, but never footway/pedestrian/bridleway/steps)
         has_microcar_yes_tag = '"microcar"=>"yes"' in other_tags
-        is_cycleway_type = highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']
-        microcar_override = has_microcar_yes_tag and not is_cycleway_type
+        is_never_microcar_path = highway in ['footway', 'pedestrian', 'bridleway', 'steps']
+        microcar_override = has_microcar_yes_tag and not is_never_microcar_path
         if not microcar_override:
             if any(k in other_tags for k in (
                 '"motor_vehicle"=>"no"', '"motorcar"=>"no"', '"access"=>"no"',
@@ -354,7 +354,7 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=Fals
                         reasons.append(f"CLASS_BLOCKED({hway})")
                     if '"motorroad"=>"yes"' in tags:
                         reasons.append("MOTORROAD_YES")
-                    if '"microcar"=>"yes"' not in tags or hway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
+                    if '"microcar"=>"yes"' not in tags or hway in ['footway', 'pedestrian', 'bridleway', 'steps']:
                         if '"motor_vehicle"=>"no"' in tags or '"motorcar"=>"no"' in tags or '"access"=>"no"' in tags:
                             reasons.append("MOTOR_VEHICLE_NO")
                         if hway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:

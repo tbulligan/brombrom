@@ -603,33 +603,151 @@ def test_minor_road_name_match_does_not_block_major_bonus():
     )
 
 def test_cycleway_microcar_yes_isolated_to_ndw():
-    """Verify that OSM microcar=yes on cycleways is ignored unless supported by an NDW exemption,
-    while normal roads (unclassified, service) continue to accept OSM microcar=yes overrides."""
-    class MockWay:
-        def __init__(self, way_id, tags):
-            self.id = way_id
-            self.tags = tags
+    """Verify TagC9Handler strips stray OSM microcar=yes on footway/pedestrian/bridleway/steps,
+    honors explicit OSM microcar=yes on permitted cycleways/paths and normal roads, honors
+    NDW-exempted cycleways, and prioritizes forbidden over exemption on overlap."""
+    from unittest.mock import MagicMock
+    from scripts import tag_c9_roads
 
-    # Case 1: Cycleway with OSM microcar=yes, NOT in NDW exemption list
-    w1 = MockWay(101, {'highway': 'cycleway', 'microcar': 'yes'})
-    is_cycleway_1 = w1.tags.get('highway') in ('cycleway', 'path', 'footway', 'pedestrian')
-    is_ndw_exempted_1 = 101 in {999}
-    has_microcar_yes_1 = is_ndw_exempted_1 or (w1.tags.get('microcar') == 'yes' and not is_cycleway_1)
-    assert not has_microcar_yes_1, "OSM microcar=yes on cycleways must be ignored without NDW exemption"
+    def run_way(way_id, tags, forbidden_ways=None, exemption_ways=None):
+        writer = MagicMock()
+        handler = tag_c9_roads.TagC9Handler(
+            writer,
+            forbidden_ways=forbidden_ways or set(),
+            way_snaps={},
+            exemption_ways=exemption_ways or set(),
+        )
+        w = MagicMock()
+        w.id = way_id
+        w.tags = tags
+        w.nodes = []
+        handler.way(w)
+        if w.replace.called:
+            return w.replace.call_args[1]['tags']
+        return tags
 
-    # Case 2: Cycleway with NDW exemption
-    w2 = MockWay(102, {'highway': 'cycleway'})
-    is_cycleway_2 = w2.tags.get('highway') in ('cycleway', 'path', 'footway', 'pedestrian')
-    is_ndw_exempted_2 = 102 in {102, 999}
-    has_microcar_yes_2 = is_ndw_exempted_2 or (w2.tags.get('microcar') == 'yes' and not is_cycleway_2)
-    assert has_microcar_yes_2, "NDW-exempted cycleways must be recognized as has_microcar_yes=True"
+    # Case 1: footway / pedestrian / bridleway / steps with stray OSM microcar=yes -> strip microcar=yes
+    for hw in ('footway', 'pedestrian', 'bridleway', 'steps'):
+        tags_1 = run_way(101, {'highway': hw, 'microcar': 'yes'}, exemption_ways={999})
+        assert 'microcar' not in tags_1, f"Stray OSM microcar=yes on {hw} must be stripped"
+        assert tags_1.get('motor_vehicle') != 'yes'
 
-    # Case 3: Normal unclassified road with OSM microcar=yes (e.g. Hollandse Brug)
-    w3 = MockWay(103, {'highway': 'unclassified', 'microcar': 'yes'})
-    is_cycleway_3 = w3.tags.get('highway') in ('cycleway', 'path', 'footway', 'pedestrian')
-    is_ndw_exempted_3 = 103 in {999}
-    has_microcar_yes_3 = is_ndw_exempted_3 or (w3.tags.get('microcar') == 'yes' and not is_cycleway_3)
-    assert has_microcar_yes_3, "OSM microcar=yes on normal roads must remain active"
+    # Case 2: Explicitly permitted OSM cycleway/path with microcar=yes (e.g. Kiltunnelweg) -> promoted
+    for hw in ('cycleway', 'path'):
+        tags_2a = run_way(105, {'highway': hw, 'microcar': 'yes'}, exemption_ways={999})
+        assert tags_2a['microcar'] == 'yes'
+        assert tags_2a['motor_vehicle'] == 'yes'
+
+    # Case 3: Cycleway with NDW exemption -> allow with microcar=yes + motor_vehicle=yes
+    tags_2 = run_way(102, {'highway': 'cycleway', 'motor_vehicle': 'no'}, exemption_ways={102, 999})
+    assert tags_2['microcar'] == 'yes'
+    assert tags_2['motor_vehicle'] == 'yes'
+
+    # Case 4: Normal unclassified road with OSM microcar=yes (e.g. Hollandse Brug) -> allowed
+    tags_3 = run_way(103, {'highway': 'unclassified', 'microcar': 'yes', 'motor_vehicle': 'no'}, exemption_ways={999})
+    assert tags_3['microcar'] == 'yes'
+    assert tags_3['motor_vehicle'] == 'yes'
+
+    # Case 5: Overlap between forbidden_ways and exemption_ways -> forbidden wins
+    tags_4 = run_way(104, {'highway': 'primary'}, forbidden_ways={104}, exemption_ways={104})
+    assert tags_4['microcar'] == 'no'
+    assert tags_4['motor_vehicle'] == 'no'
+
+
+def test_snap_g_exemptions_excludes_pre_warnings_and_forbidden(tmp_path, monkeypatch):
+    """Verify snap_g_exemptions drops VOOR pre-warnings, avoids C9-forbidden roads,
+    prevents C12 exemptions from snapping to primary arterials or cycleways,
+    prevents G12a from snapping to footways, and rejects snaps > 20m away."""
+    import json
+    import geopandas as gpd
+    from shapely.geometry import Point, LineString
+
+    monkeypatch.chdir(tmp_path)
+
+    roads = gpd.GeoDataFrame([
+        {
+            'osm_id': 1001, 'name': 'Provincialeweg', 'highway': 'primary',
+            'geometry': LineString([(5.0000, 52.0000), (5.0000, 52.0010)]),
+            'other_tags': '"maxspeed"=>"80"',
+        },
+        {
+            'osm_id': 1002, 'name': 'Provincialeweg', 'highway': 'service',
+            'geometry': LineString([(5.00015, 52.0000), (5.00015, 52.0010)]),
+            'other_tags': '',
+        },
+        {
+            'osm_id': 1003, 'name': 'Voorweg', 'highway': 'unclassified',
+            'geometry': LineString([(5.0500, 52.0000), (5.0500, 52.0010)]),
+            'other_tags': '',
+        },
+        {
+            'osm_id': 1004, 'name': 'Fietspad', 'highway': 'cycleway',
+            'geometry': LineString([(5.1000, 52.0000), (5.1000, 52.0010)]),
+            'other_tags': '',
+        },
+        {
+            'osm_id': 1005, 'name': 'Hoofdweg', 'highway': 'primary',
+            'geometry': LineString([(5.1001, 52.0000), (5.1001, 52.0010)]),
+            'other_tags': '',
+        },
+        {
+            'osm_id': 1006, 'name': 'Stoep', 'highway': 'footway',
+            'geometry': LineString([(5.1500, 52.0000), (5.1500, 52.0010)]),
+            'other_tags': '',
+        },
+        {
+            'osm_id': 1007, 'name': 'Verweg', 'highway': 'service',
+            'geometry': LineString([(5.2005, 52.0000), (5.2005, 52.0010)]),
+            'other_tags': '',
+        },
+    ], crs="EPSG:4326")
+
+    signs = gpd.GeoDataFrame([
+        {
+            'id': 's1', 'rvvCode': 'C12', 'status': 'PLACED', 'removedOn': None,
+            'roadName': 'Provincialeweg', 'bearing': 0.0, 'side': 'R',
+            'textSigns': "[{'type': 'UIT', 'text': 'Uitgezonderd brommobielen'}]",
+            'geometry': Point(5.00010, 52.0005),
+        },
+        {
+            'id': 's2', 'rvvCode': 'C12', 'status': 'PLACED', 'removedOn': None,
+            'roadName': 'Voorweg', 'bearing': 0.0, 'side': 'R',
+            'textSigns': "[{'type': 'VOOR', 'text': 'na 400 m'}, {'type': 'UIT', 'text': 'Uitgezonderd brommobielen'}]",
+            'geometry': Point(5.05005, 52.0005),
+        },
+        {
+            'id': 's3', 'rvvCode': 'C12', 'status': 'PLACED', 'removedOn': None,
+            'roadName': 'Hoofdweg', 'bearing': 0.0, 'side': 'R',
+            'textSigns': "[{'type': 'UIT', 'text': 'Uitgezonderd brommobielen'}]",
+            'geometry': Point(5.10005, 52.0005),
+        },
+        {
+            'id': 's4', 'rvvCode': 'G12a', 'status': 'PLACED', 'removedOn': None,
+            'roadName': 'Stoep', 'bearing': 0.0, 'side': 'R',
+            'textSigns': "[{'type': 'UIT', 'text': 'Brommobielen toegestaan'}]",
+            'geometry': Point(5.15002, 52.0005),
+        },
+        {
+            'id': 's5', 'rvvCode': 'C12', 'status': 'PLACED', 'removedOn': None,
+            'roadName': 'Verweg', 'bearing': 0.0, 'side': 'R',
+            'textSigns': "[{'type': 'UIT', 'text': 'Uitgezonderd brommobielen'}]",
+            'geometry': Point(5.2000, 52.0005),  # ~34m west of 1007 -> rejected by 20m cap
+        },
+    ], crs="EPSG:4326")
+    signs.to_file(tmp_path / "g_exemptions_ndw.gpkg", driver="GPKG")
+
+    snap_c9_to_roads.snap_g_exemptions(roads, 'osm_id', forbidden_osm_ids={1001})
+
+    with open(tmp_path / "g_exemptions_ways.json") as f:
+        snapped = set(json.load(f))
+
+    assert 1001 not in snapped, "Forbidden primary road must not be in g_exemptions_ways.json"
+    assert 1002 in snapped, "C12 exemption should snap to parallel service road when primary is forbidden"
+    assert 1003 not in snapped, "VOOR pre-warning exemption must be filtered out"
+    assert 1004 not in snapped, "C12 must not snap to a cycleway"
+    assert 1005 not in snapped, "C12 must not snap to a primary arterial"
+    assert 1006 not in snapped, "G12a must not snap to a footway"
+    assert 1007 not in snapped, "Exemption snap > 20m away must be rejected"
 
 
 

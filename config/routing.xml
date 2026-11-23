@@ -61,6 +61,7 @@
 				<select value="-1" t="smoothness" v="very_horrible"/>
 				<select value="-1" t="smoothness" v="impassable"/>
 			</if>
+			<!-- Explicit microcar=yes (NDW exemptions + OSM microcar=yes; stray footway/pedestrian/bridleway/steps tags are stripped in tag_c9_roads.py) -->
 			<select value="1" t="microcar" v="yes"/>
 
 
