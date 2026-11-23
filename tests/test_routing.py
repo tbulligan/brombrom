@@ -376,7 +376,10 @@ def test_routing_xml_priority_and_access_invariants():
 
     # 3. Strictest-first ordering checks (prevents shadowing & inversions)
     assert find_idx("avoid_tunnels", "tunnel", "yes") < find_idx(None, "maxspeed", "80")
+    assert find_idx("avoid_busy_roads", "maxspeed", "80") < find_idx(None, "smoothness", "horrible")
     assert find_idx(None, "smoothness", "horrible") < find_idx(None, "maxspeed", "60")
+    assert find_idx(None, "surface", "unpaved") < find_idx(None, "smoothness", "bad")
+    assert find_idx(None, "maxspeed", "80") < find_idx(None, "smoothness", "bad")
     assert find_idx(None, "surface", "unpaved") < find_idx(None, "maxspeed", "60")
     assert find_idx(None, "highway", "living_street") < find_idx(None, "maxspeed", "60")
     assert find_idx(None, "highway", "service") < find_idx(None, "maxspeed", "60")

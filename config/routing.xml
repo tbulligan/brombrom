@@ -272,15 +272,9 @@
 				<select t="tunnel" v="yes" value="0.05"/>
 			</if>
 
-			<!-- Severe road surface degradation -->
+			<!-- Severe road surface degradation & avoid_busy_roads >=80 km/h -->
 			<select value="0.05" t="smoothness" v="impassable"/>
 			<select value="0.1" t="smoothness" v="very_horrible"/>
-			<select value="0.2" t="smoothness" v="horrible"/>
-			<select value="0.2" t="tracktype" v="grade5"/>
-			<select value="0.4" t="smoothness" v="very_bad"/>
-			<select value="0.7" t="smoothness" v="bad"/>
-
-			<!-- Avoid busy roads: strongly de-prioritize >=80 km/h thoroughfares -->
 			<if param="avoid_busy_roads">
 				<select value="0.15" t="maxspeed" v="130"/>
 				<select value="0.15" t="maxspeed" v="120"/>
@@ -297,6 +291,9 @@
 				<select value="0.15" t="zone:maxspeed" v="NL:100"/>
 				<select value="0.15" t="zone:maxspeed" v="NL:80"/>
 			</if>
+			<select value="0.2" t="smoothness" v="horrible"/>
+			<select value="0.2" t="tracktype" v="grade5"/>
+			<select value="0.4" t="smoothness" v="very_bad"/>
 
 			<!-- Unpaved surfaces & non-through minor roads -->
 			<select value="0.4" t="surface" v="mud"/>
@@ -336,6 +333,7 @@
 			</if>
 
 			<!-- Comfort: rough paved surfaces -->
+			<select value="0.7" t="smoothness" v="bad"/>
 			<select value="0.7" t="surface" v="unhewn_cobblestone"/>
 			<select value="0.8" t="surface" v="cobblestone"/>
 			<select value="0.8" t="surface" v="sett"/>
