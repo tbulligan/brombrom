@@ -63,12 +63,12 @@ jobs:
       - name: Get OSM MD5
         id: osm_md5
         run: |
-          MD5=$(curl -fsS --connect-timeout 15 --retry 5 --retry-delay 5 --retry-connrefused --retry-all-errors https://download.geofabrik.de/europe/netherlands-latest.osm.pbf.md5 | awk '{print $1}')
-          if [ -z "$MD5" ]; then
-            echo "Error: Failed to fetch MD5 from Geofabrik." >&2
+          MD5=$(curl -fsSL --connect-timeout 15 --retry 5 --retry-delay 5 --retry-connrefused --retry-all-errors https://download.geofabrik.de/europe/netherlands/netherlands-latest.osm.pbf.md5 | awk '{print $1}')
+          if [[ ! "$MD5" =~ ^[0-9a-fA-F]{32}$ ]]; then
+            echo "Error: Failed to fetch valid MD5 from Geofabrik (got: '$MD5')." >&2
             exit 1
           fi
-          echo "hash=$MD5" >> $GITHUB_OUTPUT
+          echo "hash=$MD5" >> "$GITHUB_OUTPUT"
 
       - name: Restore OSM Map Data Cache
         id: cache-osm
