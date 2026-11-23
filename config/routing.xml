@@ -18,12 +18,8 @@
 		<parameter id="avoid_unpaved" name="Avoid unpaved roads" description="Avoid unpaved roads" type="boolean"/>
 		<parameter id="avoid_low_emission_zone" name="Avoid low emission zones" description="Avoid low emission zones" type="boolean"/>
 		<parameter id="avoid_ferries" name="Avoid ferries" description="Avoid ferries" type="boolean"/>
-		<parameter id="avoid_shuttle_train" name="Avoid Shuttle Trains" description="Avoid Shuttle Trains" type="boolean"/>
 		<parameter id="avoid_tunnels" name="Avoid tunnels" description="Avoid tunnels" type="boolean"/>
 		<parameter id="avoid_borders" name="Avoid border crossing" description="Avoid crossing a border into another country" type="boolean"/>
-		<parameter id="avoid_ice_roads_fords" name="Avoid ice roads, fords" description="Avoid ice roads and fords" type="boolean"/>
-		<parameter id="goods_restrictions" name="Goods restrictions" description="Respect goods restrictions" type="boolean"/>
-		<parameter id="avoid_4wd_only" name="Avoid 4WD roads" description="Avoid roads only suitable for 4WD only vehicles" type="boolean"/>
 		<parameter id="weight" name="Weight" description="Maximum vehicle weight to be permitted on the route" type="numeric" values="0,0.349,0.449,0.599,0.799,3.49" valueDescriptions="-,350kg,450kg,600kg,800kg,3.5t"/>
 		<parameter id="height" name="Height" description="Maximum vehicle height to be permitted on the route" type="numeric" values="0,1.49,1.99,2.49,2.99" valueDescriptions="-,1.5m,2m,2.5m,3m"/>
 		<parameter id="length" name="Length" description="Maximum vehicle length to be permitted on the route" type="numeric" values="0,2.49,2.99,3.49,3.99" valueDescriptions="-,2.5m,3m,3.5m,4m"/>
@@ -37,26 +33,16 @@
 			<select value="-1" t="highway" v="construction"/>
 			<select value="-1" t="construction" v="yes"/>
 			<select value="-1" t="oneway" v="reversible"/>
+			<select value="-1" t="ice_road" v="yes"/>
+			<select value="-1" t="winter_road" v="yes"/>
+			<select value="-1" t="ford" v="yes"/>
+			<select value="-1" t="4wd_only" v="yes"/>
+			<select value="-1" t="4wd_only" v="recommended"/>
 			<if param="avoid_low_emission_zone">
 				<select value="-1" t="low_emission_zone" v="yes"/>
 			</if>
-			<if param="avoid_ice_roads_fords">
-				<select value="-1" t="ice_road" v="yes"/>
-				<select value="-1" t="winter_road" v="yes"/>
-				<select value="-1" t="ford" v="yes"/>
-			</if>
 			<if param="avoid_ferries">
 			    <select value="-1" t="route" v="ferry"/>
-			</if>
-			<if param="avoid_shuttle_train">
-			    <select value="-1" t="route" v="shuttle_train"/>
-			</if>
-			<if param="goods_restrictions">
-				<select value="-1" t="goods" v="no"/>
-			</if>
-			<if param="avoid_4wd_only">
-				<select value="-1" t="4wd_only" v="yes"/>
-				<select value="-1" t="4wd_only" v="recommended"/>
 			</if>
 			<if param="avoid_unpaved">
 				<select value="-1" t="highway" v="track"/>
@@ -175,7 +161,6 @@
 			    <select value="-1" t="toll" v="yes"/>
 			</if>
 			<select value="1" t="route" v="ferry"/>
-			<select value="1" t="route" v="shuttle_train"/>
 			<select value="-1"/>
 		</way>
 
@@ -257,7 +242,6 @@
 			<select value="30" t="highway" v="service"/>
 			<select value="15" t="highway" v="living_street"/>
 			<select value="10" t="route" v="ferry"/>
-			<select value="45" t="route" v="shuttle_train"/>
 		</way>
 
 		<way attribute="priority">
@@ -380,7 +364,6 @@
 			<select value="1.0" t="highway" v="road"/>
 			<select value="0.9" t="highway" v="residential"/>
 			<select value="0.5" t="route" v="ferry"/>
-			<select value="0.5" t="route" v="shuttle_train"/>
 			<select value="0.7"/>
 		</way>
 

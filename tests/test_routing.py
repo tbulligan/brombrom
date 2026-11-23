@@ -313,18 +313,28 @@ def test_routing_xml_priority_and_access_invariants():
     profile = root.find("routingProfile[@name='BromBrom']")
     assert profile is not None
 
-    # No prefer_unpaved parameter for microcars
+    # Pruned noisy/non-microcar toggles stay absent; relevant toggles stay present
     param_ids = {p.attrib.get("id") for p in profile.findall("parameter")}
-    assert "prefer_unpaved" not in param_ids
+    for removed in ("prefer_unpaved", "avoid_shuttle_train", "avoid_ice_roads_fords", "goods_restrictions", "avoid_4wd_only"):
+        assert removed not in param_ids, f"Unexpected parameter: {removed}"
+    for kept in ("avoid_busy_roads", "avoid_tunnels", "avoid_borders", "avoid_ferries", "avoid_unpaved", "avoid_toll", "avoid_low_emission_zone"):
+        assert kept in param_ids, f"Missing expected parameter: {kept}"
 
-    # Access invariants: construction/delete must precede microcar=yes
+    # Access invariants: hard prohibitions (incl. fords/ice/4wd) must precede microcar=yes
     access_rules = [
         (elem.attrib.get("t"), elem.attrib.get("v"), elem.attrib.get("value"))
         for elem in profile.find("way[@attribute='access']")
         if elem.tag == "select"
     ]
     idx_microcar_yes = access_rules.index(("microcar", "yes", "1"))
-    for tag in [("microcar", "no", "-1"), ("osmand_change", "delete", "-1"), ("highway", "construction", "-1")]:
+    for tag in [
+        ("microcar", "no", "-1"),
+        ("osmand_change", "delete", "-1"),
+        ("highway", "construction", "-1"),
+        ("ford", "yes", "-1"),
+        ("ice_road", "yes", "-1"),
+        ("4wd_only", "yes", "-1"),
+    ]:
         assert access_rules.index(tag) < idx_microcar_yes, f"{tag} must precede microcar=yes"
 
     # Penalty transition invariants: avoid_tunnels & gravel must precede highway classes
