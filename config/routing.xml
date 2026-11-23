@@ -303,20 +303,20 @@
 
 			<!-- Safety: De-prioritize high-speed roads (Strategy 3: Balanced default) -->
 			<!-- Even though speed is capped at 45, we 'dislike' interacting with 80km/h traffic -->
-			<select value="0.25" t="maxspeed" v="130"/>
-			<select value="0.25" t="maxspeed" v="120"/>
-			<select value="0.25" t="maxspeed" v="110"/>
-			<select value="0.25" t="maxspeed" v="100"/>
-			<select value="0.3" t="maxspeed" v="90"/>
-			<select value="0.3" t="maxspeed" v="80"/>
-			<select value="0.25" t="maxspeed:motorcar" v="130"/>
-			<select value="0.25" t="maxspeed:motorcar" v="120"/>
-			<select value="0.25" t="maxspeed:motorcar" v="110"/>
-			<select value="0.25" t="maxspeed:motorcar" v="100"/>
-			<select value="0.3" t="maxspeed:motorcar" v="90"/>
-			<select value="0.3" t="maxspeed:motorcar" v="80"/>
-			<select value="0.25" t="zone:maxspeed" v="NL:100"/>
-			<select value="0.3" t="zone:maxspeed" v="NL:80"/>
+			<select value="0.45" t="maxspeed" v="130"/>
+			<select value="0.45" t="maxspeed" v="120"/>
+			<select value="0.45" t="maxspeed" v="110"/>
+			<select value="0.45" t="maxspeed" v="100"/>
+			<select value="0.55" t="maxspeed" v="90"/>
+			<select value="0.55" t="maxspeed" v="80"/>
+			<select value="0.45" t="maxspeed:motorcar" v="130"/>
+			<select value="0.45" t="maxspeed:motorcar" v="120"/>
+			<select value="0.45" t="maxspeed:motorcar" v="110"/>
+			<select value="0.45" t="maxspeed:motorcar" v="100"/>
+			<select value="0.55" t="maxspeed:motorcar" v="90"/>
+			<select value="0.55" t="maxspeed:motorcar" v="80"/>
+			<select value="0.45" t="zone:maxspeed" v="NL:100"/>
+			<select value="0.55" t="zone:maxspeed" v="NL:80"/>
 			<select value="0.8" t="maxspeed" v="70"/>
 			<select value="0.9" t="maxspeed" v="60"/>
 

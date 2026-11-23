@@ -129,9 +129,9 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=Fals
             priority = 0.05
         elif raw_maxspeed is not None:
             if raw_maxspeed >= 100:
-                priority = 0.25
+                priority = 0.45
             elif raw_maxspeed >= 80:
-                priority = 0.3
+                priority = 0.55
             elif raw_maxspeed == 70:
                 priority = 0.8
             elif raw_maxspeed == 60:

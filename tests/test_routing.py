@@ -267,9 +267,9 @@ def test_strategy3_balanced_default_and_scenic_routing():
                 priority = 0.05
             elif raw_maxspeed is not None:
                 if raw_maxspeed >= 100:
-                    priority = 0.25
+                    priority = 0.45
                 elif raw_maxspeed >= 80:
-                    priority = 0.3
+                    priority = 0.55
                 elif raw_maxspeed == 70:
                     priority = 0.8
                 elif raw_maxspeed == 60:
@@ -320,7 +320,7 @@ def test_strategy3_balanced_default_and_scenic_routing():
                 names.append(e['name'].lower())
         return names
 
-    # Under Strategy 3 balanced default (priority=0.3 on 80kmh), 80km/h Middenweg is avoided automatically
+    # Under Strategy 3 balanced default (priority=0.55 on 80kmh), 80km/h Middenweg is avoided automatically
     names_default = build_graph_and_route(avoid_busy_roads=False)
     assert not any("middenweg" in n for n in names_default), f"Expected no Middenweg in balanced default: {names_default}"
     assert any("zomerdijk" in n or "beets" in n for n in names_default), f"Expected polder bypass route: {names_default}"
