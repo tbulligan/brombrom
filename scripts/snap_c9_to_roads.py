@@ -789,12 +789,15 @@ def main():
           (~c9_gdf['bearing'].isna() & c9_gdf['side'].isin(['N', 'O', 'Z', 'W'])).sum())
 
     # Snap microcar exemption signs (G12a/G11/C12/C9 exemptions)
-    snap_g_exemptions(full_roads_gdf, id_field)
+    forbidden_osm_ids = set(forbidden_roads[id_field].dropna().astype(int).unique())
+    snap_g_exemptions(full_roads_gdf, id_field, forbidden_osm_ids=forbidden_osm_ids)
 
-def snap_g_exemptions(full_roads_gdf, id_field):
+def snap_g_exemptions(full_roads_gdf, id_field, forbidden_osm_ids=None):
     """
     Snap microcar exemption signs (G12a, G11, C12, C9 exemptions) to candidate paths/roads.
     G-signs (G12a, G11) are strictly filtered to target cycleways/paths and NEVER car roads.
+    Pre-warning (VOOR) signs and C9-forbidden roads are excluded so parallel C12 exemptions
+    snap to their local/service road rather than being pulled onto an adjacent C9 arterial.
     Saves snapped way IDs to g_exemptions_ways.json so tag_c9_roads.py can set microcar=yes and motorized access=yes.
     """
     if not os.path.exists("g_exemptions_ndw.gpkg"):
@@ -814,10 +817,17 @@ def snap_g_exemptions(full_roads_gdf, id_field):
     active_mask = g_gdf['removedOn'].isna() & (g_gdf['status'] == 'PLACED')
     g_gdf = g_gdf[active_mask].copy()
 
+    pre_warning_mask = g_gdf.apply(is_pre_warning, axis=1)
+    if pre_warning_mask.any():
+        print(f"Filtering out {pre_warning_mask.sum()} pre-warning (VOOR) exemption signs...")
+        g_gdf = g_gdf[~pre_warning_mask].copy()
+
     if len(g_gdf) == 0:
         with open("g_exemptions_ways.json", "w") as f:
             json.dump([], f)
         return
+
+    forbidden_osm_ids = set(forbidden_osm_ids) if forbidden_osm_ids else set()
 
     resolved_bearings = g_gdf.apply(
         lambda r: get_bearing_from_side(r.get('side')) if pd.isna(r.get('bearing')) else r.get('bearing'),
@@ -832,8 +842,9 @@ def snap_g_exemptions(full_roads_gdf, id_field):
 
     snapped_osm_ids = set()
     
-    # Path highway types for G-sign snapping (strictly paths/cycleways, excluding car roads)
-    PATH_HIGHWAYS = {'cycleway', 'path', 'footway', 'track'}
+    # Path highway types for G-sign snapping (strictly cycleways/paths/tracks; never footways or car roads)
+    PATH_HIGHWAYS = {'cycleway', 'path', 'track'}
+    EXEMPTION_MAX_SNAP_DIST = 20.0  # metres; prevents filtered signs jumping onto unrelated distant roads
     
     for row in g_gdf.itertuples():
         geom = row.geometry
@@ -849,13 +860,30 @@ def snap_g_exemptions(full_roads_gdf, id_field):
         
         # Strict candidate filtering based on sign type:
         if str(rvv).startswith('G'):
-            # G-signs (G12a, G11): MUST snap to cycleways/paths/tracks and NEVER to car roads
+            # G-signs (G12a, G11): MUST snap to cycleways/paths/tracks and NEVER to footways or car roads
             path_mask = cand_roads['highway'].isin(PATH_HIGHWAYS)
             cand_roads = cand_roads[path_mask].copy()
+        elif str(rvv) == 'C12':
+            # C12 (closed to all motor vehicles except microcars): local/service roads only,
+            # never motorways, trunks, primary arterials, or non-motorized paths
+            c12_excluded = {
+                'motorway', 'motorway_link', 'trunk', 'trunk_link',
+                'primary', 'primary_link',
+                'cycleway', 'path', 'footway', 'pedestrian', 'bridleway', 'steps',
+            }
+            cand_roads = cand_roads[~cand_roads['highway'].isin(c12_excluded)].copy()
         else:
-            # C-signs (C12, C9 exemptions): Exclude high-speed motorways/trunks
-            non_car_mask = ~cand_roads['highway'].isin(['motorway', 'motorway_link', 'trunk', 'trunk_link'])
-            cand_roads = cand_roads[non_car_mask].copy()
+            # C9 exemptions: exclude motorways/trunks and non-motorized paths
+            c9_excluded = {
+                'motorway', 'motorway_link', 'trunk', 'trunk_link',
+                'cycleway', 'path', 'footway', 'pedestrian', 'bridleway', 'steps',
+            }
+            cand_roads = cand_roads[~cand_roads['highway'].isin(c9_excluded)].copy()
+
+        # Exclude C9-forbidden roads so parallel C12 exemptions snap to their actual local/service road
+        if forbidden_osm_ids and not cand_roads.empty:
+            cand_ids = pd.to_numeric(cand_roads[id_field], errors='coerce')
+            cand_roads = cand_roads[~cand_ids.isin(forbidden_osm_ids)].copy()
 
         if cand_roads.empty:
             continue
@@ -869,6 +897,9 @@ def snap_g_exemptions(full_roads_gdf, id_field):
         )
         road_idx = snap_res[0]
         if road_idx is not None and pd.notna(road_idx):
+            snapped_geom = cand_roads.loc[road_idx, 'geometry']
+            if snapped_geom.distance(geom) > EXEMPTION_MAX_SNAP_DIST:
+                continue
             osm_id = cand_roads.loc[road_idx, id_field]
             if pd.notna(osm_id):
                 snapped_osm_ids.add(int(osm_id))

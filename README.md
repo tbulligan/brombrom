@@ -162,13 +162,14 @@ If you mistakenly enter a forbidden road (e.g., following traffic or missing a s
 
 ### Option B: Docker (Source of Truth)
 ```bash
-docker buildx build -t brombrom-builder .
+docker buildx build --load -t brombrom-builder .
 docker run --rm -v $(pwd):/app brombrom-builder
 ```
 
 ### Reset & Cleanup
 - **Fast Build Reset**: `./reset_build.sh` (resets processed map artifacts and outputs for a fast rebuild while preserving base maps & tools)
 - **Pristine Workspace Reset**: `./clean.sh` (completely wipes all temporary data, downloaded base maps, and installed tools)
+- **Docker Image Cleanup**: `docker rmi brombrom-builder` (removes the built Docker image)
 
 ---
 

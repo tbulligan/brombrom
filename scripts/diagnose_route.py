@@ -14,6 +14,50 @@ from shapely.geometry import Point, box
 # Ensure the root of the project is in path
 sys.path.append(os.getcwd())
 
+def compute_priority(highway, raw_maxspeed, other_tags, avoid_busy_roads=False):
+    """First-match priority matching config/routing.xml."""
+    if any(k in other_tags for k in (
+        '"motor_vehicle"=>"destination"', '"access"=>"destination"', '"motorcar"=>"destination"', '"vehicle"=>"destination"',
+        '"access"=>"customers"', '"motor_vehicle"=>"customers"', '"motorcar"=>"customers"', '"vehicle"=>"customers"',
+    )):
+        return 0.15
+    if avoid_busy_roads and raw_maxspeed is not None and raw_maxspeed >= 80:
+        return 0.15
+    if any(k in other_tags for k in ('"surface"=>"unpaved"', '"surface"=>"gravel"', '"surface"=>"dirt"', '"surface"=>"sand"', '"surface"=>"mud"')):
+        return 0.5
+    if highway == 'living_street':
+        return 0.4
+    if highway == 'track':
+        return 0.5
+    if highway == 'service':
+        return 0.6
+    if raw_maxspeed is not None and raw_maxspeed >= 100:
+        return 0.45
+    if raw_maxspeed is not None and raw_maxspeed >= 80:
+        return 0.55
+    if avoid_busy_roads and highway in ('primary', 'primary_link'):
+        return 0.4
+    if avoid_busy_roads and raw_maxspeed == 70:
+        return 0.5
+    if avoid_busy_roads and highway in ('secondary', 'secondary_link'):
+        return 0.7
+    if '"surface"=>"unhewn_cobblestone"' in other_tags:
+        return 0.7
+    if '"surface"=>"cobblestone"' in other_tags or '"surface"=>"sett"' in other_tags:
+        return 0.8
+    if avoid_busy_roads and highway == 'residential':
+        return 0.85
+    if avoid_busy_roads and raw_maxspeed == 60:
+        return 1.0
+    if raw_maxspeed == 70:
+        return 0.8
+    if raw_maxspeed == 60:
+        return 0.9
+    if highway == 'residential':
+        return 0.9
+    return 1.0
+
+
 def check_files():
     required = ["nl_roads.gpkg", "nl_roads_brom.gpkg"]
     missing = [f for f in required if not os.path.exists(f)]
@@ -87,12 +131,15 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=Fals
             
         is_link_ramp = highway in ['motorway_link', 'trunk_link']
             
-        # C. Allow microcar=yes overrides by bypassing general access/motor_vehicle/cycleway blocks
+        # C. Allow microcar=yes overrides (incl. permitted cycleways/paths, but never footway/pedestrian/bridleway/steps)
         has_microcar_yes_tag = '"microcar"=>"yes"' in other_tags
-        is_cycleway_type = highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']
-        microcar_override = has_microcar_yes_tag and not is_cycleway_type
+        is_never_microcar_path = highway in ['footway', 'pedestrian', 'bridleway', 'steps']
+        microcar_override = has_microcar_yes_tag and not is_never_microcar_path
         if not microcar_override:
-            if '"motor_vehicle"=>"no"' in other_tags or '"motorcar"=>"no"' in other_tags or '"access"=>"no"' in other_tags:
+            if any(k in other_tags for k in (
+                '"motor_vehicle"=>"no"', '"motorcar"=>"no"', '"access"=>"no"',
+                '"motor_vehicle"=>"private"', '"motorcar"=>"private"', '"vehicle"=>"private"', '"access"=>"private"',
+            )):
                 continue
             if highway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
                 continue
@@ -123,38 +170,7 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=Fals
                 pass
 
         speed_mps = speed_kmh / 3.6
-        priority = 1.0
-        # Maxspeed / Scenic priority penalties (matching routing.xml avoid_busy_roads)
-        if avoid_busy_roads and raw_maxspeed is not None and raw_maxspeed >= 80:
-            priority = 0.05
-        elif raw_maxspeed is not None:
-            if raw_maxspeed >= 100:
-                priority = 0.45
-            elif raw_maxspeed >= 80:
-                priority = 0.55
-            elif raw_maxspeed == 70:
-                priority = 0.8
-            elif raw_maxspeed == 60:
-                priority = 0.9
-
-        # Scenic road hierarchy adjustments (matching routing.xml avoid_busy_roads)
-        if avoid_busy_roads:
-            if highway in ['primary', 'primary_link']:
-                priority *= 0.4
-            elif highway in ['secondary', 'secondary_link']:
-                priority *= 0.7
-            elif highway in ['tertiary', 'tertiary_link', 'unclassified']:
-                priority *= 1.25
-            elif highway == 'residential':
-                priority *= 1.15
-
-        # Destination traffic penalty (routing.xml priority=0.15)
-        if '"motor_vehicle"=>"destination"' in other_tags or '"access"=>"destination"' in other_tags or '"motorcar"=>"destination"' in other_tags:
-            priority *= 0.15
-
-        # Surface penalties (routing.xml)
-        if '"surface"=>"unpaved"' in other_tags or '"surface"=>"gravel"' in other_tags:
-            priority *= 0.5
+        priority = compute_priority(highway, raw_maxspeed, other_tags, avoid_busy_roads=avoid_busy_roads)
 
         # Compute travel time in seconds adjusted for priority
         travel_time_sec = (length_m / speed_mps) / priority
@@ -338,7 +354,7 @@ def simulate_route(start_lat, start_lon, end_lat, end_lon, avoid_busy_roads=Fals
                         reasons.append(f"CLASS_BLOCKED({hway})")
                     if '"motorroad"=>"yes"' in tags:
                         reasons.append("MOTORROAD_YES")
-                    if '"microcar"=>"yes"' not in tags or hway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:
+                    if '"microcar"=>"yes"' not in tags or hway in ['footway', 'pedestrian', 'bridleway', 'steps']:
                         if '"motor_vehicle"=>"no"' in tags or '"motorcar"=>"no"' in tags or '"access"=>"no"' in tags:
                             reasons.append("MOTOR_VEHICLE_NO")
                         if hway in ['cycleway', 'footway', 'path', 'pedestrian', 'bridleway', 'steps']:

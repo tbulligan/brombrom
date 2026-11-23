@@ -5,6 +5,7 @@ os.environ["PROJ_NETWORK"] = "OFF"
 import geopandas as gpd
 from shapely.geometry import Point
 import networkx as nx
+from scripts.diagnose_route import compute_priority
 
 @pytest.mark.skipif(
     not os.path.exists("nl_roads.gpkg") or not os.path.exists("nl_roads_brom.gpkg"),
@@ -260,33 +261,7 @@ def test_strategy3_balanced_default_and_scenic_routing():
                     pass
 
             speed_mps = speed_kmh / 3.6
-            priority = 1.0
-
-            # Strategy 3: Balanced default and avoid_busy_roads
-            if avoid_busy_roads and raw_maxspeed is not None and raw_maxspeed >= 80:
-                priority = 0.05
-            elif raw_maxspeed is not None:
-                if raw_maxspeed >= 100:
-                    priority = 0.45
-                elif raw_maxspeed >= 80:
-                    priority = 0.55
-                elif raw_maxspeed == 70:
-                    priority = 0.8
-                elif raw_maxspeed == 60:
-                    priority = 0.9
-
-            if avoid_busy_roads:
-                if highway in ['primary', 'primary_link']:
-                    priority *= 0.4
-                elif highway in ['secondary', 'secondary_link']:
-                    priority *= 0.7
-                elif highway in ['tertiary', 'tertiary_link', 'unclassified']:
-                    priority *= 1.25
-                elif highway == 'residential':
-                    priority *= 1.15
-
-            if '"motor_vehicle"=>"destination"' in other_tags or '"access"=>"destination"' in other_tags or '"motorcar"=>"destination"' in other_tags:
-                priority *= 0.15
+            priority = compute_priority(highway, raw_maxspeed, other_tags, avoid_busy_roads=avoid_busy_roads)
 
             travel_time_sec = (length_m / speed_mps) / priority
 
@@ -329,6 +304,89 @@ def test_strategy3_balanced_default_and_scenic_routing():
     names_avoid_busy = build_graph_and_route(avoid_busy_roads=True)
     assert not any("middenweg" in n for n in names_avoid_busy), f"Expected no Middenweg when avoiding busy roads: {names_avoid_busy}"
     assert any("zomerdijk" in n or "beets" in n for n in names_avoid_busy), f"Expected polder bypass route: {names_avoid_busy}"
+
+
+def test_routing_xml_priority_and_access_invariants():
+    import xml.etree.ElementTree as ET
+
+    root = ET.parse("config/routing.xml").getroot()
+    profile = root.find("routingProfile[@name='BromBrom']")
+    assert profile is not None
+
+    # Pruned noisy/non-microcar toggles stay absent; relevant toggles stay present
+    param_ids = {p.attrib.get("id") for p in profile.findall("parameter")}
+    for removed in ("prefer_unpaved", "avoid_shuttle_train", "avoid_ice_roads_fords", "goods_restrictions", "avoid_4wd_only"):
+        assert removed not in param_ids, f"Unexpected parameter: {removed}"
+    for kept in ("avoid_busy_roads", "avoid_tunnels", "avoid_borders", "avoid_ferries", "avoid_unpaved", "avoid_toll", "avoid_low_emission_zone"):
+        assert kept in param_ids, f"Missing expected parameter: {kept}"
+
+    # Access invariants: hard prohibitions (incl. fords/ice/4wd) must precede microcar=yes
+    access_rules = [
+        (elem.attrib.get("t"), elem.attrib.get("v"), elem.attrib.get("value"))
+        for elem in profile.find("way[@attribute='access']")
+        if elem.tag == "select"
+    ]
+    idx_microcar_yes = access_rules.index(("microcar", "yes", "1"))
+    for tag in [
+        ("microcar", "no", "-1"),
+        ("osmand_change", "delete", "-1"),
+        ("highway", "construction", "-1"),
+        ("ford", "yes", "-1"),
+        ("ice_road", "yes", "-1"),
+        ("4wd_only", "yes", "-1"),
+    ]:
+        assert access_rules.index(tag) < idx_microcar_yes, f"{tag} must precede microcar=yes"
+
+    # Penalty transition invariants: avoid_tunnels & gravel must precede highway classes
+    pen_flat = []
+    for elem in profile.find("way[@attribute='penalty_transition']"):
+        if elem.tag == "select":
+            pen_flat.append((None, elem.attrib.get("t"), elem.attrib.get("v")))
+        elif elem.tag == "if":
+            for sub in elem.findall("select"):
+                pen_flat.append((elem.attrib.get("param"), sub.attrib.get("t"), sub.attrib.get("v")))
+    assert pen_flat.index(("avoid_tunnels", "tunnel", "yes")) < pen_flat.index((None, "highway", "primary"))
+    assert pen_flat.index((None, "surface", "gravel")) < pen_flat.index((None, "highway", "primary"))
+
+    # Priority invariants (OsmAnd first-match top-to-bottom)
+    prio_flat = []
+    for elem in profile.find("way[@attribute='priority']"):
+        if elem.tag == "select":
+            prio_flat.append((None, elem.attrib.get("t"), elem.attrib.get("v"), float(elem.attrib["value"])))
+        elif elem.tag == "if":
+            param = elem.attrib.get("param")
+            for sub in elem.findall("select"):
+                prio_flat.append((param, sub.attrib.get("t"), sub.attrib.get("v"), float(sub.attrib["value"])))
+
+    def find_idx(param, t, v):
+        for i, (p, kt, kv, _) in enumerate(prio_flat):
+            if p == param and kt == t and kv == v:
+                return i
+        raise AssertionError(f"Missing rule ({param}, {t}={v})")
+
+    # 1. Balanced default 80 km/h and avoid_busy_roads 80 km/h bounds
+    def_80 = prio_flat[find_idx(None, "maxspeed", "80")][3]
+    ab_80 = prio_flat[find_idx("avoid_busy_roads", "maxspeed", "80")][3]
+    assert 0.5 <= def_80 <= 0.65, f"Default maxspeed=80 priority out of range: {def_80}"
+    assert 0.05 <= ab_80 <= 0.2, f"avoid_busy_roads maxspeed=80 priority out of range: {ab_80}"
+
+    # 2. No >1.0 priority (45 km/h clamp causes 30 km/h urban bias)
+    for param, t, v, val in prio_flat:
+        assert val <= 1.0, f"Priority > 1.0: ({param}, {t}={v}, {val})"
+
+    # 3. Strictest-first ordering checks (prevents shadowing & inversions)
+    assert find_idx("avoid_tunnels", "tunnel", "yes") < find_idx(None, "maxspeed", "80")
+    assert find_idx("avoid_busy_roads", "maxspeed", "80") < find_idx(None, "smoothness", "horrible")
+    assert find_idx(None, "smoothness", "horrible") < find_idx(None, "maxspeed", "60")
+    assert find_idx(None, "surface", "unpaved") < find_idx(None, "smoothness", "bad")
+    assert find_idx(None, "maxspeed", "80") < find_idx(None, "smoothness", "bad")
+    assert find_idx(None, "surface", "unpaved") < find_idx(None, "maxspeed", "60")
+    assert find_idx(None, "highway", "living_street") < find_idx(None, "maxspeed", "60")
+    assert find_idx(None, "highway", "service") < find_idx(None, "maxspeed", "60")
+    assert find_idx("avoid_busy_roads", "highway", "primary") < find_idx("avoid_busy_roads", "maxspeed", "70")
+    assert find_idx(None, "surface", "cobblestone") < find_idx("avoid_busy_roads", "maxspeed", "60")
+    assert find_idx(None, "surface", "cobblestone") < find_idx(None, "maxspeed", "60")
+
 
 
 

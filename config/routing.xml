@@ -17,14 +17,9 @@
 		<parameter id="avoid_toll" name="Avoid toll roads" description="Avoid toll roads" type="boolean"/>
 		<parameter id="avoid_unpaved" name="Avoid unpaved roads" description="Avoid unpaved roads" type="boolean"/>
 		<parameter id="avoid_low_emission_zone" name="Avoid low emission zones" description="Avoid low emission zones" type="boolean"/>
-		<parameter id="prefer_unpaved" name="Prefer unpaved roads" description="Prefer unpaved roads" type="boolean"/>
 		<parameter id="avoid_ferries" name="Avoid ferries" description="Avoid ferries" type="boolean"/>
-		<parameter id="avoid_shuttle_train" name="Avoid Shuttle Trains" description="Avoid Shuttle Trains" type="boolean"/>
 		<parameter id="avoid_tunnels" name="Avoid tunnels" description="Avoid tunnels" type="boolean"/>
 		<parameter id="avoid_borders" name="Avoid border crossing" description="Avoid crossing a border into another country" type="boolean"/>
-		<parameter id="avoid_ice_roads_fords" name="Avoid ice roads, fords" description="Avoid ice roads and fords" type="boolean"/>
-		<parameter id="goods_restrictions" name="Goods restrictions" description="Respect goods restrictions" type="boolean"/>
-		<parameter id="avoid_4wd_only" name="Avoid 4WD roads" description="Avoid roads only suitable for 4WD only vehicles" type="boolean"/>
 		<parameter id="weight" name="Weight" description="Maximum vehicle weight to be permitted on the route" type="numeric" values="0,0.349,0.449,0.599,0.799,3.49" valueDescriptions="-,350kg,450kg,600kg,800kg,3.5t"/>
 		<parameter id="height" name="Height" description="Maximum vehicle height to be permitted on the route" type="numeric" values="0,1.49,1.99,2.49,2.99" valueDescriptions="-,1.5m,2m,2.5m,3m"/>
 		<parameter id="length" name="Length" description="Maximum vehicle length to be permitted on the route" type="numeric" values="0,2.49,2.99,3.49,3.99" valueDescriptions="-,2.5m,3m,3.5m,4m"/>
@@ -33,32 +28,21 @@
 
 		<way attribute="access">
 			<select value="-1" t="microcar" v="no"/>
-			<select value="1" t="microcar" v="yes"/>
 			<select value="-1" t="osmand_change" v="delete"/>
 			<select value="-1" t="highway" v="proposed"/>
 			<select value="-1" t="highway" v="construction"/>
 			<select value="-1" t="construction" v="yes"/>
 			<select value="-1" t="oneway" v="reversible"/>
+			<select value="-1" t="ice_road" v="yes"/>
+			<select value="-1" t="winter_road" v="yes"/>
+			<select value="-1" t="ford" v="yes"/>
+			<select value="-1" t="4wd_only" v="yes"/>
+			<select value="-1" t="4wd_only" v="recommended"/>
 			<if param="avoid_low_emission_zone">
 				<select value="-1" t="low_emission_zone" v="yes"/>
 			</if>
-			<if param="avoid_ice_roads_fords">
-				<select value="-1" t="ice_road" v="yes"/>
-				<select value="-1" t="winter_road" v="yes"/>
-				<select value="-1" t="ford" v="yes"/>
-			</if>
 			<if param="avoid_ferries">
 			    <select value="-1" t="route" v="ferry"/>
-			</if>
-			<if param="avoid_shuttle_train">
-			    <select value="-1" t="route" v="shuttle_train"/>
-			</if>
-			<if param="goods_restrictions">
-				<select value="-1" t="goods" v="no"/>
-			</if>
-			<if param="avoid_4wd_only">
-				<select value="-1" t="4wd_only" v="yes"/>
-				<select value="-1" t="4wd_only" v="recommended"/>
 			</if>
 			<if param="avoid_unpaved">
 				<select value="-1" t="highway" v="track"/>
@@ -77,6 +61,8 @@
 				<select value="-1" t="smoothness" v="very_horrible"/>
 				<select value="-1" t="smoothness" v="impassable"/>
 			</if>
+			<!-- Explicit microcar=yes (NDW exemptions + OSM microcar=yes; stray footway/pedestrian/bridleway/steps tags are stripped in tag_c9_roads.py) -->
+			<select value="1" t="microcar" v="yes"/>
 
 
 
@@ -176,7 +162,6 @@
 			    <select value="-1" t="toll" v="yes"/>
 			</if>
 			<select value="1" t="route" v="ferry"/>
-			<select value="1" t="route" v="shuttle_train"/>
 			<select value="-1"/>
 		</way>
 
@@ -201,6 +186,10 @@
 			<!-- Link ramps transition penalty (36,000s / 10h) to prevent navigation while preserving roundabout exit counting -->
 			<select value="36000" t="highway" v="motorway_link"/>
 			<select value="36000" t="highway" v="trunk_link"/>
+			<if param="avoid_tunnels">
+				<select value="200" t="tunnel" v="yes"/>
+			</if>
+			<select value="100" t="surface" v="gravel"/>
 			<!-- Consolidated transition penalties (removed short_way switch) -->
 			<!-- roughly based on minimizing turn penalties for faster roads -->
 			<select value="10" t="highway" v="primary"/>
@@ -210,11 +199,6 @@
 			<select value="20" t="highway" v="tertiary"/>
 			<select value="20" t="highway" v="tertiary_link"/>
 			<select value="40" t="highway" v="service"/>
-			
-			<if param="avoid_tunnels">
-				<select value="200" t="tunnel" v="yes"/>
-			</if>
-			<select value="100" t="surface" v="gravel"/>
 			
 			<!-- Fallback defaults -->
 			<select value="25"/>
@@ -259,50 +243,72 @@
 			<select value="30" t="highway" v="service"/>
 			<select value="15" t="highway" v="living_street"/>
 			<select value="10" t="route" v="ferry"/>
-			<select value="45" t="route" v="shuttle_train"/>
 		</way>
 
 		<way attribute="priority">
+			<!-- OsmAnd evaluates priority top-to-bottom (first match wins); keep strictest penalties first -->
 			<select t="motorcar" v="private" value="0.15"/>
 			<select t="motorcar" v="destination" value="0.15"/>
+			<select t="motorcar" v="delivery" value="0.15"/>
+			<select t="motorcar" v="customers" value="0.15"/>
 			<select t="motor_vehicle" v="private" value="0.15"/>
 			<select t="motor_vehicle" v="destination" value="0.15"/>
+			<select t="motor_vehicle" v="delivery" value="0.15"/>
+			<select t="motor_vehicle" v="customers" value="0.15"/>
+			<select t="vehicle" v="private" value="0.15"/>
+			<select t="vehicle" v="destination" value="0.15"/>
+			<select t="vehicle" v="delivery" value="0.15"/>
+			<select t="vehicle" v="customers" value="0.15"/>
 			<select t="access" v="private" value="0.15"/>
 			<select t="access" v="destination" value="0.15"/>
+			<select t="access" v="delivery" value="0.15"/>
+			<select t="access" v="customers" value="0.15"/>
 			<if param="avoid_toll">
 				<select t="toll" v="yes" value="0.05"/>
 			</if>
 			<if param="avoid_borders">
 				<select t="barrier" v="border_control" value="0.1"/>
 			</if>
-
-			<if param="avoid_busy_roads">
-				<select value="0.05" t="maxspeed" v="130"/>
-				<select value="0.05" t="maxspeed" v="120"/>
-				<select value="0.05" t="maxspeed" v="110"/>
-				<select value="0.05" t="maxspeed" v="100"/>
-				<select value="0.05" t="maxspeed" v="90"/>
-				<select value="0.05" t="maxspeed" v="80"/>
-				<select value="0.05" t="maxspeed:motorcar" v="130"/>
-				<select value="0.05" t="maxspeed:motorcar" v="120"/>
-				<select value="0.05" t="maxspeed:motorcar" v="110"/>
-				<select value="0.05" t="maxspeed:motorcar" v="100"/>
-				<select value="0.05" t="maxspeed:motorcar" v="90"/>
-				<select value="0.05" t="maxspeed:motorcar" v="80"/>
-				<select value="0.05" t="zone:maxspeed" v="NL:100"/>
-				<select value="0.05" t="zone:maxspeed" v="NL:80"/>
-				<select value="0.4" t="highway" v="primary"/>
-				<select value="0.4" t="highway" v="primary_link"/>
-				<select value="0.7" t="highway" v="secondary"/>
-				<select value="0.7" t="highway" v="secondary_link"/>
-				<select value="1.25" t="highway" v="tertiary"/>
-				<select value="1.25" t="highway" v="tertiary_link"/>
-				<select value="1.25" t="highway" v="unclassified"/>
-				<select value="1.15" t="highway" v="residential"/>
+			<if param="avoid_tunnels">
+				<select t="tunnel" v="yes" value="0.05"/>
 			</if>
 
-			<!-- Safety: De-prioritize high-speed roads (Strategy 3: Balanced default) -->
-			<!-- Even though speed is capped at 45, we 'dislike' interacting with 80km/h traffic -->
+			<!-- Severe road surface degradation & avoid_busy_roads >=80 km/h -->
+			<select value="0.05" t="smoothness" v="impassable"/>
+			<select value="0.1" t="smoothness" v="very_horrible"/>
+			<if param="avoid_busy_roads">
+				<select value="0.15" t="maxspeed" v="130"/>
+				<select value="0.15" t="maxspeed" v="120"/>
+				<select value="0.15" t="maxspeed" v="110"/>
+				<select value="0.15" t="maxspeed" v="100"/>
+				<select value="0.15" t="maxspeed" v="90"/>
+				<select value="0.15" t="maxspeed" v="80"/>
+				<select value="0.15" t="maxspeed:motorcar" v="130"/>
+				<select value="0.15" t="maxspeed:motorcar" v="120"/>
+				<select value="0.15" t="maxspeed:motorcar" v="110"/>
+				<select value="0.15" t="maxspeed:motorcar" v="100"/>
+				<select value="0.15" t="maxspeed:motorcar" v="90"/>
+				<select value="0.15" t="maxspeed:motorcar" v="80"/>
+				<select value="0.15" t="zone:maxspeed" v="NL:100"/>
+				<select value="0.15" t="zone:maxspeed" v="NL:80"/>
+			</if>
+			<select value="0.2" t="smoothness" v="horrible"/>
+			<select value="0.2" t="tracktype" v="grade5"/>
+			<select value="0.4" t="smoothness" v="very_bad"/>
+
+			<!-- Unpaved surfaces & non-through minor roads -->
+			<select value="0.4" t="surface" v="mud"/>
+			<select value="0.4" t="surface" v="sand"/>
+			<select value="0.45" t="surface" v="dirt"/>
+			<select value="0.45" t="surface" v="grass"/>
+			<select value="0.45" t="surface" v="ground"/>
+			<select value="0.5" t="surface" v="gravel"/>
+			<select value="0.5" t="surface" v="unpaved"/>
+			<select value="0.4" t="highway" v="living_street"/>
+			<select value="0.5" t="highway" v="track"/>
+			<select value="0.6" t="highway" v="service"/>
+
+			<!-- Safety: De-prioritize high-speed roads (balanced default) -->
 			<select value="0.45" t="maxspeed" v="130"/>
 			<select value="0.45" t="maxspeed" v="120"/>
 			<select value="0.45" t="maxspeed" v="110"/>
@@ -317,52 +323,46 @@
 			<select value="0.55" t="maxspeed:motorcar" v="80"/>
 			<select value="0.45" t="zone:maxspeed" v="NL:100"/>
 			<select value="0.55" t="zone:maxspeed" v="NL:80"/>
+
+			<!-- Avoid busy roads: de-prioritize primary, 70 km/h & secondary arterials -->
+			<if param="avoid_busy_roads">
+				<select value="0.4" t="highway" v="primary"/>
+				<select value="0.4" t="highway" v="primary_link"/>
+				<select value="0.5" t="maxspeed" v="70"/>
+				<select value="0.7" t="highway" v="secondary"/>
+				<select value="0.7" t="highway" v="secondary_link"/>
+			</if>
+
+			<!-- Comfort: rough paved surfaces -->
+			<select value="0.7" t="smoothness" v="bad"/>
+			<select value="0.7" t="surface" v="unhewn_cobblestone"/>
+			<select value="0.8" t="surface" v="cobblestone"/>
+			<select value="0.8" t="surface" v="sett"/>
+			<select value="0.9" t="smoothness" v="intermediate"/>
+
+			<!-- Avoid busy roads: light residential penalty, keep smooth 60 km/h rural roads at 1.0 -->
+			<if param="avoid_busy_roads">
+				<select value="0.85" t="highway" v="residential"/>
+				<select value="1.0" t="maxspeed" v="60"/>
+			</if>
+
+			<!-- Mild default speed preferences -->
 			<select value="0.8" t="maxspeed" v="70"/>
 			<select value="0.9" t="maxspeed" v="60"/>
 
-			<select value="0.5" t="surface" v="gravel"/>
-			<select value="0.5" t="surface" v="unpaved"/>
-			
-			<!-- Comfort: Brommobiels prefer smooth asphalt over clunky bricks -->
-			<select value="1.1" t="surface" v="asphalt"/>
-			<select value="1.1" t="surface" v="concrete"/>
-			<select value="1.1" t="surface" v="paved"/>
-			<select value="0.8" t="surface" v="sett"/>
-			<select value="0.8" t="surface" v="cobblestone"/>
-			<select value="0.7" t="surface" v="unhewn_cobblestone"/>
-			
-			<!-- Low Comfort: Avoid bad smoothness -->
-			<select value="0.9" t="smoothness" v="intermediate"/>
-			<select value="0.7" t="smoothness" v="bad"/>
-			<select value="0.4" t="smoothness" v="very_bad"/>
-			<select value="0.2" t="smoothness" v="horrible"/> 
-
-			<if param="prefer_unpaved">
-				<select value="1.2" t="surface" v="gravel"/>
-				<select value="1.2" t="surface" v="unpaved"/>
-				<select value="1.2" t="highway" v="track"/>
-			</if>
-
-			<!-- Preference: Balanced network usage -->
-			<!-- We prefer 50km/h flow (Primary/Secondary) but penalize high-speed deltas via maxspeed tags above -->
+			<!-- Standard road network -->
 			<select value="1.0" t="microcar" v="yes"/>
 			<select value="1.0" t="highway" v="cycleway"/>
 			<select value="1.0" t="highway" v="primary"/>
 			<select value="1.0" t="highway" v="primary_link"/>
-
 			<select value="1.0" t="highway" v="secondary"/>
-			<select value="1.0" t="highway" v="secondary_link"/>			
+			<select value="1.0" t="highway" v="secondary_link"/>
 			<select value="1.0" t="highway" v="tertiary"/>
 			<select value="1.0" t="highway" v="tertiary_link"/>
 			<select value="1.0" t="highway" v="unclassified"/>
 			<select value="1.0" t="highway" v="road"/>
-			<select value="1.0" t="highway" v="residential"/>
-			
-			<select value="0.5" t="highway" v="track"/>
-			<select value="0.6" t="highway" v="service"/>
-			<select value="0.4" t="highway" v="living_street"/>
+			<select value="0.9" t="highway" v="residential"/>
 			<select value="0.5" t="route" v="ferry"/>
-			<select value="0.5" t="route" v="shuttle_train"/>
 			<select value="0.7"/>
 		</way>
 

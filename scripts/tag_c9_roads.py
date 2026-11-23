@@ -43,18 +43,25 @@ class TagC9Handler(osmium.SimpleHandler):
         is_forbidden = way_id in self.forbidden_ways
         is_ndw_exempted = way_id in self.exemption_ways
         
-        # Microcar allowances require an explicit microcar tag or an NDW snapped exemption (OB65 / uitgezonderd brommobielen)
+        # Microcar allowances: NDW snapped exemptions (OB65) or explicit OSM microcar=yes
+        # (including explicitly permitted G12a/G11 cycleways/paths like Kiltunnelweg, but never pedestrian/equestrian/stairs)
         has_microcar_no = (w.tags.get('microcar') == 'no' and w.tags.get('motor_vehicle') != 'no')
-        is_cycleway = w.tags.get('highway') in ('cycleway', 'path', 'footway', 'pedestrian')
-        has_microcar_yes = is_ndw_exempted or (w.tags.get('microcar') == 'yes' and not is_cycleway)
+        is_never_microcar_path = w.tags.get('highway') in ('footway', 'pedestrian', 'bridleway', 'steps')
+        has_microcar_yes = is_ndw_exempted or (w.tags.get('microcar') == 'yes' and not is_never_microcar_path)
+        strip_invalid_path_microcar = is_never_microcar_path and not is_ndw_exempted and w.tags.get('microcar') == 'yes'
         
-        if not is_forbidden and not has_microcar_no and not has_microcar_yes:
+        if not is_forbidden and not has_microcar_no and not has_microcar_yes and not strip_invalid_path_microcar:
             self.writer.add_way(w)
             return
 
         tags = dict(w.tags)
         modified = False
         
+        # Strip stray raw OSM microcar=yes on footways/pedestrian/bridleway/steps so it cannot bypass routing.xml
+        if strip_invalid_path_microcar:
+            tags.pop('microcar', None)
+            modified = True
+
         # 0. Allow microcar=yes overrides by bypassing general motor_vehicle/vehicle/access/motorcar prohibitions
         if has_microcar_yes and not is_forbidden:
             for tag in ['motor_vehicle', 'vehicle', 'access', 'motorcar']:
@@ -195,6 +202,10 @@ def main():
         try:
             with open("g_exemptions_ways.json", "r") as f:
                 exemption_ways = set(json.load(f))
+            overlap = exemption_ways & forbidden_ways
+            if overlap:
+                print(f"Warning: {len(overlap)} ways appear in both g_exemptions_ways.json and forbidden_ways; keeping forbidden.")
+                exemption_ways -= overlap
             print(f"Loaded {len(exemption_ways)} microcar exemption ways from g_exemptions_ways.json")
         except Exception as e:
             print(f"Warning loading g_exemptions_ways.json: {e}")

@@ -39,6 +39,7 @@ Multi-component system:
 *   **App Versioning**: Bump version in `app/pubspec.yaml` on app update (version name `n.n.n` + build number). Choose `major.minor.patch` by change scope.
 *   **Commit Messages**: No generic/auto-generated messages (e.g. "Merge branch 'develop'"). Commits must be descriptive Conventional Commits scope-focused.
     *   **Merge Commits**: Use conventional commit type for combined changes (e.g. `perf(etl): integrate optimized road snapping and C9 tagging scripts` or `chore(release): integrate version check fix into main`).
+    *   **Post-Merge Sync**: After merging `develop` into `main`, fast-forward `develop` onto `main` (`git checkout develop && git merge --ff-only main && git push origin develop`) to prevent merge-commit drift.
 
 ## ⚠️ Known Complexities
 *   **NDK Versioning**: Flutter plugins require **Android NDK 28.2.13676358**. Do not downgrade in `app/android/app/build.gradle.kts`.
