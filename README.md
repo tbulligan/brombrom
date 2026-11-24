@@ -58,7 +58,7 @@ The fastest way to install and keep your navigation updated automatically.
 > **Already Configured?** If you have already set up the BromBrom profile in [OsmAnd](https://www.osmand.net/), you only need to perform **Phase 1: Installation & Import**. [OsmAnd](https://www.osmand.net/) will automatically retain your settings and profile choice for updates!
 
 #### Phase 1: Installation & Import (Required for Updates)
-1.  **Download** the **BromBrom Manager App** from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**.
+1.  **Download** the **BromBrom Manager App** from the **[Google Play Store](https://play.google.com/store/apps/details?id=com.brombrom.app)** (or sideload the APK from the **[latest release](https://github.com/tbulligan/brombrom/releases/latest)**).
 2.  **Install** and **Open** the app.
 3.  **Download & Import**: The app automatically checks for and downloads the update. Once downloaded, review the popup instructions and tap **"OPEN OSMAND"**.
 4.  [OsmAnd](https://www.osmand.net/) will open. Check both **"Settings"** and **"Resources"**, then tap **"Continue"**.
@@ -68,9 +68,9 @@ The fastest way to install and keep your navigation updated automatically.
 <details>
   <summary>📸 Step-by-Step Screenshots: Phase 1 (Installation & Import)</summary>
 
-  | 1. Updates Available | 2. Open with OsmAnd | 3. Select Resources to Import |
+  | 1. Updates Available | 2. Open OsmAnd | 3. Select Resources to Import |
   | :---: | :---: | :---: |
-  | ![Updates Available](assets/bbm-screenshots/bbm-0-updates-available.png) | ![Open with OsmAnd](assets/bbm-screenshots/bbm-1-open-with-osmand.png) | ![Select Resources](assets/bbm-screenshots/bbm-2-import.png) |
+  | ![Updates Available](assets/bbm-screenshots/bbm-0-updates-available.png) | ![Open OsmAnd](assets/bbm-screenshots/bbm-1-open-osmand.png) | ![Select Resources](assets/bbm-screenshots/bbm-2-import.png) |
 
   | 4. Confirm Replacement (If asked) | 5. Import Complete (Tap Close) |
   | :---: | :---: |
@@ -108,7 +108,7 @@ Because the entire BromBrom profile is packaged into a Smart Folder (`.osf`), ma
 7. Open the [OsmAnd](https://www.osmand.net/) menu (three lines in the corner) and go to **Settings** -> **Configure profiles**.
 8. **Enable BromBrom & Disable Others** — Set **BromBrom** to **ON** (orange) and switch all other profiles to **OFF** (grey).
 
-> ⚠️ Do not skip steps 6–8. [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
+> ⚠️ Do not skip steps 7–8. [OsmAnd](https://www.osmand.net/) does not enable new profiles automatically.
 
 See the [Manual Install Guide](docs/manual_install.md) ([Nederlandse handleiding](docs/manual_install.nl.md)) for deeper troubleshooting.
 

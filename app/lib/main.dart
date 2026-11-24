@@ -565,11 +565,12 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
           throw Exception("Storage directory unavailable.");
         }
         final File file = File('$_targetDir/$fileName');
-        if (await file.exists()) await file.delete();
+        final File tmpFile = File('$_targetDir/$fileName.tmp');
         
         final filePath = await task.filePath();
         final downloadedFile = File(filePath);
-        await downloadedFile.copy(file.path);
+        await downloadedFile.copy(tmpFile.path);
+        await tmpFile.rename(file.path);
         await downloadedFile.delete();
 
         _log("Saved to app storage: ${file.path}");
