@@ -53,7 +53,7 @@ Multi-component system:
     ```
     *Note: Skip Python tests for pure app or docs edits.*
 *   **Graph Drills**: Run `scripts/validate_results.py` to verify map sanity + OSF artifacts.
-*   **On-Demand Diagnostics**: Debug routing/data via `scripts/debug_road.py` and `scripts/diagnose_route.py` per [testing.md](file:///home/tomaso/projects/brombrom/docs/testing.md).
+*   **On-Demand Diagnostics**: Debug routing/data via `scripts/debug_road.py` and `scripts/diagnose_route.py` per [testing.md](docs/testing.md).
     *   Inspect road way: `micromamba run -n brombrom python scripts/debug_road.py --way <OSM_WAY_ID>`
     *   Simulate route: `micromamba run -n brombrom python scripts/diagnose_route.py --start <LAT,LON> --end <LAT,LON>`
 *   **App Testing**: Push app changes to `develop`. Download APK artifacts from GitHub Actions before merging to `main`.

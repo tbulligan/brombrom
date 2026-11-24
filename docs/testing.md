@@ -39,7 +39,7 @@ To reset your workspace or prepare for a fresh build:
 
 ## On-Demand Diagnostics
 
-For debugging specific routing complaints or verifying local data, a command-line diagnostic tool is available in [debug_road.py](file:///home/tomaso/projects/brombrom/scripts/debug_road.py).
+For debugging specific routing complaints or verifying local data, a command-line diagnostic tool is available in [debug_road.py](../scripts/debug_road.py).
 
 It queries the raw road database (`nl_roads.gpkg`), the blocked road database (`nl_roads_brom.gpkg`), and the NDW signs database (`c9_ndw.gpkg`) to report metadata, snapped signs, and tags.
 
@@ -72,7 +72,7 @@ If the required geopackage databases are missing when running a query, the tool 
 
 ### Route Simulation & Automated Gap Diagnosis (`diagnose_route.py`)
 
-To diagnose why a microcar route takes a detour or fails to calculate, use [diagnose_route.py](file:///home/tomaso/projects/brombrom/scripts/diagnose_route.py). It builds a NetworkX graph from the exact BromBrom routing logic and performs instant diagnostic gap analysis:
+To diagnose why a microcar route takes a detour or fails to calculate, use [diagnose_route.py](../scripts/diagnose_route.py). It builds a NetworkX graph from the exact BromBrom routing logic and performs instant diagnostic gap analysis:
 
 ```bash
 # Simulate a microcar route between two coordinates
