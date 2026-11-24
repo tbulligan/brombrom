@@ -34,6 +34,8 @@ def create_osmand_deploy_package():
       "location_radius_visibility": "RESTING_NAVIGATION",
       "interrupt_music": "false",
       "fast_route_mode": "true",
+      "route_calculation_method": "STANDARD_ONLY",
+      "routing_method": "A_STAR_2_PHASE",
       "show_nearby_favorites": "false",
       "show_nearby_poi": "false",
       "rotate_map": "1",

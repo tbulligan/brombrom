@@ -189,7 +189,7 @@ const translations = {
 
 const screenshots = [
   'bbm-0-updates-available.png',
-  'bbm-1-open-with-osmand.png',
+  'bbm-1-open-osmand.png',
   'bbm-2-import.png',
   'bbm-3-replace.png',
   'bbm-4-import-complete.png',
