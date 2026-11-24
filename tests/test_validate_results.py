@@ -89,3 +89,20 @@ def test_validate_osf_archive_checks_cemt_marker_when_gated(tmp_path, monkeypatc
         },
     )
     validate_results.validate_osf_archive(str(fresh_osf))
+
+
+def test_generate_osmand_deploy_disables_hh_routing(tmp_path, monkeypatch):
+    from scripts.generate_osmand_deploy import create_osmand_deploy_package
+
+    (tmp_path / "config").mkdir()
+    (tmp_path / "config" / "routing.xml").write_text("<osmand_routing_config/>")
+    (tmp_path / "OsmAndMapCreator").mkdir()
+    (tmp_path / "OsmAndMapCreator" / "NL_BromBrom_tagged.obf").write_bytes(b"obf")
+    monkeypatch.chdir(tmp_path)
+
+    create_osmand_deploy_package()
+
+    with zipfile.ZipFile(tmp_path / "dist" / "BromBrom.osf") as zf:
+        profile = json.loads(zf.read("profile_brombrom.json"))
+    assert profile["route_calculation_method"] == "STANDARD_ONLY"
+    assert profile["routing_method"] == "A_STAR_2_PHASE"

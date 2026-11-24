@@ -312,6 +312,7 @@ def test_routing_xml_priority_and_access_invariants():
     root = ET.parse("config/routing.xml").getroot()
     profile = root.find("routingProfile[@name='BromBrom']")
     assert profile is not None
+    assert profile.attrib.get("baseProfile") == "moped", "baseProfile must avoid official car/bicycle HH routing tables on iOS"
 
     # Pruned noisy/non-microcar toggles stay absent; relevant toggles stay present
     param_ids = {p.attrib.get("id") for p in profile.findall("parameter")}
