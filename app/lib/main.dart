@@ -355,18 +355,14 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
-  /// Request POST_NOTIFICATIONS permission on Android 13+.
+  /// Request POST_NOTIFICATIONS permission on Android 13+, opening app settings if permanently denied.
   Future<void> _requestNotificationPermission() async {
     if (!Platform.isAndroid) return;
     try {
-      final FlutterLocalNotificationsPlugin notificationsPlugin =
-          FlutterLocalNotificationsPlugin();
-      final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
-          notificationsPlugin.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
-      if (androidPlugin != null) {
-        await androidPlugin.requestNotificationsPermission();
-        _log("Notification permission requested.");
+      final status = await Permission.notification.request();
+      _log("Notification permission status: $status");
+      if (status.isPermanentlyDenied) {
+        await openAppSettings();
       }
     } catch (e) {
       _log("Notification permission error: $e");
@@ -400,17 +396,24 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     }
   }
 
-  Future<bool> _isOsmAndInstalled() async {
-    if (!Platform.isAndroid) return true;
+  Future<String?> _getOsmAndPackageName() async {
+    if (!Platform.isAndroid) return null;
     try {
-      final bool isOsmAnd = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand'});
-      if (isOsmAnd) return true;
-      final bool isOsmAndPlus = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand.plus'});
-      return isOsmAndPlus;
+      if (await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand.plus'}) == true) {
+        return 'net.osmand.plus';
+      }
+      if (await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand'}) == true) {
+        return 'net.osmand';
+      }
     } catch (e) {
       _log("Error checking package: $e");
-      return false;
     }
+    return null;
+  }
+
+  Future<bool> _isOsmAndInstalled() async {
+    if (!Platform.isAndroid) return true;
+    return (await _getOsmAndPackageName()) != null;
   }
 
   Future<void> _checkOnboardingRequirements() async {
@@ -975,14 +978,16 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   Future<void> _openOsfInOsmAnd(String path) async {
     final contentUri = buildOsfContentUri(path, usingInternalStorage: _usingInternalStorage);
+    final packageName = await _getOsmAndPackageName();
     
-    _log("Opening OSF Intent: $contentUri");
+    _log("Opening OSF Intent: $contentUri (package: $packageName)");
 
     try {
       final AndroidIntent intent = AndroidIntent(
         action: 'action_view',
+        package: packageName,
         data: contentUri,
-        type: '*/*',
+        type: 'application/octet-stream',
         flags: <int>[
           0x00000001, // FLAG_GRANT_READ_URI_PERMISSION
           0x10000000, // FLAG_ACTIVITY_NEW_TASK
@@ -997,8 +1002,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   Future<void> _openOsmAnd() async {
     try {
-      final isOsmAndPlus = await platform.invokeMethod('isPackageInstalled', {'packageName': 'net.osmand.plus'});
-      final packageName = isOsmAndPlus ? 'net.osmand.plus' : 'net.osmand';
+      final packageName = await _getOsmAndPackageName() ?? 'net.osmand';
       await platform.invokeMethod('openPackage', {'packageName': packageName});
     } catch (e) {
       _log("Could not open OsmAnd: $e");
@@ -1315,14 +1319,16 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         );
                       } : null;
                     } else if (_onboardingCurrentPage == 2) {
-                      return _dismissOnboarding;
+                      return _notificationPermissionGranted ? _dismissOnboarding : null;
                     }
                     return null;
                   })(),
                   child: Text(
                     (() {
                       if (_onboardingCurrentPage == 2) {
-                        return _t('ob_finish');
+                        return _notificationPermissionGranted
+                            ? _t('ob_finish')
+                            : _t('ob_notification_permission_required');
                       } else if (_onboardingCurrentPage == 1) {
                         return _osmandInstalled 
                             ? _t('ob_next') 

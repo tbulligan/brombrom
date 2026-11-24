@@ -51,7 +51,7 @@ void main() {
     );
   });
 
-  testWidgets('Onboarding slide 3 can finish without notification permission', (WidgetTester tester) async {
+  testWidgets('Onboarding slide 3 requires notification permission to finish', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({
       'language_code': 'en',
       'bg_task_scheduled': true,
@@ -68,13 +68,12 @@ void main() {
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Enable Notifications'), findsOneWidget);
-    final finishFinder = find.widgetWithText(ElevatedButton, 'Get Started');
-    expect(finishFinder, findsOneWidget);
-    expect(tester.widget<ElevatedButton>(finishFinder).onPressed, isNotNull);
+    final enableFinder = find.widgetWithText(OutlinedButton, 'Enable Notifications');
+    expect(enableFinder, findsOneWidget);
+    expect(tester.widget<OutlinedButton>(enableFinder).onPressed, isNotNull);
 
-    await tester.tap(finishFinder);
-    await tester.pumpAndSettle();
-    expect(find.text('Get Started'), findsNothing);
+    final finishFinder = find.widgetWithText(ElevatedButton, 'Grant notification permission to finish');
+    expect(finishFinder, findsOneWidget);
+    expect(tester.widget<ElevatedButton>(finishFinder).onPressed, isNull);
   });
 }
