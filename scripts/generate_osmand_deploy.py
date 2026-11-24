@@ -97,7 +97,8 @@ def create_osmand_deploy_package():
             "iconName": "mx_activities_car",
             "locIcon": "STATIC_CAR",
             "navIcon": "MOVEMENT_DEFAULT",
-            "order": 0,
+            # -2 beats DEFAULT (0) on both platforms: iOS customReg treats 0 as falsy, Android treats -1 as unset
+            "order": -2,
             "parent": "car",
             "routeService": "OSMAND",
             "routingProfile": "routing.xml/BromBrom",

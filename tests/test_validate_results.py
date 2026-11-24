@@ -104,5 +104,8 @@ def test_generate_osmand_deploy_disables_hh_routing(tmp_path, monkeypatch):
 
     with zipfile.ZipFile(tmp_path / "dist" / "BromBrom.osf") as zf:
         profile = json.loads(zf.read("profile_brombrom.json"))
+        manifest = json.loads(zf.read("items.json"))
     assert profile["route_calculation_method"] == "STANDARD_ONLY"
     assert profile["routing_method"] == "A_STAR_2_PHASE"
+    profile_item = next(item for item in manifest["items"] if item["type"] == "PROFILE")
+    assert profile_item["appMode"]["order"] == -2
