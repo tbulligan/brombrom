@@ -668,8 +668,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                       const SizedBox(height: 14),
                       ...(() {
                         final steps = wasUpdate
-                            ? ['osf_dialog_step1_update', 'osf_dialog_step2_update', 'osf_dialog_step3_update', 'osf_dialog_step4_update']
-                            : ['osf_dialog_step1', 'osf_dialog_step2', 'osf_dialog_step3', 'osf_dialog_step4', 'osf_dialog_step5', 'osf_dialog_step6', 'osf_dialog_step7'];
+                            ? const ['osf_dialog_step1', 'osf_dialog_step2', 'osf_dialog_step3']
+                            : const ['osf_dialog_step1', 'osf_dialog_step2', 'osf_dialog_step3', 'osf_dialog_step4', 'osf_dialog_step5', 'osf_dialog_step6'];
                         return <Widget>[
                           for (int i = 0; i < steps.length; i++) ...[
                             Padding(
@@ -697,7 +697,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
-                                      _t(steps[i]).replaceFirst(RegExp(r'^\d+\.\s*'), ''),
+                                      _t(steps[i]),
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: Color(0xFF334155),
