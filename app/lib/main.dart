@@ -25,6 +25,13 @@ const String _prefLastKnownRelease = "last_known_release_date";
 const String _prefBgScheduled = "bg_task_scheduled";
 const String _prefOnboardingSeen = "onboarding_seen";
 
+// ── FileProvider URI Helper ──
+String buildOsfContentUri(String path, {required bool usingInternalStorage}) {
+  final fileName = path.split('/').last;
+  final providerPath = usingInternalStorage ? 'map_imports_int' : 'map_imports_ext';
+  return 'content://com.brombrom.app.fileprovider/$providerPath/$fileName';
+}
+
 // ── Shared Release Metadata Helper Class ──
 class GithubReleaseInfo {
   final DateTime latestDate;
@@ -37,14 +44,20 @@ class GithubReleaseInfo {
     required this.downloadUrls,
   });
 
-  static Future<GithubReleaseInfo> fetch(String apiUrl) async {
-    final response = await http.get(
-      Uri.parse(apiUrl),
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-      },
-    );
+  static Future<GithubReleaseInfo> fetch(
+    String apiUrl, {
+    http.Client? client,
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    const headers = {
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+    };
+    final uri = Uri.parse(apiUrl);
+    final response = await (client != null
+            ? client.get(uri, headers: headers)
+            : http.get(uri, headers: headers))
+        .timeout(timeout);
     if (response.statusCode != 200) {
       throw Exception("API Error ${response.statusCode}");
     }
@@ -199,12 +212,14 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   
   // PATHS (App Specific, No permissions needed)
   String? _targetDir;
+  bool _usingInternalStorage = false;
   
   // STATE
   String _statusMessage = '';
   bool _isDownloading = false;
   double _progress = 0.0;
   bool _isChecking = true;
+  bool _checkInFlight = false;
   String? _checkError;
   String? _pendingImportFilePath;
   bool _pendingImportWasUpdate = false;
@@ -239,12 +254,14 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       final String systemLoc = Platform.localeName.split('_')[0];
       saved = (systemLoc == 'nl') ? 'nl' : 'en';
     }
+    if (!mounted) return;
     setState(() => _locale = saved!);
   }
 
   Future<void> _saveLocale(String code) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('language_code', code);
+    if (!mounted) return;
     setState(() {
       _locale = code;
     });
@@ -290,6 +307,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   final List<String> _logs = [];
   void _log(String msg) {
     print(msg);
+    if (!mounted) return;
     setState(() {
       _logs.add("${DateFormat('HH:mm:ss').format(DateTime.now())} - $msg");
     });
@@ -305,6 +323,7 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       await _checkOnboardingRequirements();
       // NOTE: Notification permission is now requested via the onboarding carousel or manually, not on start.
       await _scheduleBackgroundUpdateCheck();
+      if (!mounted) return;
       _checkVersions();
       // Show onboarding carousel on first launch
       final prefs = await SharedPreferences.getInstance();
@@ -320,16 +339,18 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     try {
       final dir = await getExternalStorageDirectory();
       _targetDir = dir?.path;
+      _usingInternalStorage = false;
     } catch(e) {
       _log("Failed to get external storage dir: $e");
     }
 
     if (_targetDir == null) {
       try {
-        final dir = await getApplicationDocumentsDirectory();
+        final dir = await getApplicationSupportDirectory();
         _targetDir = dir.path;
+        _usingInternalStorage = true;
       } catch (e) {
-        _log("Failed to get app documents dir: $e");
+        _log("Failed to get app support dir: $e");
       }
     }
   }
@@ -394,7 +415,14 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   Future<void> _checkOnboardingRequirements() async {
     final osmandInstalled = await _isOsmAndInstalled();
-    final notificationGranted = await Permission.notification.isGranted;
+    bool notificationGranted = false;
+    if (Platform.isAndroid) {
+      try {
+        notificationGranted = await Permission.notification.isGranted;
+      } catch (e) {
+        _log("Error checking notification permission: $e");
+      }
+    }
     if (mounted) {
       final bool wasNotInstalled = !_osmandInstalled;
       setState(() {
@@ -420,21 +448,26 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _checkOnboardingRequirements().then((_) {
+      if (_checkInFlight) {
+        _checkOnboardingRequirements();
+      } else {
         _checkVersions();
-      });
+      }
     }
   }
 
   Future<void> _checkVersions() async {
-    await _checkOnboardingRequirements();
-    setState(() {
-      _isChecking = true;
-      _checkError = null;
-      _statusMessage = _t('status_checking');
-    });
-    
+    if (_checkInFlight) return;
+    _checkInFlight = true;
     try {
+      await _checkOnboardingRequirements();
+      if (!mounted) return;
+      setState(() {
+        _isChecking = true;
+        _checkError = null;
+        _statusMessage = _t('status_checking');
+      });
+
       final release = await GithubReleaseInfo.fetch(RELEASE_API);
       
       _downloadUrls.clear();
@@ -450,12 +483,17 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
         await prefs.setString(_prefLastKnownRelease, _latestReleaseDate!.toIso8601String());
       }
 
-      final File osfFile = File('$_targetDir/$OSF_FILENAME');
-      _localOsfDate = await osfFile.exists() ? await osfFile.lastModified() : null;
+      if (_targetDir != null) {
+        final File osfFile = File('$_targetDir/$OSF_FILENAME');
+        _localOsfDate = await osfFile.exists() ? await osfFile.lastModified() : null;
+      } else {
+        _localOsfDate = null;
+      }
 
       _osfUpdateAvailable = _localOsfDate == null || 
           _localOsfDate!.isBefore(_remoteOsfDate ?? _latestReleaseDate!);
 
+      if (!mounted) return;
       setState(() {
         _isChecking = false;
         _checkError = null;
@@ -464,17 +502,22 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       if (_osfUpdateAvailable && _osmandInstalled && !_isDownloading) {
         _log("Auto-starting download of $OSF_FILENAME");
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _downloadFile(OSF_FILENAME);
+          if (mounted && !_isDownloading) {
+            _downloadFile(OSF_FILENAME);
+          }
         });
       }
 
     } catch (e) {
       _log("Check Error: $e");
+      if (!mounted) return;
       setState(() {
         _isChecking = false;
         _checkError = e.toString();
         _statusMessage = _t('status_error');
       });
+    } finally {
+      _checkInFlight = false;
     }
   }
 
@@ -515,6 +558,9 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
       );
 
       if (result.status == TaskStatus.complete) {
+        if (_targetDir == null) {
+          throw Exception("Storage directory unavailable.");
+        }
         final File file = File('$_targetDir/$fileName');
         if (await file.exists()) await file.delete();
         
@@ -523,10 +569,10 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
         await downloadedFile.copy(file.path);
         await downloadedFile.delete();
 
-        _log("Saved to public storage: ${file.path}");
-        _scanFile(file.path);
+        _log("Saved to app storage: ${file.path}");
         
         await _checkVersions();
+        if (!mounted) return;
 
         setState(() {
           _isDownloading = false;
@@ -927,21 +973,8 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
     );
   }
 
-  void _scanFile(String path) {
-    try {
-      final AndroidIntent intent = AndroidIntent(
-        action: 'android.intent.action.MEDIA_SCANNER_SCAN_FILE',
-        data: Uri.parse("file://$path").toString(),
-      );
-      intent.launch();
-    } catch (e) {
-      _log("Scan Error: $e");
-    }
-  }
-
   Future<void> _openOsfInOsmAnd(String path) async {
-    final fileName = path.split('/').last;
-    final contentUri = "content://com.brombrom.app.fileprovider/map_imports_ext/$fileName";
+    final contentUri = buildOsfContentUri(path, usingInternalStorage: _usingInternalStorage);
     
     _log("Opening OSF Intent: $contentUri");
 
@@ -974,11 +1007,14 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
 
   Future<void> _forceReinstall() async {
     try {
-      final File osfFile = File('$_targetDir/$OSF_FILENAME');
-      if (await osfFile.exists()) {
-        await osfFile.delete();
-        _log("Local OSF file deleted for force reinstall.");
+      if (_targetDir != null) {
+        final File osfFile = File('$_targetDir/$OSF_FILENAME');
+        if (await osfFile.exists()) {
+          await osfFile.delete();
+          _log("Local OSF file deleted for force reinstall.");
+        }
       }
+      if (!mounted) return;
       setState(() {
         _localOsfDate = null;
         _osfUpdateAvailable = true;
@@ -1279,18 +1315,14 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         );
                       } : null;
                     } else if (_onboardingCurrentPage == 2) {
-                      return _notificationPermissionGranted ? () {
-                        _dismissOnboarding();
-                      } : null;
+                      return _dismissOnboarding;
                     }
                     return null;
                   })(),
                   child: Text(
                     (() {
                       if (_onboardingCurrentPage == 2) {
-                        return _notificationPermissionGranted 
-                            ? _t('ob_finish') 
-                            : _t('ob_notification_permission_required');
+                        return _t('ob_finish');
                       } else if (_onboardingCurrentPage == 1) {
                         return _osmandInstalled 
                             ? _t('ob_next') 
@@ -1561,6 +1593,10 @@ class _InstallerScreenState extends State<InstallerScreen> with WidgetsBindingOb
                         const SizedBox(height: 8),
                         OutlinedButton.icon(
                           onPressed: () async {
+                            if (_targetDir == null) {
+                              _log("Storage directory unavailable.");
+                              return;
+                            }
                             try {
                               final file = File('$_targetDir/$OSF_FILENAME');
                               if (await file.exists()) {
