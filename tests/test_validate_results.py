@@ -55,3 +55,37 @@ def test_validate_osf_archive_rejects_invalid_xml(tmp_path, monkeypatch):
     )
     with pytest.raises(Exception):
         validate_results.validate_osf_archive(str(osf))
+
+
+def test_validate_osf_archive_checks_cemt_marker_when_gated(tmp_path, monkeypatch):
+    monkeypatch.setattr(validate_results, "MIN_EXPECTED_OBF_SIZE_MB", 0)
+    gated_xml = (
+        "<osmand_routing_config><routingProfile name='BromBrom'>"
+        "<way attribute='access'><ifnot t='cemt' v='brombrom'><select value='-1'/></ifnot></way>"
+        "</routingProfile></osmand_routing_config>"
+    )
+
+    stale_osf = tmp_path / "stale.osf"
+    _write_osf(
+        stale_osf,
+        {
+            "items.json": "{}",
+            "profile_brombrom.json": "{}",
+            "routing/routing.xml": gated_xml,
+            "NL_BromBrom_tagged.obf": b"\x08\x02Nl_brombrom_tagged\x12\x08\x1a\x04name*\x00",
+        },
+    )
+    with pytest.raises(ValueError, match="cemt=brombrom"):
+        validate_results.validate_osf_archive(str(stale_osf))
+
+    fresh_osf = tmp_path / "fresh.osf"
+    _write_osf(
+        fresh_osf,
+        {
+            "items.json": "{}",
+            "profile_brombrom.json": "{}",
+            "routing/routing.xml": gated_xml,
+            "NL_BromBrom_tagged.obf": b"\x08\x02Nl_brombrom_tagged" + validate_results.OBF_BROMBROM_RULE_BYTES,
+        },
+    )
+    validate_results.validate_osf_archive(str(fresh_osf))

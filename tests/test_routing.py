@@ -320,10 +320,15 @@ def test_routing_xml_priority_and_access_invariants():
     for kept in ("avoid_busy_roads", "avoid_tunnels", "avoid_borders", "avoid_ferries", "avoid_unpaved", "avoid_toll", "avoid_low_emission_zone"):
         assert kept in param_ids, f"Missing expected parameter: {kept}"
 
-    # Access invariants: hard prohibitions (incl. fords/ice/4wd) must precede microcar=yes
+    # Access invariants: cemt=brombrom isolation gate must be first; hard prohibitions must precede microcar=yes
+    access_el = profile.find("way[@attribute='access']")
+    first_child = list(access_el)[0]
+    assert first_child.tag == "ifnot" and first_child.attrib == {"t": "cemt", "v": "brombrom"}
+    assert [(s.tag, s.attrib) for s in first_child] == [("select", {"value": "-1"})]
+
     access_rules = [
         (elem.attrib.get("t"), elem.attrib.get("v"), elem.attrib.get("value"))
-        for elem in profile.find("way[@attribute='access']")
+        for elem in access_el
         if elem.tag == "select"
     ]
     idx_microcar_yes = access_rules.index(("microcar", "yes", "1"))

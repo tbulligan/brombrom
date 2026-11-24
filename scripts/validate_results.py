@@ -8,6 +8,9 @@ import geopandas as gpd
 
 MIN_EXPECTED_OBF_SIZE_MB = 10
 MIN_EXPECTED_TAGGED_ROADS = 500  # Conservative minimum; actual is usually thousands
+# Protobuf RouteEncodingRule entry (field 3='cemt', field 5='brombrom') in OBF routing header.
+# shortcut: scans first 1 MB of OBF (encoding rules sit at file start, ~252 KB for NL); widen if non-routing sections ever precede routing.
+OBF_BROMBROM_RULE_BYTES = b"\x1a\x04cemt*\x08brombrom"
 REQUIRED_OSF_MEMBERS = {
     "items.json",
     "profile_brombrom.json",
@@ -26,12 +29,21 @@ def validate_osf_archive(osf_path: str) -> None:
 
         json.loads(zf.read("items.json"))
         json.loads(zf.read("profile_brombrom.json"))
-        ET.fromstring(zf.read("routing/routing.xml"))
+        routing_root = ET.fromstring(zf.read("routing/routing.xml"))
 
         obf_info = zf.getinfo("NL_BromBrom_tagged.obf")
         obf_mb = obf_info.file_size / (1024 * 1024)
         if obf_mb < MIN_EXPECTED_OBF_SIZE_MB:
             raise ValueError(f"OBF inside OSF is too small ({obf_mb:.2f} MB < {MIN_EXPECTED_OBF_SIZE_MB} MB)")
+
+        if routing_root.find(".//ifnot[@t='cemt'][@v='brombrom']") is not None:
+            with zf.open("NL_BromBrom_tagged.obf") as obf_f:
+                obf_header = obf_f.read(1024 * 1024)
+            if OBF_BROMBROM_RULE_BYTES not in obf_header:
+                raise ValueError(
+                    "NL_BromBrom_tagged.obf is missing cemt=brombrom encoding rule "
+                    "(stale OBF paired with gated routing.xml — run ./reset_build.sh)"
+                )
 
 
 def validate_build():

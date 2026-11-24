@@ -16,6 +16,7 @@ print("Filtering roads...")
 subprocess.run([
     "osmium", "tags-filter", PBF_IN,
     "w/highway=primary,primary_link,secondary,secondary_link,tertiary,tertiary_link,residential,unclassified,trunk,trunk_link,motorway,motorway_link,living_street,service,road,track,cycleway,path,footway",
+    "w/route=ferry",
     "w/microcar=yes",
     "w/motor_vehicle=yes,permissive,designated",
     "r/type=restriction,restriction:conditional",

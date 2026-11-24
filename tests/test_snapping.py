@@ -750,4 +750,90 @@ def test_snap_g_exemptions_excludes_pre_warnings_and_forbidden(tmp_path, monkeyp
     assert 1007 not in snapped, "Exemption snap > 20m away must be rejected"
 
 
+def test_tag_c9_obf_isolation_and_restriction_remapping():
+    """Verify TagC9Handler offsets way IDs, tags cemt=brombrom, buffers split B ways
+    for sorted PBF output, and remaps via-node and via-way turn restrictions."""
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+    from scripts import tag_c9_roads
+
+    O = tag_c9_roads.WAY_ID_OFFSET
+    B0 = tag_c9_roads.SPLIT_WAY_ID_START
+
+    written = []
+    writer = MagicMock()
+    writer.add_way.side_effect = lambda w: written.append(('w', w))
+    writer.add_relation.side_effect = lambda r: written.append(('r', r))
+
+    def make_node(ref, lon, lat):
+        return SimpleNamespace(ref=ref, lon=lon, lat=lat)
+
+    def make_way(wid, nodes, tags):
+        w = MagicMock()
+        w.id = wid
+        w.nodes = nodes
+        w.tags = tags
+        w.replace.side_effect = lambda **kw: SimpleNamespace(
+            id=kw.get('id', wid),
+            nodes=kw.get('nodes', [n.ref for n in nodes]),
+            tags=kw.get('tags', dict(tags)),
+        )
+        return w
+
+    def make_rel(rid, members):
+        r = MagicMock()
+        r.id = rid
+        r.members = [SimpleNamespace(type=t, ref=ref, role=role) for t, ref, role in members]
+        r.replace.side_effect = lambda **kw: SimpleNamespace(id=rid, members=kw['members'])
+        return r
+
+    # Way 200 runs south->north (nodes 1->2->3, ~55m each); C9 sign at node 2 facing south (180°) restricts A (1->2), keeps B (2->3) open
+    # Way 400 is also a via-way with a mid-way C9 snap -> must stay unsplit (not broken into unordered [A, B])
+    snaps = {
+        200: [{'lon': 4.4880, 'lat': 52.1390, 'bearing': 180.0}],
+        400: [{'lon': 4.4880, 'lat': 52.1390, 'bearing': 180.0}],
+    }
+    handler = tag_c9_roads.TagC9Handler(
+        writer, forbidden_ways={200, 400}, way_snaps=snaps, exemption_ways=set(), via_way_ids={300, 400}
+    )
+
+    handler.way(make_way(100, [make_node(10, 4.487, 52.139), make_node(3, 4.488, 52.1395)], {'highway': 'unclassified'}))
+    handler.way(make_way(200, [
+        make_node(1, 4.4880, 52.1385),
+        make_node(2, 4.4880, 52.1390),
+        make_node(3, 4.4880, 52.1395),
+    ], {'highway': 'secondary', 'name': 'Europaweg'}))
+    handler.way(make_way(300, [make_node(3, 4.4880, 52.1395), make_node(4, 4.4890, 52.1395)], {'highway': 'unclassified'}))
+    handler.way(make_way(400, [
+        make_node(1, 4.4880, 52.1385),
+        make_node(2, 4.4880, 52.1390),
+        make_node(3, 4.4880, 52.1395),
+    ], {'highway': 'secondary'}))
+
+    # Rel 1: via node 3 (on split B!) -> 'to' way 200 must remap to B0, 'from' 100 to 100+O
+    handler.relation(make_rel(1, [('w', 100, 'from'), ('n', 3, 'via'), ('w', 200, 'to')]))
+    # Rel 2: via node 1 (on split A) -> 'from' way 200 stays 200+O
+    handler.relation(make_rel(2, [('w', 200, 'from'), ('n', 1, 'via'), ('w', 100, 'to')]))
+    # Rel 3: via way 300 (endpoints 3,4 -> touches split B node 3) -> 'from' 200 must remap to B0, 'via' 300 to 300+O
+    handler.relation(make_rel(3, [('w', 200, 'from'), ('w', 300, 'via'), ('w', 100, 'to')]))
+    # Rel 4: via way 400 stays unsplit -> single remapped member 400+O
+    handler.relation(make_rel(4, [('w', 100, 'from'), ('w', 400, 'via'), ('w', 300, 'to')]))
+
+    ways = [obj for kind, obj in written if kind == 'w']
+    rels = [obj for kind, obj in written if kind == 'r']
+
+    # Ways must be written in ascending ID order (base offset ways first, buffered split B last, before any relation)
+    assert [w.id for w in ways] == [100 + O, 200 + O, 300 + O, 400 + O, B0]
+    assert [kind for kind, _ in written] == ['w', 'w', 'w', 'w', 'w', 'r', 'r', 'r', 'r']
+    assert all(w.tags.get('cemt') == 'brombrom' for w in ways)
+    assert ways[1].tags['motor_vehicle'] == 'no' and 'motor_vehicle' not in ways[4].tags
+    assert ways[3].tags['motor_vehicle'] == 'no'  # unsplit via-way restricted in full
+
+    assert rels[0].members == [('w', 100 + O, 'from'), ('n', 3, 'via'), ('w', B0, 'to')]
+    assert rels[1].members == [('w', 200 + O, 'from'), ('n', 1, 'via'), ('w', 100 + O, 'to')]
+    assert rels[2].members == [('w', B0, 'from'), ('w', 300 + O, 'via'), ('w', 100 + O, 'to')]
+    assert rels[3].members == [('w', 100 + O, 'from'), ('w', 400 + O, 'via'), ('w', 300 + O, 'to')]
+
+
+
 
